@@ -282,15 +282,9 @@ if __name__ == "__main__":
 
     # Setup the command line description text
     DESC_TEXTT = """
-    Share hardware resources with lock files.
-
-    This tool creates lock files and prevents resource contention. Calling this will block
-    until the resource can be locked or times out waiting.
-
-    return values:
-    0: Success
-    1: Timeout waiting for lock to release
-    2: Trying to unlock a file that doesn't exits
+    Lock/Unlock Hardware resources
+    Query resource information
+    Monitor resources
     """
 
     # Parse the command line arguments
