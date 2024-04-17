@@ -49,11 +49,13 @@ Description: BTM-CI Resource Manager
 
 """
 import os
+import glob
 import sys
 import json
 from typing import List
 from datetime import datetime
 import argparse
+
 
 class ResourceManager:
     """BTM-CI Resource Manager"""
@@ -89,13 +91,25 @@ class ResourceManager:
 
         return resource in locks
 
-    def get_resource_start_time(self, resource: str):
+    def get_resource_start_time(self, resource: str) -> str:
+        """Get the start time a resource was locked
+
+        Parameters
+        ----------
+        resource : str
+            resource name
+
+        Returns
+        -------
+        str
+            Date and time resource was locked
+        """
         lockfile_path = self.get_lock_path(resource)
         if not os.path.exists(lockfile_path):
             return "N/A"
-        else:
-            with open(lockfile_path, "r", encoding="utf-8") as lockfile:
-                return lockfile.readline()
+
+        with open(lockfile_path, "r", encoding="utf-8") as lockfile:
+            return lockfile.readline()
 
     def get_resource_usage(self):
         """Get a dictionary of resources and their usage
@@ -115,7 +129,19 @@ class ResourceManager:
 
         return resource_used
 
-    def get_lock_path(self, resource: str):
+    def get_lock_path(self, resource: str) -> str:
+        """Get the full path to a lockfile given the resource name
+
+        Parameters
+        ----------
+        resource : str
+            name of resource
+
+        Returns
+        -------
+        str
+            Lockfile path
+        """
         return os.path.join(self.resource_lock_dir, resource)
 
     def unlock_resource(self, resource: str):
@@ -132,12 +158,23 @@ class ResourceManager:
 
         return True
 
-    def unlock_resources(self, resources: str):
+    def unlock_resources(self, resources: List[str]):
+        """Unlock a list of resources
+
+        Parameters
+        ----------
+        resources : str
+            _description_
+        """
         for resource in resources:
             self.unlock_resource(resource)
 
     def unlock_all_resources(self):
-        self.unlock_resources(self.resources.keys())
+        """Delete all lockfiles"""
+        locks = glob.glob(f"{self.resource_lock_dir}/*")
+        for lock in locks:
+            print(f"Unlocking - {os.path.basename(lock)}")
+            os.remove(lock)
 
     def lock_resource(self, resource: str):
         lockfile_path = self.get_lock_path(resource)
@@ -189,12 +226,7 @@ class ResourceManager:
 
         Parameters
         ----------
-        item_name : str
-            item name
-
-        Returns
-        -------
-        str
+        item_name : strans
             json item value
         """
         tree = item_name.split(".")
@@ -223,16 +255,14 @@ class ResourceManager:
         # whatever is at the end is the answer
         return ans
 
+    def print_usage(self):
+        usage = self.get_resource_usage()
+        print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15}")
+        print("*" * 75)
+        for resource, usage_info in usage.items():
 
-def print_usage(rm: ResourceManager):
-    
-    usage = rm.get_resource_usage()
-    print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15}")
-    print("*" * 75)
-    for resource, usage_info in usage.items():
-
-        print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
-        print("-" * 75)
+            print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
+            print("-" * 75)
 
 
 if __name__ == "__main__":
@@ -255,7 +285,11 @@ if __name__ == "__main__":
         description=DESC_TEXTT, formatter_class=argparse.RawTextHelpFormatter
     )
 
-
+    parser.add_argument(
+        "--custom-config",
+        default=None,
+        help="Custom config for boards. Will be added to what is on CI",
+    )
 
     parser.add_argument(
         "--timeout",
@@ -264,11 +298,14 @@ if __name__ == "__main__":
         help="Timeout before returning in seconds",
     )
     parser.add_argument(
-        "--unlock",
         "-u",
-        action="store_true",
-        help="Unlock the file, otherwise lock the file",
+        "--unlock",
+        default=[],
+        action="extend",
+        nargs="*",
+        help="Name of board to unlock per boards_config.json",
     )
+
     parser.add_argument(
         "--unlock-all",
         action="store_true",
@@ -282,39 +319,39 @@ if __name__ == "__main__":
         nargs="*",
         help="Name of board to lock per boards_config.json",
     )
-    
+
     parser.add_argument(
         "--list-usage",
         action="store_true",
         help="Unlock the file, otherwise lock the file",
     )
-    
+
     parser.add_argument(
         "-g",
         "--get-value",
         default=None,
         help="Get value for resource in config (ex: max32655_board1.dap_sn)",
     )
-    
 
     args = parser.parse_args()
-    boards = list(args.lock)
 
-    rm = ResourceManager(timeout=args.timeout)
+    lock_boards = list(args.lock)
+    unlock_boards = list(args.unlock)
 
+    rm = ResourceManager(resource_filepath=args.custom_config, timeout=args.timeout)
 
     if args.list_usage:
-        print_usage(rm)
+        rm.print_usage()
 
     if args.unlock_all:
         print("Unlocking all boards!")
         rm.unlock_all_resources()
         sys.exit(0)
 
-    if not args.unlock and boards:
-        print(f"Attempting to lock all boards {boards}")
+    if lock_boards:
+        print(f"Attempting to lock all boards {lock_boards}")
 
-        COULD_LOCK = rm.lock_resources(boards)
+        COULD_LOCK = rm.lock_resources(lock_boards)
 
         if COULD_LOCK:
             print("Successfully locked boards")
@@ -322,15 +359,12 @@ if __name__ == "__main__":
         else:
             print("Failed to lock all boards")
             sys.exit(-1)
-    elif boards:
-        print(f"Unlocking resources {boards}")
-        rm.unlock_resources(boards) 
-    
+
+    if unlock_boards:
+        print(f"Unlocking resources {unlock_boards}")
+        rm.unlock_resources(unlock_boards)
+
     if args.get_value:
-        ans = rm.get_item_value(args.get_value)
-
-        print(ans)
-
-
+        print(rm.get_item_value(args.get_value))
 
     sys.exit(0)
