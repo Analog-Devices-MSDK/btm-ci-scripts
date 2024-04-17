@@ -176,7 +176,19 @@ class ResourceManager:
             print(f"Unlocking - {os.path.basename(lock)}")
             os.remove(lock)
 
-    def lock_resource(self, resource: str):
+    def lock_resource(self, resource: str) -> bool:
+        """Lock resource
+
+        Parameters
+        ----------
+        resource : str
+            Resource name
+
+        Returns
+        -------
+        bool
+            True is locked successfully. False otherwise.
+        """
         lockfile_path = self.get_lock_path(resource)
 
         if not os.path.exists(lockfile_path):
@@ -256,6 +268,7 @@ class ResourceManager:
         return ans
 
     def print_usage(self):
+        """Pretty print the resource usage"""
         usage = self.get_resource_usage()
         print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15}")
         print("*" * 75)
