@@ -175,6 +175,9 @@ class ResourceManager:
         for lock in locks:
             print(f"Unlocking - {os.path.basename(lock)}")
             os.remove(lock)
+    def is_locked(self, resource:str) -> bool:
+        lockfile_path = self.get_lock_path(resource)
+        return os.path.exists(lockfile_path)
 
     def lock_resource(self, resource: str) -> bool:
         """Lock resource
@@ -191,7 +194,7 @@ class ResourceManager:
         """
         lockfile_path = self.get_lock_path(resource)
 
-        if not os.path.exists(lockfile_path):
+        if not self.is_locked(resource):
             with open(lockfile_path, "w", encoding="utf-8") as lockfile:
 
                 now = datetime.now()
@@ -211,27 +214,34 @@ class ResourceManager:
 
         start = datetime.now()
         idx = 0
-        while resources:
-            resource = resources[idx]
-            lock_ok = self.lock_resource(resource)
+    
+        
+        boards_locked = False
+        start = datetime.now()
 
-            if lock_ok:
-                resource_locks[resource] = True
-                resources.remove(resource)
+        while not boards_locked:
+            unlocked_count = 0
+            for resource in resources:
+                if not self.is_locked(resource):
+                    unlocked_count += 1
+            # Attempt to lock them all at once 
+            if unlocked_count == len(resources):
+                lockcount = 0
+                for resource in resources:
+                    lockcount += 1 if self.lock_resource(resource) else 0
+                    boards_locked = True
 
             now = datetime.now()
-
             if (now - start).total_seconds() > self.timeout:
                 # TIMEOUT!
                 break
 
-        if len(resources) == 0:
-            return True
-
-        for resource in resource_locks:
-            self.unlock_resource(resource)
-
-        return False
+        if boards_locked and lockcount != len(resources):
+            for resource in resources:
+                self.unlock_resource(resource)
+                boards_locked = False
+                
+        return boards_locked
 
     def get_item_value(self, item_name: str) -> str:
         """Get value attached to json item
