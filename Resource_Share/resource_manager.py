@@ -138,6 +138,8 @@ class ResourceManager:
     def unlock_resources(self, resources:str):
         for resource in resources:
             self.unlock_resource(resource)
+    def unlock_all_resources(self):
+        self.unlock_resources(self.resources.keys())
     
     def lock_resource(self, resource: str):
         lockfile_path = self.get_lock_path(resource)

@@ -77,17 +77,25 @@ parser.add_argument(
     "--unlock", "-ul", action="store_true", help="Unlock the file, otherwise lock the file"
 )
 parser.add_argument(
+    "--unlock-all",  action="store_true", help="Unlock the file, otherwise lock the file"
+)
+parser.add_argument(
     "-b",
     "--board",
-    action="append",
-    help="Name of board to lock per boards_config.json",
-    required=True,
+    action="extend",
+    nargs="*",
+    help="Name of board to lock per boards_config.json"
 )
 
 args = parser.parse_args()
 boards = list(args.board)
 
 rm = ResourceManager()
+
+if args.unlock_all:
+    print('Unlocking all boards!')
+    rm.unlock_all_resources()
+    sys.exit(0)
 
 if not args.unlock:
     print(f"Attempting to lock all boards {boards}")
