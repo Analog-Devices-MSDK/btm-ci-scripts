@@ -40,76 +40,77 @@
 
 import sys
 import argparse
-import os
-from pathlib import Path
-import time
-import json
-import time
 from resource_manager import ResourceManager
 
 
-# Setup the command line description text
-descText = """
-Share hardware resources with lock files.
+if __name__ == "__main__":
 
-This tool creates lock files and prevents resource contention. Calling this will block
-until the resource can be locked or times out waiting.
+    # Setup the command line description text
+    DESC_TEXTT = """
+    Share hardware resources with lock files.
 
-return values:
-0: Success
-1: Timeout waiting for lock to release
-2: Trying to unlock a file that doesn't exits
-"""
+    This tool creates lock files and prevents resource contention. Calling this will block
+    until the resource can be locked or times out waiting.
 
-# Parse the command line arguments
-parser = argparse.ArgumentParser(
-    description=descText, formatter_class=argparse.RawTextHelpFormatter
-)
+    return values:
+    0: Success
+    1: Timeout waiting for lock to release
+    2: Trying to unlock a file that doesn't exits
+    """
 
+    # Parse the command line arguments
+    parser = argparse.ArgumentParser(
+        description=DESC_TEXTT, formatter_class=argparse.RawTextHelpFormatter
+    )
 
-parser.add_argument(
-    "--timeout",
-    "-t",
-    default=60,
-    help="Timeout before returning in seconds",
-)
-parser.add_argument(
-    "--unlock", "-ul", action="store_true", help="Unlock the file, otherwise lock the file"
-)
-parser.add_argument(
-    "--unlock-all",  action="store_true", help="Unlock the file, otherwise lock the file"
-)
-parser.add_argument(
-    "-b",
-    "--board",
-    action="extend",
-    nargs="*",
-    help="Name of board to lock per boards_config.json"
-)
+    parser.add_argument(
+        "--timeout",
+        "-t",
+        default=60,
+        help="Timeout before returning in seconds",
+    )
+    parser.add_argument(
+        "--unlock",
+        "-ul",
+        action="store_true",
+        help="Unlock the file, otherwise lock the file",
+    )
+    parser.add_argument(
+        "--unlock-all",
+        action="store_true",
+        help="Unlock the file, otherwise lock the file",
+    )
+    parser.add_argument(
+        "-b",
+        "--board",
+        action="extend",
+        nargs="*",
+        help="Name of board to lock per boards_config.json",
+    )
 
-args = parser.parse_args()
-boards = list(args.board)
+    args = parser.parse_args()
+    boards = list(args.board)
 
-rm = ResourceManager()
+    rm = ResourceManager()
 
-if args.unlock_all:
-    print('Unlocking all boards!')
-    rm.unlock_all_resources()
-    sys.exit(0)
-
-if not args.unlock:
-    print(f"Attempting to lock all boards {boards}")
-    could_lock = rm.lock_resources(boards)
-    if(could_lock):
-        print("Successfully locked boards")
+    if args.unlock_all:
+        print("Unlocking all boards!")
+        rm.unlock_all_resources()
         sys.exit(0)
+
+    if not args.unlock:
+        print(f"Attempting to lock all boards {boards}")
+
+        COULD_LOCK = rm.lock_resources(boards)
+
+        if COULD_LOCK:
+            print("Successfully locked boards")
+            sys.exit(0)
+        else:
+            print("Failed to lock all boards")
+            sys.exit(-1)
     else:
-        print("Failed to lock all boards")
-        sys.exit(-1)
-else:
-    print(f"Unlocking resources {boards}")
-    rm.unlock_resources(boards)
-    
+        print(f"Unlocking resources {boards}")
+        rm.unlock_resources(boards)
 
-
-sys.exit(0)
+    sys.exit(0)

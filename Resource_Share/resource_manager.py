@@ -63,7 +63,7 @@ class ResourceManager:
         resource_filepath = os.environ.get("CI_BOARD_CONFIG")
         with open(resource_filepath, "r", encoding="utf-8") as resource_file:
             self.resources: dict = json.load(resource_file)
-        
+
         if resource_filepath is not None:
             custom_resource_filepath = resource_filepath
             with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
@@ -88,15 +88,15 @@ class ResourceManager:
         locks = os.listdir(self.resource_lock_dir)
 
         return resource in locks
-    def get_resource_start_time(self, resource:str):
+
+    def get_resource_start_time(self, resource: str):
         lockfile_path = self.get_lock_path(resource)
         if not os.path.exists(lockfile_path):
-            return 'N/A'
+            return "N/A"
         else:
-            with open(lockfile_path, 'r', encoding='utf-8') as lockfile:
+            with open(lockfile_path, "r", encoding="utf-8") as lockfile:
                 return lockfile.readline()
-        
-    
+
     def get_resource_usage(self):
         """Get a dictionary of resources and their usage
 
@@ -107,22 +107,21 @@ class ResourceManager:
         """
         resource_used = {}
         for resource in self.resources.keys():
-            
+
             in_use = self.resource_in_use(resource=resource)
             start_time = self.get_resource_start_time(resource)
-            
-            resource_used[resource] = [in_use ,start_time]
-            
+
+            resource_used[resource] = [in_use, start_time]
+
         return resource_used
 
     def get_lock_path(self, resource: str):
         return os.path.join(self.resource_lock_dir, resource)
 
-
     def unlock_resource(self, resource: str):
         """
         Delete Resource lock
-        
+
         """
         lock = self.get_lock_path(resource)
 
@@ -133,17 +132,16 @@ class ResourceManager:
 
         return True
 
-
-
-    def unlock_resources(self, resources:str):
+    def unlock_resources(self, resources: str):
         for resource in resources:
             self.unlock_resource(resource)
+
     def unlock_all_resources(self):
         self.unlock_resources(self.resources.keys())
-    
+
     def lock_resource(self, resource: str):
         lockfile_path = self.get_lock_path(resource)
-        
+
         if not os.path.exists(lockfile_path):
             with open(lockfile_path, "w", encoding="utf-8") as lockfile:
 
@@ -155,7 +153,6 @@ class ResourceManager:
             return True
 
         return False
-    
 
     def lock_resources(self, resources: List[str]) -> bool:
         """

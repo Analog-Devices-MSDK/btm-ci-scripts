@@ -65,6 +65,6 @@ if __name__ == "__main__":
     print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15}")
     print("*" * 75)
     for resource, usage_info in usage.items():
-        
+
         print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
         print("-" * 75)
