@@ -53,7 +53,7 @@ import sys
 import json
 from typing import List
 from datetime import datetime
-
+import argparse
 
 class ResourceManager:
     """BTM-CI Resource Manager"""
@@ -222,3 +222,115 @@ class ResourceManager:
 
         # whatever is at the end is the answer
         return ans
+
+
+def print_usage(rm: ResourceManager):
+    
+    usage = rm.get_resource_usage()
+    print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15}")
+    print("*" * 75)
+    for resource, usage_info in usage.items():
+
+        print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
+        print("-" * 75)
+
+
+if __name__ == "__main__":
+
+    # Setup the command line description text
+    DESC_TEXTT = """
+    Share hardware resources with lock files.
+
+    This tool creates lock files and prevents resource contention. Calling this will block
+    until the resource can be locked or times out waiting.
+
+    return values:
+    0: Success
+    1: Timeout waiting for lock to release
+    2: Trying to unlock a file that doesn't exits
+    """
+
+    # Parse the command line arguments
+    parser = argparse.ArgumentParser(
+        description=DESC_TEXTT, formatter_class=argparse.RawTextHelpFormatter
+    )
+
+
+
+    parser.add_argument(
+        "--timeout",
+        "-t",
+        default=60,
+        help="Timeout before returning in seconds",
+    )
+    parser.add_argument(
+        "--unlock",
+        "-u",
+        action="store_true",
+        help="Unlock the file, otherwise lock the file",
+    )
+    parser.add_argument(
+        "--unlock-all",
+        action="store_true",
+        help="Unlock the file, otherwise lock the file",
+    )
+    parser.add_argument(
+        "-l",
+        "--lock",
+        default=[],
+        action="extend",
+        nargs="*",
+        help="Name of board to lock per boards_config.json",
+    )
+    
+    parser.add_argument(
+        "--list-usage",
+        action="store_true",
+        help="Unlock the file, otherwise lock the file",
+    )
+    
+    parser.add_argument(
+        "-g",
+        "--get-value",
+        default=None,
+        help="Get value for resource in config (ex: max32655_board1.dap_sn)",
+    )
+    
+
+    args = parser.parse_args()
+    boards = list(args.lock)
+
+    rm = ResourceManager(timeout=args.timeout)
+
+
+    if args.list_usage:
+        print_usage(rm)
+
+    if args.unlock_all:
+        print("Unlocking all boards!")
+        rm.unlock_all_resources()
+        sys.exit(0)
+
+    if not args.unlock and boards:
+        print(f"Attempting to lock all boards {boards}")
+
+        COULD_LOCK = rm.lock_resources(boards)
+
+        if COULD_LOCK:
+            print("Successfully locked boards")
+            sys.exit(0)
+        else:
+            print("Failed to lock all boards")
+            sys.exit(-1)
+    elif boards:
+        print(f"Unlocking resources {boards}")
+        rm.unlock_resources(boards) 
+    
+    if args.get_value:
+        ans = rm.get_item_value(args.get_value)
+
+        print(ans)
+
+
+
+    sys.exit(0)
