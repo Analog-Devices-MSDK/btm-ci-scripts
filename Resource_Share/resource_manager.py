@@ -240,7 +240,7 @@ class ResourceManager:
             for resource in resources:
                 self.unlock_resource(resource)
                 boards_locked = False
-                
+
         return boards_locked
 
     def get_item_value(self, item_name: str) -> str:
@@ -352,8 +352,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    lock_boards = list(args.lock)
-    unlock_boards = list(args.unlock)
+    lock_boards = list(set(args.lock))
+    unlock_boards = list(set(args.unlock))
 
     rm = ResourceManager(resource_filepath=args.custom_config, timeout=args.timeout)
 
