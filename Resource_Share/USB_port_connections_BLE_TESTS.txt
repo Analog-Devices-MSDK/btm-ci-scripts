@@ -1,0 +1,12 @@
+max32655_board1 : App Trace uart
+max32655_board2 : App Trace uart
+max32690_board_w1 : App Trace uart
+max32690_board_w1 : DapLink
+max32655_board2 : DapLink
+max32655_board1 : DapLink
+max32655_board2 : HCI Trace
+max32665_board1 : App Trace
+max32665_board1 : DapLink
+max32655_board1 : HCI Trace
+max32665_board1 : HCI Trace
+max32690_board_w1 (power cable)
