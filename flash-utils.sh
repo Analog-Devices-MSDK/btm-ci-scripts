@@ -20,13 +20,13 @@ function ocdflash() {
     telnetport=$(resource_manager.py -g $name.ocdports.telnet)
     tclport=$(resource_manager.py -g $name.ocdports.tcl)
 
-    openocd -s $OPENOCD_PATH/tcl \
+    openocd -s $OPENOCD_PATH \
     -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
     -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
     -c "program $elfFile verify; reset; exit"
 
     if [[ $? -ne 0 ]]; then
-        openocd -s $OPENOCD_PATH/tcl \
+        openocd -s $OPENOCD_PATH \
         -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
         -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
         -c "program $elfFile verify; reset; exit"
@@ -50,24 +50,27 @@ function ocderase() {
 
     name=$1
 
+
+
     target=$(resource_manager.py -g $name.target)
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)
     telnetport=$(resource_manager.py -g $name.ocdports.telnet)
     tclport=$(resource_manager.py -g $name.ocdports.tcl)
 
-    openocd -s $OPENOCD_PATH/tcl \
-    -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
-    -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
-    -c "init; reset halt; max32xxx mass_erase 0;" -c exit
-    if [[ "$target" == "MAX32655" ]]; then
-        return $?
-    fi
-    openocd -s $OPENOCD_PATH/tcl \
-        -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
-        -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
-        -c "init; reset halt; max32xxx mass_erase 1;" -c exit
+   
+    # openocd -s $OPENOCD_PATH \
+    # -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+    # -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
+    # -c "init; reset halt; max32xxx mass_erase 0;" -c exit
+    # if [[ "$target" == "MAX32655" ]]; then
+    #     return $?
+    # fi
+    # openocd -s $OPENOCD_PATH \
+    #     -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+    #     -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
+    #     -c "init; reset halt; max32xxx mass_erase 1;" -c exit
 
-    return $?
+    # return $?
 
 }
