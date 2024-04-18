@@ -58,22 +58,22 @@ from datetime import datetime
 sys.path.append("..")
 from Resource_Share.resource_manager import ResourceManager
 
-def advertising_test(serial_port:serial.Serial):
+
+def advertising_test(serial_port: serial.Serial):
     print("Advertising test")
     start = datetime.now()
 
     while True:
         text = str(serial_port.readline())
 
-        if 'Advertising started' in text:
+        if "Advertising started" in text:
             return True
         elif (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
             return False
-        
+
 
 def test_secure_connection(serial_port: serial.Serial):
-    
     print("STARTING CONNECTION TEST")
 
     start = datetime.now()
@@ -106,52 +106,56 @@ def test_secure_connection(serial_port: serial.Serial):
             print("TIMEOUT!!")
             return False
 
-def write_char_test(serial_port:serial.Serial):
+
+def write_char_test(serial_port: serial.Serial):
     print("WRITE CHARACTERISTIC TEST")
     serial_port.write("btn 2 l\r\n".encode("utf-8"))
     start = datetime.now()
 
     while True:
         text = str(serial_port.readline())
-        if 'No action assigned' in text:
+        if "No action assigned" in text:
             return False
-        elif 'hello' in text:
+        elif "hello" in text:
             return True
         elif (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
             return False
 
-def write_secure_test(serial_port:serial.Serial):
+
+def write_secure_test(serial_port: serial.Serial):
     print("WRITE SECURE TEST")
     serial_port.write("btn 2 m\r\n".encode("utf-8"))
     start = datetime.now()
 
     while True:
         text = str(serial_port.readline())
-        if 'No action assigned' in text:
+        if "No action assigned" in text:
             return False
-        elif 'hello' in text:
+        elif "hello" in text:
             return True
         elif (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
             return False
-        
-def phy_switch_test(serial_port:serial.Serial):
+
+
+def phy_switch_test(serial_port: serial.Serial):
     print("PHY CHANGE TEST")
     serial_port.write("btn 2 s\r\n".encode("utf-8"))
     start = datetime.now()
 
     while True:
         text = str(serial_port.readline())
-        if 'No action assigned' in text:
+        if "No action assigned" in text:
             return False
-        elif '2 MBit TX and RX PHY Requested' in text:
+        elif "2 MBit TX and RX PHY Requested" in text:
             return True
         elif (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
             return False
-    
-def speed_test(serial_port:serial.Serial):
+
+
+def speed_test(serial_port: serial.Serial):
     print("SPEED TEST")
     serial_port.write("btn 2 x\r\n".encode("utf-8"))
     start = datetime.now()
@@ -164,32 +168,35 @@ def speed_test(serial_port:serial.Serial):
     time.sleep(2)
     serial_port.write("btn 2 m\r\n".encode("utf-8"))
 
-
     while True:
         text = str(serial_port.readline())
-        if 'bps' in text:
+        if "bps" in text:
             print(text)
             return True
         elif (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
             return False
 
-test_results_client = {}
-def client_thread(portname: str):
 
+test_results_client = {}
+
+
+def client_thread(portname: str):
     client_console = serial.Serial(portname, baudrate=115200, timeout=2)
     test_results_client["pairing"] = test_secure_connection(client_console)
-    test_results_client['write characteristic'] = write_char_test(client_console)
-    test_results_client['write secure'] = write_secure_test(client_console)
-    test_results_client['speed'] = speed_test(client_console)
+    test_results_client["write characteristic"] = write_char_test(client_console)
+    test_results_client["write secure"] = write_secure_test(client_console)
+    test_results_client["speed"] = speed_test(client_console)
 
     return test_results_client
 
 
 test_results_server = {}
+
+
 def server_thread(portname: str):
     server_console = serial.Serial(portname, baudrate=115200, timeout=2)
-    test_results_server['advertising'] = advertising_test(server_console)
+    test_results_server["advertising"] = advertising_test(server_console)
     test_results_server["pairing"] = test_secure_connection(server_console)
 
     return test_results_server
@@ -238,16 +245,13 @@ if __name__ == "__main__":
     server_t.start()
     client_t.join()
     server_t.join()
-    
-    client_results = test_results_client
-    server_results = test_results_server
 
     # Print Results
-    print(client_results)
-    print(server_results)
+    print(test_results_client)
+    print(test_results_server)
 
-    overall_client = print_results("DATC", client_results)
-    overall_server = print_results("DATS", server_results)
+    overall_client = print_results("DATC", test_results_client)
+    overall_server = print_results("DATS", test_results_server)
 
     print(f"Client {'Pass' if overall_client else 'Fail'}")
     print(f"Client {'Pass' if overall_client else 'Fail'}")
