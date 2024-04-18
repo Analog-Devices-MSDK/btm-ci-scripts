@@ -58,7 +58,8 @@ optional arguments:
 
 ## BOARD_CONFIG_PATH
 Path to board config, which contains all needed information to flash and communicate with DUTs
-
+## Custom Board config path
+Optionally, you can add a custom board config by exporting its path equal to CI_BOARD_CONFIG_CUSTOM
 ## RESOURCE_LOCK_DIR
 Directory where lockfiles for boards are stored
 
