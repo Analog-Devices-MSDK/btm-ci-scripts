@@ -1,4 +1,4 @@
-source /home/btm-ci/Tools/btm-ci-scripts/str-utils.sh
+source ~/Tools/btm-ci-scripts/str-utils.sh
 function ocdflash() {
     if [[ "$1" == "--help" || $1 == "-h" ]]; then
         printf "flash --> flash a board\n"

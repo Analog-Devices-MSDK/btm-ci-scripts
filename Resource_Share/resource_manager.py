@@ -74,6 +74,10 @@ class ResourceManager:
         self.timeout = timeout
         self.resource_lock_dir = os.environ.get("RESOURCE_LOCK_DIR")
 
+        if not os.path.exists(self.resource_lock_dir):
+            os.mkdir(self.resource_lock_dir)
+
+
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
 
@@ -356,6 +360,9 @@ if __name__ == "__main__":
     unlock_boards = list(set(args.unlock))
 
     rm = ResourceManager(resource_filepath=args.custom_config, timeout=args.timeout)
+
+
+
 
     if args.list_usage:
         rm.print_usage()
