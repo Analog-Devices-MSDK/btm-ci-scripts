@@ -60,23 +60,30 @@ import argparse
 class ResourceManager:
     """BTM-CI Resource Manager"""
 
-    def __init__(self, custom_resource_filepath: str = None, timeout=60) -> None:
+    def __init__(self, timeout=60) -> None:
         # Initialize the resource file
         base_resource_path = os.environ.get("CI_BOARD_CONFIG")
         with open(base_resource_path, "r", encoding="utf-8") as resource_file:
             self.resources: dict = json.load(resource_file)
 
-        if custom_resource_filepath is not None:
-            custom_resource_filepath = custom_resource_filepath
-            with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
-                custom_resources = json.load(resource_file)
-                self.resources.update(custom_resources)
+
+
+        self.add_custom_config()
         
         self.timeout = timeout
         self.resource_lock_dir = os.environ.get("RESOURCE_LOCK_DIR")
+        self._add_lockdir()
 
+    def _add_lockdir(self):
         if not os.path.exists(self.resource_lock_dir):
             os.mkdir(self.resource_lock_dir)
+
+    def add_custom_config(self):
+        custom_resource_filepath = os.environ.get("CI_BOARD_CONFIG_CUSTOM")
+        if custom_resource_filepath is not None:
+            with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
+                custom_resources = json.load(resource_file)
+                self.resources.update(custom_resources)
 
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
@@ -303,12 +310,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--custom-config",
-        default=None,
-        help="Custom config for boards. Will be added to what is on CI",
-    )
-
-    parser.add_argument(
         "--timeout",
         "-t",
         default=60,
@@ -355,7 +356,7 @@ if __name__ == "__main__":
     lock_boards = list(set(args.lock))
     unlock_boards = list(set(args.unlock))
 
-    rm = ResourceManager(custom_resource_filepath=args.custom_config, timeout=args.timeout)
+    rm = ResourceManager(timeout=args.timeout)
 
     if args.list_usage:
         rm.print_usage()
