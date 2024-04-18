@@ -68,7 +68,8 @@ Path to where the openocd tooling is located
 
 ## Past lessons learned and moving forward
 - Pathing is incredibly easy to mess up in yaml files. So all commonly used fucntions are now global.
-- If you find yourself using loops or arrays in bash it is time to use python.
+- Bash is easy to mess up and no one on our team is very good at it. Simple bash only
+- If you find yourself using loops or arrays in bash it is time to use python or some other language like golang.
 - If your test runs on walle, put it in the the btm-ci scripts folder. No need to add to the tangled mess that is the workflows.
 - Keep workflows as flat as possible. Tracking dependencies is difficult.
 - If you find yourself doing a very common thing. Make it a script and put it into the btm-ci-scripts
