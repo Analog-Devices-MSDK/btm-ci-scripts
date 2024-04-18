@@ -330,7 +330,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--unlock-all",
         action="store_true",
-        help="Unlock the file, otherwise lock the file",
+        help="Unlock all resources in lock directory",
     )
     parser.add_argument(
         "-l",
@@ -344,7 +344,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--list-usage",
         action="store_true",
-        help="Unlock the file, otherwise lock the file",
+        help="Display basic usage stats of the boards including if they are locked and when they were locked",
     )
 
     parser.add_argument(
