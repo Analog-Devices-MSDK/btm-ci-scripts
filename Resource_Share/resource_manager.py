@@ -77,7 +77,6 @@ class ResourceManager:
         if not os.path.exists(self.resource_lock_dir):
             os.mkdir(self.resource_lock_dir)
 
-
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
 
@@ -125,7 +124,6 @@ class ResourceManager:
         """
         resource_used = {}
         for resource in self.resources.keys():
-
             in_use = self.resource_in_use(resource=resource)
             start_time = self.get_resource_start_time(resource)
 
@@ -179,7 +177,8 @@ class ResourceManager:
         for lock in locks:
             print(f"Unlocking - {os.path.basename(lock)}")
             os.remove(lock)
-    def is_locked(self, resource:str) -> bool:
+
+    def is_locked(self, resource: str) -> bool:
         lockfile_path = self.get_lock_path(resource)
         return os.path.exists(lockfile_path)
 
@@ -200,7 +199,6 @@ class ResourceManager:
 
         if not self.is_locked(resource):
             with open(lockfile_path, "w", encoding="utf-8") as lockfile:
-
                 now = datetime.now()
                 dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
@@ -218,8 +216,7 @@ class ResourceManager:
 
         start = datetime.now()
         idx = 0
-    
-        
+
         boards_locked = False
         start = datetime.now()
 
@@ -228,7 +225,7 @@ class ResourceManager:
             for resource in resources:
                 if not self.is_locked(resource):
                     unlocked_count += 1
-            # Attempt to lock them all at once 
+            # Attempt to lock them all at once
             if unlocked_count == len(resources):
                 lockcount = 0
                 for resource in resources:
@@ -287,13 +284,11 @@ class ResourceManager:
         print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15}")
         print("*" * 75)
         for resource, usage_info in usage.items():
-
             print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
             print("-" * 75)
 
 
 if __name__ == "__main__":
-
     # Setup the command line description text
     DESC_TEXTT = """
     Lock/Unlock Hardware resources
@@ -360,9 +355,6 @@ if __name__ == "__main__":
     unlock_boards = list(set(args.unlock))
 
     rm = ResourceManager(resource_filepath=args.custom_config, timeout=args.timeout)
-
-
-
 
     if args.list_usage:
         rm.print_usage()
