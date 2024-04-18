@@ -60,17 +60,18 @@ import argparse
 class ResourceManager:
     """BTM-CI Resource Manager"""
 
-    def __init__(self, resource_filepath: str = None, timeout=60) -> None:
+    def __init__(self, custom_resource_filepath: str = None, timeout=60) -> None:
         # Initialize the resource file
-        resource_filepath = os.environ.get("CI_BOARD_CONFIG")
-        with open(resource_filepath, "r", encoding="utf-8") as resource_file:
+        base_resource_path = os.environ.get("CI_BOARD_CONFIG")
+        with open(base_resource_path, "r", encoding="utf-8") as resource_file:
             self.resources: dict = json.load(resource_file)
 
-        if resource_filepath is not None:
-            custom_resource_filepath = resource_filepath
+        if custom_resource_filepath is not None:
+            custom_resource_filepath = custom_resource_filepath
             with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
-                self.resources.update(json.load(resource_file))
-
+                custom_resources = json.load(resource_file)
+                self.resources.update(custom_resources)
+        
         self.timeout = timeout
         self.resource_lock_dir = os.environ.get("RESOURCE_LOCK_DIR")
 
@@ -354,7 +355,7 @@ if __name__ == "__main__":
     lock_boards = list(set(args.lock))
     unlock_boards = list(set(args.unlock))
 
-    rm = ResourceManager(resource_filepath=args.custom_config, timeout=args.timeout)
+    rm = ResourceManager(custom_resource_filepath=args.custom_config, timeout=args.timeout)
 
     if args.list_usage:
         rm.print_usage()
