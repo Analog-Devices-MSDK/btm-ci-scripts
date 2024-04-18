@@ -3,7 +3,7 @@
 #
 # Copyright (C) 2022-2023 Maxim Integrated Products, Inc., All Rights Reserved.
 # (now owned by Analog Devices, Inc.)
-# 
+#
 # This software is protected by copyright laws of the United States and
 # of foreign countries. This material may also be protected by patent laws
 # and technology transfer regulations of the United States and of foreign
@@ -53,61 +53,76 @@ import serial
 import os
 import time
 import threading
-sys.path.append('..')
+import datetime
+
+sys.path.append("..")
 from Resource_Share.resource_manager import ResourceManager
 
 
-def test_secure_connection(serial_port:serial.Serial):
-    # Secure connections
+def test_secure_connection(serial_port: serial.Serial):
+    start = datetime.now()
+
     while True:
         text = str(serial_port.readline())
         print(text)
-        if 'enter passkey' in text:
+        # wait until you see the term passkey, so we can enter the pin
+        if "enter passkey" in text:
             time.sleep(1)
-            serial_port.write('pin 1 1234\r\n'.encode('utf-8'))
+            serial_port.write("pin 1 1234\r\n".encode("utf-8"))
             break
-    
+
+        if (datetime.now() - start).total_seconds > 10:
+            print("TIMEOUT!!")
+            return False
+
+    start = datetime.now()
     while True:
         text = str(serial_port.readline())
-        if 'Pairing failed' in text:
-            print('Pairing failed')
+        # wait for pairing process to go through and see if it passed or failed
+        if "Pairing failed" in text:
+            print("Pairing failed")
             return False
-        elif 'Pairing completed successfully' in text:
-            print('Pairing success')
-            return True 
+        elif "Pairing completed successfully" in text:
+            print("Pairing success")
+            return True
 
-def client_thread(portname:str):
+        if (datetime.now() - start).total_seconds > 10:
+            print("TIMEOUT!!")
+            return False
+
+
+def client_thread(portname: str):
     test_results_client = {}
 
     client_console = serial.Serial(portname, baudrate=115200)
-    test_results_client['pairing'] = test_secure_connection(client_console)
-    
-
+    test_results_client["pairing"] = test_secure_connection(client_console)
 
     return test_results_client
-    
-def server_thread(portname:str):
+
+
+def server_thread(portname: str):
     test_results_server = {}
     server_console = serial.Serial(portname, baudrate=115200)
-    test_results_server['pairing'] = test_secure_connection(server_console)
+    test_results_server["pairing"] = test_secure_connection(server_console)
 
     return test_results_server
 
-def print_results(name , report):
+
+def print_results(name, report):
     overall = True
-    
+
     print(f"{name} RESULTS")
     print("TEST\t\tResult")
     for key, value in report.items():
-        print(f'{key}\t\t{value}')
-        
+        print(f"{key}\t\t{value}")
+
         if not value:
             overall = False
-        
+
     return overall
 
-if __name__ == '__main__':
 
+if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Not enough arguments!")
         sys.exit(-1)
@@ -119,32 +134,26 @@ if __name__ == '__main__':
 
     rm = ResourceManager()
 
+    # Get the boards under test
     server_board = sys.argv[1]
     client_board = sys.argv[2]
 
-    server_port = rm.get_item_value(f'{server_board}.console_port')
-    client_port = rm.get_item_value(f'{client_board}.console_port')
+    # Get console ports associated with the boards
+    server_port = rm.get_item_value(f"{server_board}.console_port")
+    client_port = rm.get_item_value(f"{client_board}.console_port")
 
-    print(server_port)
-
+    # Configure and run tests
     client_t = threading.Thread(target=client_thread, args=(client_port,))
     server_t = threading.Thread(target=server_thread, args=(server_port,))
-
-
     client_t.start()
     server_t.start()
+    client_results: dict = client_t.join()
+    server_results: dict = server_t.join()
 
-
-    client_results:dict = client_t.join()
-    server_results :dict= server_t.join()
-
-    overall_client = print_results('DATC', client_results)
-    overall_server = print_results('DATS', server_results)
-
+    # Print Results
+    overall_client = print_results("DATC", client_results)
+    overall_server = print_results("DATS", server_results)
 
     print(f"Client {'Pass' if overall_client else 'Fail'}")
     print(f"Client {'Pass' if overall_client else 'Fail'}")
     print(f"Overall {'Pass' if overall_client and overall_server else 'Fails'}")
-
-
-    
