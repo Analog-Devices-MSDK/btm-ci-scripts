@@ -55,7 +55,7 @@ import json
 from typing import List
 from datetime import datetime
 import argparse
-
+import subprocess
 
 class ResourceManager:
     """BTM-CI Resource Manager"""
@@ -304,7 +304,9 @@ class ResourceManager:
         resource_name : str
             Name of resource to reset
         """
-        os.system(f'ocdreset {resource_name}')
+        ret = subprocess.Popen(['bash','-c',f'ocdreset {resource_name}'])
+        ret.wait()
+
 
     @staticmethod 
     def resource_erase(resource_name:str):
@@ -315,7 +317,8 @@ class ResourceManager:
         resource_name : str
             Name of resource to erase
         """
-        os.system(f'ocderase {resource_name}')
+        ret = subprocess.Popen(['bash','-c',f'ocderase {resource_name}'])
+        ret.wait()
 
     @staticmethod 
     def resource_flash(resource_name:str, elf_file:str):
@@ -327,7 +330,10 @@ class ResourceManager:
         elf_file : str
             Elf file to program resource with
         """
-        os.system(f'ocderase {resource_name}  {elf_file}')
+        ret = subprocess.Popen(['bash','-c',f'ocdflash {resource_name} {elf_file}'])
+        ret.wait()
+        
+
 
 if __name__ == "__main__":
     # Setup the command line description text

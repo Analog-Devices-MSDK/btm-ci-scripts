@@ -1,3 +1,4 @@
+#! /usr/bin/bash
 source ~/Tools/btm-ci-scripts/str-utils.sh
 function ocdflash() {
     if [[ "$1" == "--help" || $1 == "-h" ]]; then
@@ -100,8 +101,12 @@ function ocdreset() {
     openocd -s $OPENOCD_PATH \
         -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
         -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
-        -c "init; reset halt;exit" 
+        -c "init; reset ;exit" 
 
     return $?
 
 }
+
+export -f ocdflash
+export -f ocderase
+export -f ocdreset

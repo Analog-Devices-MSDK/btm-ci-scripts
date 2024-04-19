@@ -7,3 +7,6 @@ function upper() {
     val=$1
     echo ${val^^}
 }
+
+export -f lower
+export -f upper
