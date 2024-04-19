@@ -294,7 +294,40 @@ class ResourceManager:
         for resource, usage_info in usage.items():
             print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
             print("-" * 75)
+    
+    @staticmethod
+    def resource_reset(resource_name:str):
+        """Reset resource found in board_config.json or custom config
 
+        Parameters
+        ----------
+        resource_name : str
+            Name of resource to reset
+        """
+        os.system(f'ocdreset {resource_name}')
+
+    @staticmethod 
+    def resource_erase(resource_name:str):
+        """Erase resource found in board_config.json or custom config
+
+        Parameters
+        ----------
+        resource_name : str
+            Name of resource to erase
+        """
+        os.system(f'ocderase {resource_name}')
+
+    @staticmethod 
+    def resource_flash(resource_name:str, elf_file:str):
+        """Flash a resource in board_config.json or custom config with given elf
+        Parameters
+        ----------
+        resource_name : str
+            Resource to flash
+        elf_file : str
+            Elf file to program resource with
+        """
+        os.system(f'ocderase {resource_name}  {elf_file}')
 
 if __name__ == "__main__":
     # Setup the command line description text
