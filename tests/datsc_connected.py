@@ -131,6 +131,7 @@ def write_secure_test(serial_port: serial.Serial):
     while True:
         text = str(serial_port.readline())
         if "No action assigned" in text:
+            print(text)
             return False
         elif "hello" in text:
             return True
@@ -186,6 +187,7 @@ def client_thread(portname: str):
     test_results_client["pairing"] = test_secure_connection(client_console)
     test_results_client["write characteristic"] = write_char_test(client_console)
     test_results_client["write secure"] = write_secure_test(client_console)
+    test_results_client['phy switch'] = phy_switch_test(client_console)
     test_results_client["speed"] = speed_test(client_console)
 
     return test_results_client
@@ -206,53 +208,64 @@ def print_results(name, report):
     overall = True
 
     print(f"{name} RESULTS")
-    print("TEST\t\tResult")
+    print(f"{'TEST':<25} Result")
     for key, value in report.items():
-        print(f"{key}\t\t{value}")
+        print('-'*30)
+        print(f"{key:<25}{'Fail' if not value else 'Pass'}")
 
         if not value:
             overall = False
+
+    print('-'*30, '\n')
+    
 
     return overall
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 5:
         print("Not enough arguments!")
         sys.exit(-1)
 
-    if len(sys.argv) > 3:
-        custom_config = sys.argv[3]
-    else:
-        custom_config = None
 
     rm = ResourceManager()
 
-    # Get the boards under test
+    # Get the boards under test and the file paths
     server_board = sys.argv[1]
     client_board = sys.argv[2]
+    dats_file = sys.argv[3]
+    datc_file = sys.argv[4]
+
+    # Make sure all bonding information is wiped
+    rm.resource_erase(server_board)
+    rm.resource_erase(client_board)
+
+    
+    rm.resource_flash(server_board, dats_file)
+    rm.resource_flash(client_board, datc_file)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{server_board}.console_port")
     client_port = rm.get_item_value(f"{client_board}.console_port")
 
-    print(server_port)
-    print(client_port)
     # Configure and run tests
     client_t = threading.Thread(target=client_thread, args=(client_port,))
     server_t = threading.Thread(target=server_thread, args=(server_port,))
     client_t.start()
     server_t.start()
+
+    # Reset to start from scratch
+    rm.resource_reset(server_board)
+    rm.resource_reset(client_board)
+
     client_t.join()
     server_t.join()
 
     # Print Results
-    print(test_results_client)
-    print(test_results_server)
-
+    print('\n\n')
     overall_client = print_results("DATC", test_results_client)
     overall_server = print_results("DATS", test_results_server)
 
-    print(f"Client {'Pass' if overall_client else 'Fail'}")
-    print(f"Client {'Pass' if overall_client else 'Fail'}")
-    print(f"Overall {'Pass' if overall_client and overall_server else 'Fails'}")
+    print(f"{'Client':<10} {'Pass' if overall_client else 'Fail'}")
+    print(f"{'Server':<10} {'Pass' if overall_server else 'Fail'}")
+    print(f"{'Overall':<10} {'Pass' if overall_client and overall_server else 'Fail'}")
