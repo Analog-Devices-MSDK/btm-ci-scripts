@@ -1,5 +1,5 @@
-name: 'OTAS-TEST'
-description: 'OTAS Test Action'
+name: 'DATSC-TEST'
+description: 'DATSC Test Action'
 inputs:
   board_client:
     description: 'Board for client'
@@ -27,4 +27,4 @@ runs:
     elf_client=${msdk_path}/Examples/${target_client}/Bluetooth/BLE_otas/build/${target_client_lower}.elf
 
   
-    ../../tests/otas_connected.py $target_server $target_client $elf_server $elf_client
+    ../../../tests/datsc_connected.py $target_server $target_client $elf_server $elf_client
