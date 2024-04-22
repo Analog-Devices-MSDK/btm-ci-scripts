@@ -138,3 +138,4 @@ function ocdopen() {
 export -f ocdflash
 export -f ocderase
 export -f ocdreset
+export -f ocdopen
