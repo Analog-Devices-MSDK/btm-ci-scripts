@@ -381,5 +381,5 @@ if __name__ == "__main__":
     print(f"{'Server':<10} {'Pass' if OVERALL_SERVER else 'Fail'}")
     print(f"{'Overall':<10} {'Pass' if OVERALL_CLIENT and OVERALL_SERVER else 'Fail'}")
 
-    if not OVERALL_CLIENT:
+    if not OVERALL_CLIENT or not OVERALL_SERVER:
         sys.exit(-1)

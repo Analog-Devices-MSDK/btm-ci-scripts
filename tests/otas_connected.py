@@ -88,14 +88,13 @@ def _slow_write(serial_port: serial.Serial, data: bytes):
         time.sleep(0.1)
 
 
-test_results_client = {}
 
 
 def wait_for_connection(serial_port):
     pass
 
 def client_test_discover_filespace(serial_port:serial.Serial)->bool:
-    
+    print('DISCOVER FILESPACE TEST')
     press_btn(serial_port, BTN2, 's')
 
     text = ""
@@ -104,8 +103,10 @@ def client_test_discover_filespace(serial_port:serial.Serial)->bool:
     while True:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
+        if new_text.isalnum():
+            print(new_text)
 
-        if "FTC Send" in text:
+        if "File discovery complete" in text:
             return True
     
         if (datetime.now() - start).total_seconds() > 10:
@@ -113,7 +114,7 @@ def client_test_discover_filespace(serial_port:serial.Serial)->bool:
             return False
 
 def client_test_start_update_xfer(serial_port:serial.Serial)->bool:
-    
+    print('UPDATE XFER TEST')
     press_btn(serial_port, BTN2, 'm')
 
     text = ""
@@ -122,8 +123,11 @@ def client_test_start_update_xfer(serial_port:serial.Serial)->bool:
     while True:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
+        if new_text.isalnum():
+            print(new_text)
 
-        if "Initiating erase" in text:
+
+        if "Starting file transfer" in text:
             break
     
         if (datetime.now() - start).total_seconds() > 10:
@@ -136,7 +140,7 @@ def client_test_start_update_xfer(serial_port:serial.Serial)->bool:
         text += new_text
         
 
-        if "erase complete" in text:
+        if "transfer complete" in text:
             return True
     
         if (datetime.now() - start).total_seconds() > 30:
@@ -144,22 +148,30 @@ def client_test_start_update_xfer(serial_port:serial.Serial)->bool:
             return False
 
 def client_verify_xfer(serial_port:serial.Serial) ->bool:
+    
+    print("VERIFY XFER TEST")
+
     press_btn(serial_port, BTN2, 'l')
 
     text = ""
     start = datetime.now()
-    pattern = r'CRC (From File|Calculated): 0x([0-9A-Fa-f]+)'
 
+    pattern = r'Verify complete status:\s*(.+)'
+    
     while True:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
 
-        matches = re.search(pattern, text)
+        status_match = re.search(pattern, text)
 
-        #see if the values are equal
-        if len(matches) == 2 and matches[0][1] == matches[1][1]:
-            print(matches)
-            return True
+        # Check for successful completion
+        if status_match:
+            status = status_match.group(1) == 0
+            if status == 0:
+                return True
+            print(f'status mismatch {status}')
+            print(status)
+            return False
         
         if (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
@@ -177,7 +189,7 @@ def client_tests(portname: str):
 
     client_console.flush()
 
-    return test_results_client
+    return client_results
 
 
 def server_test_version(serial_port: serial.Serial) -> bool:
@@ -263,16 +275,14 @@ if __name__ == "__main__":
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    # # Reset to start from scratch
-    # rm.resource_reset(SERVER_BOARD)
-    # rm.resource_reset(CLIENT_BOARD)
+    rm.resource_reset(SERVER_BOARD)
+    rm.resource_reset(CLIENT_BOARD)
 
     #give time for connection
     time.sleep(5)
 
     # Run the tests
     server_results = server_tests(server_port)
-    client_results = {}
     client_results = client_tests(client_port)
 
     # Print Results
@@ -284,5 +294,5 @@ if __name__ == "__main__":
     print(f"{'Server':<10} {'Pass' if OVERALL_SERVER else 'Fail'}")
     print(f"{'Overall':<10} {'Pass' if OVERALL_CLIENT and OVERALL_SERVER else 'Fail'}")
 
-    if not OVERALL_CLIENT:
+    if not OVERALL_CLIENT or not OVERALL_SERVER:
         sys.exit(-1)
