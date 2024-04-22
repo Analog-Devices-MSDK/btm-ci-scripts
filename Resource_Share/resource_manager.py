@@ -439,7 +439,7 @@ if __name__ == "__main__":
     lock_boards = set(args.lock)
     unlock_boards = set(args.unlock)
 
-    rm = ResourceManager(timeout=args.timeout)
+    rm = ResourceManager(timeout=int(args.timeout))
 
     if args.list_usage:
         rm.print_usage()
