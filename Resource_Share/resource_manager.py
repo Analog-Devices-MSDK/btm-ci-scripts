@@ -134,7 +134,11 @@ class ResourceManager:
             in_use = self.resource_in_use(resource=resource)
             start_time = self.get_resource_start_time(resource)
 
-            resource_used[resource] = [in_use, start_time]
+            resource_used[resource] = [
+                in_use,
+                start_time,
+                self.resources[resource]["group"],
+            ]
 
         return resource_used
 
@@ -326,10 +330,12 @@ class ResourceManager:
     def print_usage(self):
         """Pretty print the resource usage"""
         usage = self.get_resource_usage()
-        print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15}")
+        print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15} {'Group':<15}")
         print("*" * 75)
         for resource, usage_info in usage.items():
-            print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
+            print(
+                f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15} {str(usage_info[2]):<15}"
+            )
             print("-" * 75)
 
     @staticmethod
