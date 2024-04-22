@@ -251,6 +251,7 @@ class ResourceManager:
         start = datetime.now()
 
         while not boards_locked:
+            print('Boards locked', boards_locked)
             unlocked_count = 0
             for resource in resources:
                 if not self.is_locked(resource):
