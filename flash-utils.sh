@@ -106,7 +106,35 @@ function ocdreset() {
     return $?
 
 }
+function ocdopen() {
+    if [[ "$1" == "--help" || $1 == "-h" ]]; then
+        printf "reset\n"
+        printf "==========================\n"
+        printf "usage: erase BOARDNAME\n"
+        printf "\tBOARDNAME => board to reset, names defined in boards_config.json.\n"
+        return 0
+    fi
+    if [[ $# -ne 1 ]]; then
+        echo "Improper use! Expected: 1 argument, Received: $#"
+    fi
 
+    name=$1
+
+
+    target=$(resource_manager.py -g $name.target)
+    dapsn=$(resource_manager.py -g $name.dap_sn)
+    gdbport=$(resource_manager.py -g $name.ocdports.gdb)
+    telnetport=$(resource_manager.py -g $name.ocdports.telnet)
+    tclport=$(resource_manager.py -g $name.ocdports.tcl)
+
+
+    openocd -s $OPENOCD_PATH \
+        -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+        -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport"
+
+    return $?
+
+}
 export -f ocdflash
 export -f ocderase
 export -f ocdreset

@@ -58,7 +58,8 @@ from datetime import datetime
 sys.path.append("..")
 from Resource_Share.resource_manager import ResourceManager
 
-def slow_write(serial_port:serial.Serial, str:bytes):
+
+def slow_write(serial_port: serial.Serial, str: bytes):
     for c in str:
         serial_port.write(c)
         time.sleep(0.1)
@@ -67,9 +68,9 @@ def slow_write(serial_port:serial.Serial, str:bytes):
 def advertising_test(serial_port: serial.Serial):
     print("Advertising test")
     start = datetime.now()
-    text = ''
+    text = ""
     while True:
-        text += serial_port.read(serial_port.in_waiting).decode('utf-8')
+        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
         if "Advertising started" in text:
             return True
         elif (datetime.now() - start).total_seconds() > 10:
@@ -78,38 +79,39 @@ def advertising_test(serial_port: serial.Serial):
 
 
 def test_secure_connection(serial_port: serial.Serial):
-    time.sleep(3)
     print("STARTING CONNECTION TEST")
     start = datetime.now()
-    text  = ''
+    text = ""
     while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode('utf-8')
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
-
+        # if new_text.isalnum():
+        #     print(new_text)
         # wait until you see the term passkey, so we can enter the pin
         if "passkey" in text:
             time.sleep(1)
             serial_port.write("pin 1 1234\n".encode("utf-8"))
             break
-        elif 'Connection encrypted' in text:
+        elif "Connection encrypted" in text:
             return True
 
         if (datetime.now() - start).total_seconds() > 20:
             print("TIMEOUT!!")
             return False
-    print('Passkey entered')
+    print("Passkey entered")
     start = datetime.now()
     while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode('utf-8')
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
+        if new_text.isalnum():
+            print(new_text)
         # wait for pairing process to go through and see if it passed or failed
         if "Pairing failed" in text:
             print("Pairing failed")
             return False
-        elif "Pairing completed successfully" in text or 'Connection encrypted' in text:
+        elif "Pairing completed successfully" in text or "Connection encrypted" in text:
             print("Pairing success")
             return True
-
 
         if (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
@@ -119,14 +121,19 @@ def test_secure_connection(serial_port: serial.Serial):
 def write_char_test(serial_port: serial.Serial):
     time.sleep(2)
     print("WRITE CHARACTERISTIC TEST")
-    
+
+    # serial_port.write("btn 2 l\n".encode("utf-8"))
+    # slow_write(serial_port, "btn 2 l\n".encode("utf-8"))
     serial_port.write("btn 2 l\n".encode("utf-8"))
+    time.sleep(1)
+    serial_port.write("btn 2 l\n".encode("utf-8"))
+
     start = datetime.now()
-    
-    text = ''
-    
-    while True: 
-        text += serial_port.read(serial_port.in_waiting).decode('utf-8')
+
+    text = ""
+
+    while True:
+        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
         if "No action assigned" in text:
             return False
         elif "hello" in text:
@@ -135,53 +142,44 @@ def write_char_test(serial_port: serial.Serial):
             print("TIMEOUT!!")
             return False
 
-        time.sleep(0.5)    
+        time.sleep(0.5)
         serial_port.write("btn 2 l\n".encode("utf-8"))
-        
-    
-
-
+        # slow_write(serial_port, "btn 2 l\n".encode("utf-8"))
 
 
 def write_secure_test(serial_port: serial.Serial):
     print("WRITE SECURE TEST")
-    time.sleep(3)
+    # time.sleep(3)
     serial_port.write("btn 2 m\r\n".encode("utf-8"))
-    
     # serial_port.write("btn 2 m\n".encode("utf-8"))
     # slow_write(serial_port, "btn 2 m\n".encode("utf-8"))
     start = datetime.now()
-    text = ''
+    text = ""
     while True:
-
-        text += serial_port.read(serial_port.in_waiting).decode('utf-8')
+        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
 
         if "No action assigned" in text:
             return False
-        elif "hello" in text or 'Secure data received!' in text:
+        elif "hello" in text or "Secure data received!" in text:
             return True
         elif (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
             return False
-        time.sleep(0.5)
+        time.sleep(1)
         serial_port.write("btn 2 m\r\n".encode("utf-8"))
         # slow_write(serial_port, "btn 2 m\r\n".encode("utf-8"))
 
 
-
-
 def phy_switch_test(serial_port: serial.Serial):
-    
     time.sleep(1)
     print("PHY CHANGE TEST")
-    
+
     serial_port.write("btn 2 s\n".encode("utf-8"))
     start = datetime.now()
-    text = ''
-    
-    while True:
+    text = ""
 
-        new_text = serial_port.read(serial_port.in_waiting).decode('utf-8')
+    while True:
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
         # print(new_text)
         if "No action assigned" in text:
@@ -195,28 +193,24 @@ def phy_switch_test(serial_port: serial.Serial):
         time.sleep(0.5)
         serial_port.write("btn 2 s\n".encode("utf-8"))
 
-        
-
 
 def speed_test(serial_port: serial.Serial):
-    time.sleep(1)
-    
+
     print("SPEED TEST")
-    
+
     serial_port.write("btn 2 x\n".encode("utf-8"))
     start = datetime.now()
 
-    try:
-        serial_port.readline()
-    except TimeoutError:
-        return False
+    time.sleep(1)
 
-    time.sleep(2)
+
     serial_port.write("btn 2 m\n".encode("utf-8"))
-    text = ''
+    time.sleep(1)
+    text = ""
+
+
     while True:
-        
-        text += serial_port.read(serial_port.in_waiting).decode('utf-8')
+        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
         if "bps" in text:
             print(text)
             return True
@@ -231,7 +225,7 @@ test_results_client = {}
 def client_thread(portname: str):
     client_console = serial.Serial(portname, baudrate=115200, timeout=2)
     test_results_client["pairing"] = test_secure_connection(client_console)
-    if not test_results_client['pairing']:
+    if not test_results_client["pairing"]:
         return
     test_results_client["write characteristic"] = write_char_test(client_console)
     test_results_client["write secure"] = write_secure_test(client_console)
@@ -292,7 +286,6 @@ if __name__ == "__main__":
     rm.resource_flash(server_board, dats_file)
     rm.resource_flash(client_board, datc_file)
 
-    
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{server_board}.console_port")
     client_port = rm.get_item_value(f"{client_board}.console_port")
@@ -302,15 +295,13 @@ if __name__ == "__main__":
     # Configure and run tests
     client_t = threading.Thread(target=client_thread, args=(client_port,))
     server_t = threading.Thread(target=server_thread, args=(server_port,))
-    
-    # Reset to start from scratch
+
+    # # Reset to start from scratch
     rm.resource_reset(server_board)
     rm.resource_reset(client_board)
-    
 
     client_t.start()
     server_t.start()
-
 
     client_t.join()
     server_t.join()
