@@ -55,7 +55,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from typing import Set
+from typing import Set, List
 
 
 class ResourceManager:
