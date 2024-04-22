@@ -48,14 +48,15 @@ resource_manager.py
 Description: BTM-CI Resource Manager
 
 """
-import os
-import glob
-import sys
-import json
-from typing import List
-from datetime import datetime
 import argparse
+import glob
+import json
+import os
 import subprocess
+import sys
+from datetime import datetime
+from typing import Set
+
 
 class ResourceManager:
     """BTM-CI Resource Manager"""
@@ -66,10 +67,8 @@ class ResourceManager:
         with open(base_resource_path, "r", encoding="utf-8") as resource_file:
             self.resources: dict = json.load(resource_file)
 
+        self._add_custom_config()
 
-
-        self.add_custom_config()
-        
         self.timeout = timeout
         self.resource_lock_dir = os.environ.get("RESOURCE_LOCK_DIR")
         self._add_lockdir()
@@ -78,7 +77,7 @@ class ResourceManager:
         if not os.path.exists(self.resource_lock_dir):
             os.mkdir(self.resource_lock_dir)
 
-    def add_custom_config(self):
+    def _add_custom_config(self):
         custom_resource_filepath = os.environ.get("CI_BOARD_CONFIG_CUSTOM")
         if custom_resource_filepath is not None:
             with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
@@ -168,7 +167,7 @@ class ResourceManager:
 
         return True
 
-    def unlock_resources(self, resources: List[str]):
+    def unlock_resources(self, resources: Set[str]):
         """Unlock a list of resources
 
         Parameters
@@ -187,6 +186,18 @@ class ResourceManager:
             os.remove(lock)
 
     def is_locked(self, resource: str) -> bool:
+        """Check if a resource is locked
+
+        Parameters
+        ----------
+        resource : str
+            Name of resource
+
+        Returns
+        -------
+        bool
+            True if locked. False otherwise.
+        """
         lockfile_path = self.get_lock_path(resource)
         return os.path.exists(lockfile_path)
 
@@ -216,14 +227,21 @@ class ResourceManager:
 
         return False
 
-    def lock_resources(self, resources: List[str]) -> bool:
+    def lock_resources(self, resources: Set[str]) -> bool:
+        """Create locks for resources
+
+        Parameters
+        ----------
+        resources : Set[str]
+            Set of resources to lock
+
+        Returns
+        -------
+        bool
+            True if successfully locked all boards. False otherwise.
         """
-        Create resource lock
-        """
-        resource_locks = {resource: False for resource in resources}
 
         start = datetime.now()
-        idx = 0
 
         boards_locked = False
         start = datetime.now()
@@ -245,6 +263,7 @@ class ResourceManager:
                 # TIMEOUT!
                 break
 
+        # if we failed to lock all the boards, release the ones we locked
         if boards_locked and lockcount != len(resources):
             for resource in resources:
                 self.unlock_resource(resource)
@@ -294,9 +313,9 @@ class ResourceManager:
         for resource, usage_info in usage.items():
             print(f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15}")
             print("-" * 75)
-    
+
     @staticmethod
-    def resource_reset(resource_name:str):
+    def resource_reset(resource_name: str):
         """Reset resource found in board_config.json or custom config
 
         Parameters
@@ -304,12 +323,11 @@ class ResourceManager:
         resource_name : str
             Name of resource to reset
         """
-        ret = subprocess.Popen(['bash','-c',f'ocdreset {resource_name}'])
-        ret.wait()
+        with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name}"]) as process:
+            process.wait()
 
-
-    @staticmethod 
-    def resource_erase(resource_name:str):
+    @staticmethod
+    def resource_erase(resource_name: str):
         """Erase resource found in board_config.json or custom config
 
         Parameters
@@ -317,11 +335,11 @@ class ResourceManager:
         resource_name : str
             Name of resource to erase
         """
-        ret = subprocess.Popen(['bash','-c',f'ocderase {resource_name}'])
-        ret.wait()
+        with subprocess.Popen(["bash", "-c", f"ocderase {resource_name}"]) as process:
+            process.wait()
 
-    @staticmethod 
-    def resource_flash(resource_name:str, elf_file:str):
+    @staticmethod
+    def resource_flash(resource_name: str, elf_file: str):
         """Flash a resource in board_config.json or custom config with given elf
         Parameters
         ----------
@@ -330,9 +348,10 @@ class ResourceManager:
         elf_file : str
             Elf file to program resource with
         """
-        ret = subprocess.Popen(['bash','-c',f'ocdflash {resource_name} {elf_file}'])
-        ret.wait()
-        
+        with subprocess.Popen(
+            ["bash", "-c", f"ocdflash {resource_name} {elf_file}"]
+        ) as process:
+            process.wait()
 
 
 if __name__ == "__main__":
@@ -380,7 +399,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--list-usage",
         action="store_true",
-        help="Display basic usage stats of the boards including if they are locked and when they were locked",
+        help="""Display basic usage stats of the boards"""
+        """including if they are locked and when they were locked""",
     )
 
     parser.add_argument(
@@ -392,8 +412,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    lock_boards = list(set(args.lock))
-    unlock_boards = list(set(args.unlock))
+    lock_boards = set(args.lock)
+    unlock_boards = set(args.unlock)
 
     rm = ResourceManager(timeout=args.timeout)
 
