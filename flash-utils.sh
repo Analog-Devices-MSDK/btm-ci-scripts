@@ -1,4 +1,5 @@
 #! /usr/bin/bash
+
 source ~/Tools/btm-ci-scripts/str-utils.sh
 function ocdflash() {
     if [[ "$1" == "--help" || $1 == "-h" ]]; then
@@ -11,6 +12,7 @@ function ocdflash() {
     fi
     if [[ $# -ne 2 ]]; then
         echo "Improper use! Expected: 2 arguments, Received: $#" 
+        return -1
     fi
     name=$1
     elfFile=$2
@@ -47,6 +49,7 @@ function ocderase() {
     fi
     if [[ $# -ne 1 ]]; then
         echo "Improper use! Expected: 1 argument, Received: $#"
+        return -1
     fi
 
     name=$1
@@ -139,3 +142,4 @@ export -f ocdflash
 export -f ocderase
 export -f ocdreset
 export -f ocdopen
+

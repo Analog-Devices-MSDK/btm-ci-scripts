@@ -305,6 +305,24 @@ class ResourceManager:
         # whatever is at the end is the answer
         return ans
 
+    def get_applicable_items(self, target: str = None, group: str = None) -> List[str]:
+        applicable_items = []
+        for rname in self.resources:
+            if self.resource_in_use(rname):
+                continue
+            if target is not None:
+                if self.get_item_value(f"{rname}.target") != target.upper():
+                    continue
+            if group is not None:
+                if self.get_item_value(f"{rname}.group") != group.upper():
+                    continue
+            applicable_items.append(rname)
+
+        if applicable_items == []:
+            raise ValueError("No items matching the criteria found.")
+
+        return applicable_items
+
     def print_usage(self):
         """Pretty print the resource usage"""
         usage = self.get_resource_usage()

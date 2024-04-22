@@ -8,5 +8,8 @@ function upper() {
     echo ${val^^}
 }
 
+
 export -f lower
 export -f upper
+
+

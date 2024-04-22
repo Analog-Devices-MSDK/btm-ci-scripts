@@ -46,8 +46,8 @@
         "rev"          : null,
         "group"        : "APP",
         "dap_sn"       : "04091702f7f18a2900000000000000000000000097969906",
-        "console_port" : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03OFQ0-if00-port0",
-        "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D309ZDEM-if00-port0",
+        "console_port" : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D309ZDEM-if00-port0",
+        "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03OFQ0-if00-port0",
         "sw_model"     : null,
         "sw_state"     : null,
         "ocdports"     : {
@@ -187,7 +187,7 @@
         "group"        : "APP",
         "dap_sn"       : "04091702b55e4e9600000000000000000000000097969906",
         "console_port" : "/dev/serial/by-id/usb-FTDI_FT231X_USB_UART_D30AKVTH-if00-port0",
-        "hci_port"     : "/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_04091702b55e4e9600000000000000000000000097969906-if01",
+        "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT231X_USB_UART_D30AKVTH-if00-port0",
         "sw_model"     : null,
         "sw_state"     : null,
         "ocdports"     : {
@@ -241,7 +241,7 @@
 
     "nRF52840_1" : {
         "desc"         : "PER test, master board",
-        "target"       : null,
+        "target"       : "NRF52840",
         "board"        : null,
         "rev"          : null,
         "group"        : "RFPHY",
@@ -261,7 +261,7 @@
 
     "nRF52840_4" : {
         "desc"         : "not in box",
-        "target"       : null,
+        "target"       : "NRF52840",
         "board"        : null,
         "rev"          : null,
         "group"        : null,
@@ -281,7 +281,7 @@
 
     "rsl15_1" : {
         "desc"         : "OnSemi, RSL15",
-        "target"       : null,
+        "target"       : "RSL15",
         "board"        : null,
         "rev"          : null,
         "group"        : "RFPHY",
@@ -301,6 +301,7 @@
 
     "RS_SA" : {
         "desc"         : "Rhode and Schwarz spectrum analyzer",
+        "target"       : null,
         "group"        : "RFPHY",
         "sw_model"     : "USB-1SP8T-63H",
         "sw_state"     : "1",
@@ -309,6 +310,7 @@
 
     "minicircuits_rf_switch" : {
         "desc"         : "one lock file is enough for the two switches",
+        "target"       : null,
         "group"        : "RFPHY",
         "lockfile"     : "minicircuits_rf_switch.txt"
     }
