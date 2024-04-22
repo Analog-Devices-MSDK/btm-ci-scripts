@@ -50,7 +50,7 @@ Description: Data server-client connection test
 """
 
 import sys
-import threading
+import re
 import time
 from datetime import datetime
 
@@ -62,8 +62,18 @@ from Resource_Share.resource_manager import ResourceManager
 
 # pylint: enable=import-error,wrong-import-position
 
+BTN1 = 1
+BTN2 = 2
 
-def slow_write(serial_port: serial.Serial, data: bytes):
+
+def press_btn(serial_port: serial.Serial, btn_num: int, method: str):
+    command = f"btn {btn_num} {method}\r\n".encode("utf-8")
+    serial_port.write(command)
+
+    # _slow_write(serial_port, command)
+
+
+def _slow_write(serial_port: serial.Serial, data: bytes):
     """Write UART data at human typing speeds
 
     Parameters
@@ -78,239 +88,129 @@ def slow_write(serial_port: serial.Serial, data: bytes):
         time.sleep(0.1)
 
 
-def test_secure_connection(serial_port: serial.Serial) -> bool:
-    """Generic secure connection test for pairing
-
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        serial port to write and read from
-
-    Returns
-    -------
-    bool
-        True if test success. False otherwise
-    """
-
-    print("STARTING CONNECTION TEST")
-    start = datetime.now()
-    text = ""
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
-
-        # wait until you see the term passkey, so we can enter the pin
-        if "passkey" in text:
-            time.sleep(1)
-            serial_port.write("pin 1 1234\n".encode("utf-8"))
-            break
-
-        if "Connection encrypted" in text:
-            return True
-
-        if (datetime.now() - start).total_seconds() > 20:
-            print("TIMEOUT!!")
-            return False
-
-    print("Passkey entered")
-    start = datetime.now()
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
-
-        # wait for pairing process to go through and see if it passed or failed
-        if "Pairing failed" in text:
-            print("Pairing failed")
-            return False
-
-        if "Pairing completed successfully" in text or "Connection encrypted" in text:
-            print("Pairing success")
-            return True
-
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
-
-
-def write_char_test(serial_port: serial.Serial) -> bool:
-    """Test for unsecure write characteristic
-
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        serial port to write to
-
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise.
-    """
-    time.sleep(2)
-    print("WRITE CHARACTERISTIC TEST")
-
-    serial_port.write("btn 2 l\n".encode("utf-8"))
-    time.sleep(1)
-    serial_port.write("btn 2 l\n".encode("utf-8"))
-
-    start = datetime.now()
-
-    text = ""
-
-    while True:
-        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
-        if "No action assigned" in text:
-            return False
-
-        if "hello" in text:
-            return True
-
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
-
-        time.sleep(0.5)
-        serial_port.write("btn 2 l\n".encode("utf-8"))
-
-
-def write_secure_test(serial_port: serial.Serial) -> bool:
-    """Test for secure write
-
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Serial port to write to
-
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise.
-    """
-    print("WRITE SECURE TEST")
-    time.sleep(3)
-    serial_port.write("btn 2 m\n".encode("utf-8"))
-
-    start = datetime.now()
-    text = ""
-    while True:
-        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
-
-        if "No action assigned" in text:
-            return False
-
-        if "hello" in text or "Secure data received!" in text:
-            return True
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
-
-        time.sleep(1)
-        serial_port.write("btn 2 m\r\n".encode("utf-8"))
-
-
-def phy_switch_test(serial_port: serial.Serial) -> bool:
-    """Test to update PHY from 1M to 2M
-
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Serial port to write to
-
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise.
-    """
-    time.sleep(4)
-    print("PHY CHANGE TEST")
-
-    serial_port.write("btn 2 s\n".encode("utf-8"))
-    start = datetime.now()
-    text = ""
-
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
-
-        if "No action assigned" in text:
-            return False
-
-        if "2 MBit TX and RX PHY Requested" in text:
-            return True
-
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
-
-        time.sleep(1)
-        serial_port.write("btn 2 s\n".encode("utf-8"))
-
-
-def _run_speed_test(serial_port: serial.Serial):
-    serial_port.write("btn 2 x\n".encode("utf-8"))
-    time.sleep(1)
-    serial_port.write("btn 2 m\n".encode("utf-8"))
-
-
-def speed_test(serial_port: serial.Serial) -> bool:
-    """Test throughput example
-
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Serial port to write to
-
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise.
-    """
-    print("SPEED TEST")
-
-    text = ""
-
-    _run_speed_test(serial_port)
-    time.sleep(1)
-    start = datetime.now()
-
-    while True:
-        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
-        if "bps" in text:
-            print(text)
-            return True
-
-        if (datetime.now() - start).total_seconds() > 20:
-            print("TIMEOUT!!")
-            return False
-
-        _run_speed_test(serial_port)
-        time.sleep(2)
-
-
 test_results_client = {}
 
 
-def _client_thread(portname: str):
-    client_console = serial.Serial(portname, baudrate=115200, timeout=2)
-    test_results_client["pairing"] = test_secure_connection(client_console)
-    if not test_results_client["pairing"]:
-        return test_results_client
-    test_results_client["write characteristic"] = write_char_test(client_console)
-    test_results_client["write secure"] = write_secure_test(client_console)
+def wait_for_connection(serial_port):
+    pass
 
-    test_results_client["phy switch"] = phy_switch_test(client_console)
-    test_results_client["speed"] = speed_test(client_console)
+def client_test_discover_filespace(serial_port:serial.Serial)->bool:
+    
+    press_btn(serial_port, BTN2, 's')
+
+    text = ""
+    start = datetime.now()
+
+    while True:
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+
+        if "FTC Send" in text:
+            return True
+    
+        if (datetime.now() - start).total_seconds() > 10:
+            print("TIMEOUT!!")
+            return False
+
+def client_test_start_update_xfer(serial_port:serial.Serial)->bool:
+    
+    press_btn(serial_port, BTN2, 'm')
+
+    text = ""
+    start = datetime.now()
+
+    while True:
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+
+        if "Initiating erase" in text:
+            break
+    
+        if (datetime.now() - start).total_seconds() > 10:
+            print("TIMEOUT!!")
+            return False
+        
+    #wait for complete
+    while True:
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+        
+
+        if "erase complete" in text:
+            return True
+    
+        if (datetime.now() - start).total_seconds() > 30:
+            print("TIMEOUT!!")
+            return False
+
+def client_verify_xfer(serial_port:serial.Serial) ->bool:
+    press_btn(serial_port, BTN2, 'l')
+
+    text = ""
+    start = datetime.now()
+    pattern = r'CRC (From File|Calculated): 0x([0-9A-Fa-f]+)'
+
+    while True:
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+
+        matches = re.search(pattern, text)
+
+        #see if the values are equal
+        if len(matches) == 2 and matches[0][1] == matches[1][1]:
+            print(matches)
+            return True
+        
+        if (datetime.now() - start).total_seconds() > 10:
+            print("TIMEOUT!!")
+            return False
+        
+    
+
+def client_tests(portname: str):
+    client_console = serial.Serial(portname, baudrate=115200, timeout=2)
+    
+    client_results = {}
+    client_results['filespace'] = client_test_discover_filespace(client_console)
+    client_results['update'] = client_test_start_update_xfer(client_console)
+    client_results['verify'] = client_verify_xfer(client_console)
 
     client_console.flush()
 
     return test_results_client
 
 
-test_results_server = {}
+def server_test_version(serial_port: serial.Serial) -> bool:
+    print("SERVER TEST VERSION")
+    text = ""
+    press_btn(serial_port, BTN2, "m")
+    start = datetime.now()
+
+    pattern = r'FW_VERSION:\s*(.+)'
+
+    while True:
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+
+        version_match = re.search(pattern, text)
+
+        if version_match:
+            version = version_match.group(1)
+            print(f"GOT VERSION {version}")
+            return True
+
+        if (datetime.now() - start).total_seconds() > 10:
+            print("TIMEOUT!!")
+            return False
+
+        time.sleep(1)
+        press_btn(serial_port, BTN2, "m")
 
 
-def _server_thread(portname: str):
+def server_tests(portname: str):
     server_console = serial.Serial(portname, baudrate=115200, timeout=2)
-    test_results_server["pairing"] = test_secure_connection(server_console)
+    test_results_server = {}
+    test_results_server["versioning"] = server_test_version(server_console)
 
     return test_results_server
 
@@ -342,40 +242,43 @@ if __name__ == "__main__":
     # Get the boards under test and the file paths
     SERVER_BOARD = sys.argv[1]
     CLIENT_BOARD = sys.argv[2]
-    dats_file = sys.argv[3]
-    datc_file = sys.argv[4]
+    OTAS_FILE = sys.argv[3]
+    OTAC_FILE = sys.argv[4]
+
+    assert (
+        SERVER_BOARD != CLIENT_BOARD
+    ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
+    assert (
+        OTAS_FILE != OTAC_FILE
+    ), f"OTAC ELF ({OTAC_FILE}) must not  be the same as Server ({OTAS_FILE})"
 
     # Make sure all bonding information is wiped
     rm.resource_erase(SERVER_BOARD)
     rm.resource_erase(CLIENT_BOARD)
 
-    rm.resource_flash(SERVER_BOARD, dats_file)
-    rm.resource_flash(CLIENT_BOARD, datc_file)
+    rm.resource_flash(SERVER_BOARD, OTAS_FILE)
+    rm.resource_flash(CLIENT_BOARD, OTAC_FILE)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    assert client_port != server_port
-
-    # Configure and run tests
-    client_t = threading.Thread(target=_client_thread, args=(client_port,))
-    server_t = threading.Thread(target=_server_thread, args=(server_port,))
-
     # # Reset to start from scratch
-    rm.resource_reset(SERVER_BOARD)
-    rm.resource_reset(CLIENT_BOARD)
+    # rm.resource_reset(SERVER_BOARD)
+    # rm.resource_reset(CLIENT_BOARD)
 
-    client_t.start()
-    server_t.start()
+    #give time for connection
+    time.sleep(5)
 
-    client_t.join()
-    server_t.join()
+    # Run the tests
+    server_results = server_tests(server_port)
+    client_results = {}
+    client_results = client_tests(client_port)
 
     # Print Results
     print("\n\n")
-    OVERALL_CLIENT = _print_results("DATC", test_results_client)
-    OVERALL_SERVER = _print_results("DATS", test_results_server)
+    OVERALL_CLIENT = _print_results("OTAC", client_results)
+    OVERALL_SERVER = _print_results("OTAS", server_results)
 
     print(f"{'Client':<10} {'Pass' if OVERALL_CLIENT else 'Fail'}")
     print(f"{'Server':<10} {'Pass' if OVERALL_SERVER else 'Fail'}")
