@@ -13,4 +13,4 @@ elf_server=${msdk_path}/Examples/${target_server}/Bluetooth/BLE_otas/build/${tar
 elf_client=${msdk_path}/Examples/${target_client}/Bluetooth/BLE_otas/build/${target_client_lower}.elf
 
 
-../../../tests/datsc_connected.py $target_server $target_client $elf_server $elf_client
+cd ../../../tests/ && datsc_connected.py $target_server $target_client $elf_server $elf_client
