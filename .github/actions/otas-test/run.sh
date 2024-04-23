@@ -3,6 +3,10 @@
 BOARD_SERVER=$INPUT_BOARD_SERVER
 BOARD_CLIENT=$INPUT_BOARD_CLIENT
 
+echo "SERVER " $BOARD_SERVER
+echo "CLIENT " $BOARD_CLIENT
+
+
 target_server=$(resource_manager.py -g $BOARD_SERVER.target)
 target_client=$(resource_manager.py -g $BOARD_CLIENT.target)
 target_server_lower=$(lower ${target_server})
