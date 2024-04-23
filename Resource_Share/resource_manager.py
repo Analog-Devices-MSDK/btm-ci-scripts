@@ -448,7 +448,7 @@ class ResourceManager:
 
 if __name__ == "__main__":
     # Setup the command line description text
-    DESC_TEXTT = """
+    DESC_TEXT = """
     Lock/Unlock Hardware resources
     Query resource information
     Monitor resources
@@ -456,7 +456,7 @@ if __name__ == "__main__":
 
     # Parse the command line arguments
     parser = argparse.ArgumentParser(
-        description=DESC_TEXTT, formatter_class=argparse.RawTextHelpFormatter
+        description=DESC_TEXT, formatter_class=argparse.RawTextHelpFormatter
     )
 
     parser.add_argument(
