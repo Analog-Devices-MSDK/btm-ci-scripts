@@ -233,7 +233,7 @@ class ResourceManager:
                 now = datetime.now()
                 dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
-                lockfile.writelines([dt_string])
+                lockfile.writelines([dt_string, os.getpid()])
 
             return True
 
