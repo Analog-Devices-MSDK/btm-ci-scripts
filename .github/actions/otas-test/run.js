@@ -15,19 +15,21 @@ console.log(BOARD_CLIENT);
 console.log(MSDK_PATH);
 
 
+console.log(process.env.OPENOCD_PATH);
+console.log(process.env.BOARD_CONFIG_PATH);
 
-
-let target_client = execSync("resource_manager.py -g ${BOARD_CLIENT}.target");
+let command = 'resource_manager.py -g ${BOARD_CLIENT}.target';
+console.log(command)
+let target_client = execSync(command).stdout;
 console.log(target_client);
+
+
 let target_server = execSync("resource_manager.py -g ${BOARD_SERVER}.target");
 
 let target_client_obj_lower = target_client_obj.toLowerCase();
 let target_server_obj_lower = target_server_obj.toLowerCase();
 
 
-
-console.log(process.env.OPENOCD_PATH);
-console.log(process.env.BOARD_CONFIG_PATH);
 
 
 console.log(target_client_obj);
