@@ -1,7 +1,7 @@
-
-console.log(process.env.CI_BOARD_CONFIG)
-console.log(process.env.OPENOCD_PATH)
-console.log(process.env.RESOURCE_LOCK_DIR)
+console.log(process.env)
+// console.log(process.env.CI_BOARD_CONFIG)
+// console.log(process.env.OPENOCD_PATH)
+// console.log(process.env.RESOURCE_LOCK_DIR)
 
 
 // const fs = require('fs')
