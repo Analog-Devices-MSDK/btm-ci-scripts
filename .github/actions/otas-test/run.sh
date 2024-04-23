@@ -1,7 +1,7 @@
 #!/bin/bash
 
-BOARD_SERVER=${INPUT_BOARD_SERVER}
-BOARD_CLIENT=${INPUT_BOARD_CLIENT}
+BOARD_SERVER=$INPUT_BOARD_SERVER
+BOARD_CLIENT=$INPUT_BOARD_CLIENT
 
 target_server=$(resource_manager.py -g $BOARD_SERVER.target)
 target_client=$(resource_manager.py -g $BOARD_CLIENT.target)
