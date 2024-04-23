@@ -56,7 +56,7 @@ import subprocess
 import sys
 from datetime import datetime
 from typing import Set, List
-
+from tabulate import tabulate
 
 class ResourceManager:
     """BTM-CI Resource Manager"""
@@ -103,7 +103,15 @@ class ResourceManager:
         locks = os.listdir(self.resource_lock_dir)
 
         return resource in locks
-
+    
+        
+    def get_resource_lock_info(self, resource:str):
+        lock_path = self.get_lock_path(resource)
+        if not os.path.exists(lock_path):
+            return {}
+        with open(lock_path, 'r') as lockfile:
+            lf_info = json.load(lockfile)
+        return lf_info
 
     def get_resource_start_time(self, resource: str) -> str:
         """Get the start time a resource was locked
@@ -136,12 +144,13 @@ class ResourceManager:
         resource_used = {}
         for resource in self.resources.keys():
             in_use = self.resource_in_use(resource=resource)
-            start_time = self.get_resource_start_time(resource)
-
+            resource_info = self.get_resource_lock_info(resource)
+    
             resource_used[resource] = [
                 in_use,
-                start_time,
-                self.resources[resource]["group"],
+                resource_info.get('start', 'N\A'),
+                resource_info.get('pid', 'N\A'),
+                self.resources[resource].get("group"),
             ]
 
         return resource_used
@@ -231,9 +240,15 @@ class ResourceManager:
         if not self.is_locked(resource):
             with open(lockfile_path, "w", encoding="utf-8") as lockfile:
                 now = datetime.now()
-                dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
-                lockfile.writelines([dt_string, os.getpid()])
+                lf_info = {
+                    'start' : now.strftime("%d/%m/%Y %H:%M:%S"),
+                    'pid' : os.getpid()
+                }
+
+                json.dump(lf_info, lockfile)
+
+                
 
             return True
 
@@ -336,14 +351,33 @@ class ResourceManager:
 
     def print_usage(self):
         """Pretty print the resource usage"""
+        header = ['Name', 'In Use', 'Start Time', 'PID', 'Group']
+        table = [header]
         usage = self.get_resource_usage()
-        print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15} {'Group':<15}")
-        print("*" * 75)
-        for resource, usage_info in usage.items():
-            print(
-                f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15} {str(usage_info[2]):<15}"
-            )
-            print("-" * 75)
+
+        for resource in usage:
+            in_use = usage[resource][0]
+            start = usage[resource][1]
+            pid = usage[resource][2]
+            group = usage[resource][3]
+
+            data = [resource, in_use, start, pid, group]
+
+            table.append(data)
+
+        # table.append(usage)
+        # header.append(usage)
+        # print(header)
+        
+        print(tabulate(table, headers='firstrow', tablefmt='fancy_grid'))
+        # print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15} {'PID':<15} {'Group':<15}")
+        # print("*" * 100)
+
+        # for resource, usage_info in usage.items():
+        #     print(
+        #         f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15} {str(usage_info[2]):<15} {str(usage_info[3]):<15}"
+        #     )
+        #     print("-" * 75)
 
 
     
