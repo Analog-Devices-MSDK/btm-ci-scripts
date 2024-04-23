@@ -55,8 +55,13 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from typing import Set, List
+from typing import Set, List, Dict
+
+# pylint: disable=import-error
 from tabulate import tabulate
+
+# pylint: enable=import-error
+
 
 class ResourceManager:
     """BTM-CI Resource Manager"""
@@ -84,9 +89,6 @@ class ResourceManager:
                 custom_resources = json.load(resource_file)
                 self.resources.update(custom_resources)
 
-    def get_resource_table(self):
-        return self.resources
-                
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
 
@@ -103,13 +105,25 @@ class ResourceManager:
         locks = os.listdir(self.resource_lock_dir)
 
         return resource in locks
-    
-        
-    def get_resource_lock_info(self, resource:str):
+
+    def get_resource_lock_info(self, resource: str) -> Dict[str, object]:
+        """Get lockfile info associated to locked resource
+
+        Parameters
+        ----------
+        resource : str
+            Resource name
+
+        Returns
+        -------
+        Dict[str, object]
+            Dictionary of lockfile information
+        """
+
         lock_path = self.get_lock_path(resource)
         if not os.path.exists(lock_path):
             return {}
-        with open(lock_path, 'r') as lockfile:
+        with open(lock_path, "r", encoding="utf-8") as lockfile:
             lf_info = json.load(lockfile)
         return lf_info
 
@@ -145,13 +159,15 @@ class ResourceManager:
         for resource in self.resources.keys():
             in_use = self.resource_in_use(resource=resource)
             resource_info = self.get_resource_lock_info(resource)
-    
-            resource_used[resource] = [
-                in_use,
-                resource_info.get('start', 'N\A'),
-                resource_info.get('pid', 'N\A'),
-                self.resources[resource].get("group"),
-            ]
+
+            resource_used[resource] = {
+                "in-use": in_use,
+                "group": self.resources[resource].get("group"),
+                "start": resource_info.get("start", ""),
+                "owner": resource_info.get("owner", ""),
+            }
+
+            # resource_used[resource].update(resource_info)
 
         return resource_used
 
@@ -170,7 +186,7 @@ class ResourceManager:
         """
         return os.path.join(self.resource_lock_dir, resource)
 
-    def unlock_resource(self, resource: str):
+    def unlock_resource(self, resource: str, owner=""):
         """
         Delete Resource lock
 
@@ -180,11 +196,17 @@ class ResourceManager:
         if not os.path.exists(lock):
             return False
 
+        created_owner = self.get_resource_lock_info(resource)["owner"]
+
+        if created_owner not in ("", owner):
+            print("You do not own the lockfile! Will not delete")
+            return False
+
         os.remove(lock)
 
         return True
 
-    def unlock_resources(self, resources: Set[str]) -> int:
+    def unlock_resources(self, resources: Set[str], owner="") -> int:
         """Unlock a list of resources
 
         Parameters
@@ -194,10 +216,9 @@ class ResourceManager:
         """
         unlock_count = 0
         for resource in resources:
-            if self.unlock_resource(resource):
-               unlock_count += 1
+            if self.unlock_resource(resource, owner):
+                unlock_count += 1
         return unlock_count
-    
 
     def unlock_all_resources(self):
         """Delete all lockfiles"""
@@ -222,7 +243,7 @@ class ResourceManager:
         lockfile_path = self.get_lock_path(resource)
         return os.path.exists(lockfile_path)
 
-    def lock_resource(self, resource: str) -> bool:
+    def lock_resource(self, resource: str, owner="") -> bool:
         """Lock resource
 
         Parameters
@@ -241,20 +262,15 @@ class ResourceManager:
             with open(lockfile_path, "w", encoding="utf-8") as lockfile:
                 now = datetime.now()
 
-                lf_info = {
-                    'start' : now.strftime("%d/%m/%Y %H:%M:%S"),
-                    'pid' : os.getpid()
-                }
+                lf_info = {"start": now.strftime("%d/%m/%Y %H:%M:%S"), "owner": owner}
 
                 json.dump(lf_info, lockfile)
-
-                
 
             return True
 
         return False
 
-    def lock_resources(self, resources: Set[str]) -> bool:
+    def lock_resources(self, resources: Set[str], owner="") -> bool:
         """Create locks for resources
 
         Parameters
@@ -282,7 +298,7 @@ class ResourceManager:
             if unlocked_count == len(resources):
                 lockcount = 0
                 for resource in resources:
-                    lockcount += 1 if self.lock_resource(resource) else 0
+                    lockcount += 1 if self.lock_resource(resource, owner) else 0
                     boards_locked = True
 
             now = datetime.now()
@@ -317,7 +333,6 @@ class ResourceManager:
             ans = self.resources[arg]
         else:
             raise KeyError(f"Could not find {arg} in resources")
-        
 
         # while we havent fully traversed the tree keep going
         while tree:
@@ -327,11 +342,25 @@ class ResourceManager:
             else:
                 raise KeyError(f"Could not find {arg} in resources")
 
-
         # whatever is at the end is the answer
         return ans
 
     def get_applicable_items(self, target: str = None, group: str = None) -> List[str]:
+        """Get items that match criteria of group and target
+
+        Parameters
+        ----------
+        target : str, optional
+            Target type, by default None
+        group : str, optional
+            Group target should be in, by default None
+
+        Returns
+        -------
+        List[str]
+            Resources matching criteria
+
+        """
         applicable_items = []
         for rname in self.resources:
             if self.resource_in_use(rname):
@@ -344,43 +373,27 @@ class ResourceManager:
                     continue
             applicable_items.append(rname)
 
-        if applicable_items == []:
-            raise ValueError("No items matching the criteria found.")
-
         return applicable_items
 
     def print_usage(self):
         """Pretty print the resource usage"""
-        header = ['Name', 'In Use', 'Start Time', 'PID', 'Group']
-        table = [header]
+
+        header = ["NAME"]
         usage = self.get_resource_usage()
+        resources = list(usage.keys())
 
-        for resource in usage:
-            in_use = usage[resource][0]
-            start = usage[resource][1]
-            pid = usage[resource][2]
-            group = usage[resource][3]
+        header.extend(usage.get(resources[0]).keys())
+        header = [x.upper() for x in header]
 
-            data = [resource, in_use, start, pid, group]
+        table = [header]
 
-            table.append(data)
+        for resource, data in usage.items():
+            row = [resource]
+            row.extend(list(data.values()))
+            table.append(row)
 
-        # table.append(usage)
-        # header.append(usage)
-        # print(header)
-        
-        print(tabulate(table, headers='firstrow', tablefmt='fancy_grid'))
-        # print(f"{'Board':<35} {'In Use':<15} {'Start Time':<15} {'PID':<15} {'Group':<15}")
-        # print("*" * 100)
+        print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
 
-        # for resource, usage_info in usage.items():
-        #     print(
-        #         f"{resource:<35} {str(usage_info[0]):<15} {str(usage_info[1]):<15} {str(usage_info[2]):<15} {str(usage_info[3]):<15}"
-        #     )
-        #     print("-" * 75)
-
-
-    
     def resource_reset(self, resource_name: str) -> bool:
         """Reset resource found in board_config.json or custom config
 
@@ -391,14 +404,12 @@ class ResourceManager:
         """
         if resource_name not in self.resources:
             return False
-    
+
         with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name}"]) as process:
             process.wait()
-            ok = process.returncode == 0
 
-        return ok
-        
-    
+        return process.returncode == 0
+
     def resource_erase(self, resource_name: str):
         """Erase resource found in board_config.json or custom config
 
@@ -409,12 +420,12 @@ class ResourceManager:
         """
         if resource_name not in self.resources:
             return False
+
         with subprocess.Popen(["bash", "-c", f"ocderase {resource_name}"]) as process:
             process.wait()
-            ok = process.returncode == 0
-        
-        return ok
-    
+
+        return process.returncode == 0
+
     def resource_flash(self, resource_name: str, elf_file: str):
         """Flash a resource in board_config.json or custom config with given elf
         Parameters
@@ -426,14 +437,13 @@ class ResourceManager:
         """
         if resource_name not in self.resources:
             return False
-        
+
         with subprocess.Popen(
             ["bash", "-c", f"ocdflash {resource_name} {elf_file}"]
         ) as process:
             process.wait()
-            ok = process.returncode == 0
-        
-        return ok
+
+        return process.returncode == 0
 
 
 if __name__ == "__main__":
@@ -477,7 +487,11 @@ if __name__ == "__main__":
         nargs="*",
         help="Name of board to lock per boards_config.json",
     )
-
+    parser.add_argument(
+        "--owner",
+        default="",
+        help="Name of user locking or unlocking",
+    )
     parser.add_argument(
         "--list-usage",
         action="store_true",
@@ -490,6 +504,13 @@ if __name__ == "__main__":
         "--get-value",
         default=None,
         help="Get value for resource in config (ex: max32655_board1.dap_sn)",
+    )
+
+    parser.add_argument(
+        "-go",
+        "--get-owner",
+        default="",
+        help="Get owner of resource if locked",
     )
 
     args = parser.parse_args()
@@ -510,7 +531,7 @@ if __name__ == "__main__":
     if lock_boards:
         print(f"Attempting to lock all boards {lock_boards}")
 
-        COULD_LOCK = rm.lock_resources(lock_boards)
+        COULD_LOCK = rm.lock_resources(lock_boards, args.owner)
 
         if COULD_LOCK:
             print("Successfully locked boards")
@@ -521,9 +542,12 @@ if __name__ == "__main__":
 
     if unlock_boards:
         print(f"Unlocking resources {unlock_boards}")
-        rm.unlock_resources(unlock_boards)
+        rm.unlock_resources(unlock_boards, args.owner)
 
     if args.get_value:
         print(rm.get_item_value(args.get_value))
+
+    if args.get_owner:
+        print(rm.get_resource_lock_info(args.get_owner).get("owner", ""))
 
     sys.exit(0)
