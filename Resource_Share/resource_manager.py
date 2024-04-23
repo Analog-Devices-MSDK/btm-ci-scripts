@@ -84,6 +84,9 @@ class ResourceManager:
                 custom_resources = json.load(resource_file)
                 self.resources.update(custom_resources)
 
+    def get_resource_table(self):
+        return self.resources
+                
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
 
@@ -100,6 +103,7 @@ class ResourceManager:
         locks = os.listdir(self.resource_lock_dir)
 
         return resource in locks
+
 
     def get_resource_start_time(self, resource: str) -> str:
         """Get the start time a resource was locked
@@ -171,7 +175,7 @@ class ResourceManager:
 
         return True
 
-    def unlock_resources(self, resources: Set[str]):
+    def unlock_resources(self, resources: Set[str]) -> int:
         """Unlock a list of resources
 
         Parameters
@@ -179,8 +183,12 @@ class ResourceManager:
         resources : str
             _description_
         """
+        unlock_count = 0
         for resource in resources:
-            self.unlock_resource(resource)
+            if self.unlock_resource(resource):
+               unlock_count += 1
+        return unlock_count
+    
 
     def unlock_all_resources(self):
         """Delete all lockfiles"""
@@ -251,7 +259,6 @@ class ResourceManager:
         start = datetime.now()
 
         while not boards_locked:
-            print('Boards locked', boards_locked)
             unlocked_count = 0
             for resource in resources:
                 if not self.is_locked(resource):
@@ -287,16 +294,15 @@ class ResourceManager:
         tree = item_name.split(".")
 
         if not tree:
-            print("Tree could not be parsed!")
-            sys.exit(-1)
+            raise ValueError("Tree could not be parsed!")
 
         # Get the first input
         arg = tree.pop(0)
         if arg in self.resources:
             ans = self.resources[arg]
         else:
-            print(f"Could not find {arg} in resources")
-            sys.exit(-1)
+            raise KeyError(f"Could not find {arg} in resources")
+        
 
         # while we havent fully traversed the tree keep going
         while tree:
@@ -304,8 +310,8 @@ class ResourceManager:
             if arg in ans:
                 ans = ans[arg]
             else:
-                print(f"Could not find {item_name} in resources")
-                sys.exit(-1)
+                raise KeyError(f"Could not find {arg} in resources")
+
 
         # whatever is at the end is the answer
         return ans
@@ -339,8 +345,9 @@ class ResourceManager:
             )
             print("-" * 75)
 
-    @staticmethod
-    def resource_reset(resource_name: str):
+
+    
+    def resource_reset(self, resource_name: str) -> bool:
         """Reset resource found in board_config.json or custom config
 
         Parameters
@@ -348,11 +355,17 @@ class ResourceManager:
         resource_name : str
             Name of resource to reset
         """
+        if resource_name not in self.resources:
+            return False
+    
         with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name}"]) as process:
             process.wait()
+            ok = process.returncode == 0
 
-    @staticmethod
-    def resource_erase(resource_name: str):
+        return ok
+        
+    
+    def resource_erase(self, resource_name: str):
         """Erase resource found in board_config.json or custom config
 
         Parameters
@@ -360,11 +373,15 @@ class ResourceManager:
         resource_name : str
             Name of resource to erase
         """
+        if resource_name not in self.resources:
+            return False
         with subprocess.Popen(["bash", "-c", f"ocderase {resource_name}"]) as process:
             process.wait()
-
-    @staticmethod
-    def resource_flash(resource_name: str, elf_file: str):
+            ok = process.returncode == 0
+        
+        return ok
+    
+    def resource_flash(self, resource_name: str, elf_file: str):
         """Flash a resource in board_config.json or custom config with given elf
         Parameters
         ----------
@@ -373,10 +390,16 @@ class ResourceManager:
         elf_file : str
             Elf file to program resource with
         """
+        if resource_name not in self.resources:
+            return False
+        
         with subprocess.Popen(
             ["bash", "-c", f"ocdflash {resource_name} {elf_file}"]
         ) as process:
             process.wait()
+            ok = process.returncode == 0
+        
+        return ok
 
 
 if __name__ == "__main__":
