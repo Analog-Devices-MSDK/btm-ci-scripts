@@ -4,10 +4,6 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { exit } = require('process');
 
-// const BOARD_SERVER = process.env.INPUT_BOARD_SERVER;
-// const BOARD_CLIENT = process.env.INPUT_BOARD_CLIENT;
-// const MSDK_PATH = process.env.INPUT_MSDK_PATH;
-
 console.log("Current directory:", __dirname);
 
 const BOARD_SERVER = core.getInput('board_server');
@@ -29,6 +25,9 @@ let target_client_obj_lower = target_client_obj.toLowerCase();
 let target_server_obj_lower = target_server_obj.toLowerCase();
 
 
+
+console.log(process.env.OPENOCD_PATH);
+console.log(process.env.BOARD_CONFIG_PATH);
 
 
 console.log(target_client_obj);
