@@ -16,10 +16,10 @@ printf '%s\n' \
 
 for i in {0..3}; do
 cp .env /home/btm-ci/Workspace/btm-ci-github-runner$i
-cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh stop
-cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh start
+(cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh stop)
+(cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh start)
+pwd
 done
-
 
 
 rm .env
