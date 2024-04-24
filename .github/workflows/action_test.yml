@@ -71,10 +71,11 @@ jobs:
     steps:
       #----------------------------------------------------------------------------------------------
       # Checks out repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           submodules: false
-          fetch-depth: 0
+          repository: analogdevicesinc/msdk
+          ref: main
       #----------------------------------------------------------------------------------------------
       # Test enviornment variables.
       - name: TestEnv
@@ -85,36 +86,36 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> lock action
       - name: TestLock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
         with:
           boards: max32655_board1
           lock: true
       #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
         with:
           board: max32655_board1
           project: BLE5_ctr
-          msdk_path: ${{ GITHUB_WORKSPACE }}
+          msdk_path: ${{ github.workspace }}
           build: true
       #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
         with:
           board: max32655_board1
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
       - name: TestErase
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@action-testing
         with:
           board: max32655_board1
           has_two_flash_banks: false
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> unlock action
       - name: TestUnlock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
         with:
           boards: max32655_board1
           lock: false
