@@ -2,6 +2,7 @@ const Core = require('@actions/core');
 const Github = require('@actions/github');
 const { PythonShell } = require('python-shell');
 const { spawn } = require('child_process');
+const { env } = require('node:process');
 
 const BOARD_ID = Core.getInput('board');
 const HAS_TWO_FLASH_BANKS = Core.getBooleanInput('has_two_flash_banks', { required: false });
@@ -47,7 +48,7 @@ const getBoardOwner = function (boardId) {
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     const args = [
-        `-s ${OPENOCD_PATH}`, '-f interface/cmsis-dap.cfg',
+        `-s ${env.OPENOCD_PATH}`, '-f interface/cmsis-dap.cfg',
         `-f target/${target.toLowerCase()}.cfg`, `-c "adapter serial ${dap}"`,
         `-c "gdb_port ${gdb}"`, `-c "telnet_port ${telnet}"`, `-c "tcl_port ${tcl}"`,
         `-c "init; reset halt; max32xxx mass_erase ${bank}"; exit`

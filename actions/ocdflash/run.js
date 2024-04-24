@@ -2,6 +2,7 @@ const Core = require('@actions/core');
 const Github = require('@actions/github');
 const { PythonShell } = require('python-shell');
 const { spawn } = require('child_process');
+const { env } = require('node:process');
 const path = require('path');
 
 const BOARD_ID = Core.getInput('board');
@@ -68,7 +69,7 @@ const makeProject = function (projectPath) {
 
 const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     const args = [
-        `-s ${OPENOCD_PATH}`, '-f interface/cmsis-dap.cfg',
+        `-s ${env.OPENOCD_PATH}`, '-f interface/cmsis-dap.cfg',
         `-f target/${target.toLowerCase()}`, `-c "adapter serial ${dap}"`,
         `-c "gdb_port ${gdb}"`, `-c "telnet_port ${telnet}"`, `-c "tcl_port ${tcl}"`,
         `-c "program ${elf} verify; reset; exit"`

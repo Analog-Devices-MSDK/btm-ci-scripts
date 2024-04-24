@@ -20,3 +20,5 @@ const main = async function () {
         console.log(results)
     })
 }
+
+main();

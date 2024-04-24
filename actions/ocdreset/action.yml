@@ -1,4 +1,4 @@
-name: OCDErase
+name: OCDReset
 description: 'Mass erase a board using OpenOCD'
 inputs:
   board:
