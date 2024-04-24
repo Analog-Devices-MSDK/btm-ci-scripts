@@ -1,5 +1,9 @@
 #!/bin/bash
 # MUST RUN AS SUDO!
+set -e
+source /home/btm-ci/.bashrc
+envcheck 4 CI_BOARD_CONFIG RESOURCE_LOCK_DIR RESOURCE_SHARE_DIR OPENOCD_PATH
+set +e
 
 env="LANG=en_US.UTF-16"
 printf '%s\n' \
