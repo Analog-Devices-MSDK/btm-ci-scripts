@@ -1,0 +1,9 @@
+name: OCDErase
+description: 'Mass erase a board using OpenOCD'
+inputs:
+  board:
+    description: 'ID of the board to erase'
+    required: true
+runs:
+  using: 'node20'
+  main: 'run.js'

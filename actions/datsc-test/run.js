@@ -21,7 +21,7 @@ const getTarget = function (boardId) {
         PythonShell.run('resource_manager.py', options, function (err, results) {
             if (err) reject(err);
             else {
-                console.log('target --> %s', results[0]);
+                console.log('target --> %s', results);
                 resolve(results[0]);
             }
         });
@@ -37,14 +37,14 @@ const makeProject = function (target, role) {
         makeCmd.stderr.on('data', data => { console.log(data) });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
-            reject(error);
         });
         makeCmd.on('close', code => {
             console.log(`Process exited with code ${code}`);
+            if (code != 0) reject(code);
             elfPath = path.join(fullPath, 'build', `${target.toLowerCase()}.elf`);
             resolve(elfPath);
         });
-    })
+    });
 }
 
 const main = async function () {
@@ -61,14 +61,12 @@ const main = async function () {
         scriptPath: '../../tests',
         args: [targetServer, targetClient, elfServer, elfClient]
     };
-    let datscTest = new PythonShell('datsc_connection.py', options);
-    datscTest.on('message', function(message) {
-        console.log(message);
-    });
+    let datscTest = new PythonShell('datsc_connected.py', options);
+    datscTest.on('message', function (message) { console.log(message) });
     datscTest.end(function (err) {
         if (err) throw err;
+        console.log('Test finished.')
     });
-    console.log('Test finished.')
-};
+}
 
 main();
