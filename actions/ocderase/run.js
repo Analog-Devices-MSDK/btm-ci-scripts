@@ -14,7 +14,7 @@ const getBoardData = function (boardId, itemName) {
         pythonPath: 'python3',
         pythonOptions: ['-u'],
         scriptPath: env.RESOURCE_SHARE_DIR,
-        args: [`-g ${boardId}.${itemName}`]
+        args: ['-g', `${boardId}.${itemName}`]
     };
     return new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
@@ -33,7 +33,7 @@ const getBoardOwner = function (boardId) {
         pythonPath: 'python3',
         pythonOptions: ['-u'],
         scriptPath: env.RESOURCE_SHARE_DIR,
-        args: [`--get-owner ${boardId}`]
+        args: ['--get-owner', `${boardId}`]
     };
     return new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
@@ -48,10 +48,10 @@ const getBoardOwner = function (boardId) {
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     const args = [
-        `-s ${env.OPENOCD_PATH}`, '-f interface/cmsis-dap.cfg',
-        `-f target/${target.toLowerCase()}.cfg`, `-c "adapter serial ${dap}"`,
-        `-c "gdb_port ${gdb}"`, `-c "telnet_port ${telnet}"`, `-c "tcl_port ${tcl}"`,
-        `-c "init; reset halt; max32xxx mass_erase ${bank}"; exit`
+        '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
+        '-f', `target/${target.toLowerCase()}.cfg`, '-c', `"adapter serial ${dap}"`,
+        '-c', `"gdb_port ${gdb}"`, '-c', `"telnet_port ${telnet}"`, '-c', `"tcl_port ${tcl}"`,
+        '-c', `"init; reset halt; max32xxx mass_erase ${bank}"; exit`
     ];
     return new Promise((reject, resolve) => {
         const eraseCmd = spawn('openocd', args);

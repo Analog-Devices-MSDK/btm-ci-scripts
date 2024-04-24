@@ -17,7 +17,7 @@ const getBoardData = function (boardId, itemName) {
         pythonPath: 'python3',
         pythonOptions: ['-u'],
         scriptPath: env.RESOURCE_SHARE_DIR,
-        args: [`-g ${boardId}.${itemName}`]
+        args: ['-g', `${boardId}.${itemName}`]
     };
     return new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
@@ -36,7 +36,7 @@ const getBoardOwner = function (boardId) {
         pythonPath: 'python3',
         pythonOptions: ['-u'],
         scriptPath: env.RESOURCE_SHARE_DIR,
-        args: [`--get-owner ${boardId}`]
+        args: ['--get-owner', `${boardId}`]
     }
     return new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
@@ -69,10 +69,10 @@ const makeProject = function (projectPath) {
 
 const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     const args = [
-        `-s ${env.OPENOCD_PATH}`, '-f interface/cmsis-dap.cfg',
-        `-f target/${target.toLowerCase()}`, `-c "adapter serial ${dap}"`,
-        `-c "gdb_port ${gdb}"`, `-c "telnet_port ${telnet}"`, `-c "tcl_port ${tcl}"`,
-        `-c "program ${elf} verify; reset; exit"`
+        '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
+        '-f', `target/${target.toLowerCase()}`, '-c', `"adapter serial ${dap}"`,
+        '-c', `"gdb_port ${gdb}"`, '-c', `"telnet_port ${telnet}"`, '-c', `"tcl_port ${tcl}"`,
+        '-c', `"program ${elf} verify; reset; exit"`
     ];
     return new Promise((reject, resolve) => {
         const flashCmd = spawn('openocd', args);
