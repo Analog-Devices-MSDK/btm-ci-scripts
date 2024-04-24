@@ -65,6 +65,10 @@ Directory where lockfiles for boards are stored
 
 ## OPENOCD PATH
 Path to where the openocd tooling is located
+## Getting the environment variables loaded for GitHub Workflows
+The environment variables loaded into the bashrc will not be sourced by GitHub. These can only be used for manual usage.
+The variables need to be placed into the ``.env`` files located in the runner directories on Wall-E. 
+For convenience, the ``envsetup.sh``, located in the envsetup folder, can be ran on Wall-E. This will automatically load the .env file into the runner.
 
 
 ## Past lessons learned and moving forward
