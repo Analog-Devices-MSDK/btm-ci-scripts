@@ -96,7 +96,7 @@ jobs:
         with:
           board: max32655_board1
           project: BLE5_ctr
-          msdk_path: ${{ GITHUB_WORKSPACE }}
+          msdk_path: ${GITHUB_WORKSPACE}
           build: true
       #----------------------------------------------------------------------------------------------
       # Test OCDReset action
