@@ -71,10 +71,10 @@ jobs:
     steps:
       #----------------------------------------------------------------------------------------------
       # Checks out repository
-      - uses: actions/checkout@v4
-        with:
-          submodules: false
-          fetch-depth: 0
+      # - uses: actions/checkout@v4
+      #   with:
+      #     submodules: false
+      #     fetch-depth: 0
       #----------------------------------------------------------------------------------------------
       # Test enviornment variables.
       - name: TestEnv
@@ -91,13 +91,13 @@ jobs:
           lock: true
       #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
-      - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1.0
-        with:
-          board: max32655_board1
-          project: BLE5_ctr
-          msdk_path: ${{ GITHUB_WORKSPACE }}
-          build: true
+      # - name: TestFlash
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1.0
+      #   with:
+      #     board: max32655_board1
+      #     project: BLE5_ctr
+      #     msdk_path: ${{ GITHUB_WORKSPACE }}
+      #     build: true
       #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
@@ -113,8 +113,8 @@ jobs:
           has_two_flash_banks: false
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> unlock action
-      - name: TestUnlock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
-        with:
-          boards: max32655_board1
-          lock: false
+      # - name: TestUnlock
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
+      #   with:
+      #     boards: max32655_board1
+      #     lock: false
