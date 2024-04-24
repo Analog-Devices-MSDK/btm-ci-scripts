@@ -13,7 +13,7 @@ const getBoardData = function (boardId, itemName) {
         mode: 'text',
         pythonPath: 'python3',
         pythonOptions: ['-u'],
-        scriptPath: '../../Resource_Share',
+        scriptPath: env.RESOURCE_SHARE_DIR,
         args: [`-g ${boardId}.${itemName}`]
     };
     return new Promise((reject, resolve) => {
@@ -32,7 +32,7 @@ const getBoardOwner = function (boardId) {
         mode: 'text',
         pythonPath: 'python3',
         pythonOptions: ['-u'],
-        scriptPath: '../../Resource_Share',
+        scriptPath: env.RESOURCE_SHARE_DIR,
         args: [`--get-owner ${boardId}`]
     };
     return new Promise((reject, resolve) => {

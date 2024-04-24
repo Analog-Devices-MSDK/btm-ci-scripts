@@ -1,6 +1,7 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
 const { PythonShell } = require('python-shell');
+const { env } = require('node:process');
 
 const BOARD_IDS = Core.getMultilineInput('boards');
 const LOCK_FLAG = Core.getBooleanInput('lock', {required: false});
@@ -12,7 +13,7 @@ const main = async function () {
         mode: 'text',
         pythonPath: 'python3',
         pythonOptions: ['-u'],
-        scriptPath: '../../Resource_Share',
+        scriptPath: env.RESOURCE_SHARE_DIR,
         args: [`${mode} ${BOARD_IDS.join(" ")} --owner ${OWNER_REF}`]
     };
     PythonShell.run('resource_manager.py', options, function (err, results) {
