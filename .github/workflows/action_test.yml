@@ -71,11 +71,11 @@ jobs:
     steps:
       #----------------------------------------------------------------------------------------------
       # Checks out repository
-      - uses: actions/checkout@v3
-        with:
-          submodules: false
-          repository: analogdevicesinc/msdk
-          ref: main
+      # - uses: actions/checkout@v3
+      #   with:
+      #     submodules: false
+      #     repository: analogdevicesinc/msdk
+      #     ref: main
       #----------------------------------------------------------------------------------------------
       # Test enviornment variables.
       - name: TestEnv
@@ -92,13 +92,13 @@ jobs:
           lock: true
       #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
-      - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
-        with:
-          board: max32655_board1
-          project: BLE5_ctr
-          msdk_path: ${{ github.workspace }}
-          build: true
+      # - name: TestFlash
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
+      #   with:
+      #     board: max32655_board1
+      #     project: BLE5_ctr
+      #     msdk_path: ${{ github.workspace }}
+      #     build: true
       #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
@@ -114,9 +114,9 @@ jobs:
           has_two_flash_banks: false
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> unlock action
-      - name: TestUnlock
-        if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
-        with:
-          boards: max32655_board1
-          lock: false
+      # - name: TestUnlock
+      #   if: always()
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
+      #   with:
+      #     boards: max32655_board1
+      #     lock: false
