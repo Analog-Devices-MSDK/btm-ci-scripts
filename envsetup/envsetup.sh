@@ -11,10 +11,26 @@ printf '%s\n' \
 
 
 
-for i in {0..3}; do
-cp .env ~/Workspace/btm-ci-github-runner$i
-./~/Workspace/btm-ci-github-runner$i/svc.sh stop
-./~/Workspace/btm-ci-github-runner$i/svc.sh start
-done
+# for i in {0..3}; do
+# cp .env ~/Workspace/btm-ci-github-runner$i
+# ./~/Workspace/btm-ci-github-runner${i}/svc.sh stop
+# ./~/Workspace/btm-ci-github-runner${i}/svc.sh start
+# done
+
+cp .env ~/Workspace/btm-ci-github-runner0
+cp .env ~/Workspace/btm-ci-github-runner1
+cp .env ~/Workspace/btm-ci-github-runner1
+cp .env ~/Workspace/btm-ci-github-runner3
+
+
+./~/Workspace/btm-ci-github-runner0/svc.sh stop
+./~/Workspace/btm-ci-github-runner1/svc.sh stop
+./~/Workspace/btm-ci-github-runner2/svc.sh stop
+./~/Workspace/btm-ci-github-runner3/svc.sh stop
+
+./~/Workspace/btm-ci-github-runner0/svc.sh start
+./~/Workspace/btm-ci-github-runner1/svc.sh start
+./~/Workspace/btm-ci-github-runner2/svc.sh start
+./~/Workspace/btm-ci-github-runner3/svc.sh start
 
 rm .env
