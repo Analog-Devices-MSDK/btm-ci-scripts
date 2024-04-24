@@ -1,5 +1,5 @@
 #! /usr/bin/bash
-pwd
+
 source /home/btm-ci/Tools/btm-ci-scripts/str-utils.sh
 function ocdflash() {
     if [[ "$1" == "--help" || $1 == "-h" ]]; then
