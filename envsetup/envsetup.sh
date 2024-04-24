@@ -1,3 +1,4 @@
+# MUST RUN AS SUDO!
 
 env="LANG=en_US.UTF-16"
 printf '%s\n' \
@@ -13,12 +14,12 @@ cp .env ~/Workspace/btm-ci-github-runner3
 
 rm .env
 
-sudo  ~/Workspace/btm-ci-github-runner0/svc.sh stop
-sudo  ~/Workspace/btm-ci-github-runner1/svc.sh stop
-sudo  ~/Workspace/btm-ci-github-runner2/svc.sh stop
-sudo  ~/Workspace/btm-ci-github-runner3/svc.sh stop
+./~/Workspace/btm-ci-github-runner0/svc.sh stop
+./~/Workspace/btm-ci-github-runner1/svc.sh stop
+./~/Workspace/btm-ci-github-runner2/svc.sh stop
+./~/Workspace/btm-ci-github-runner3/svc.sh stop
 
-sudo  ~/Workspace/btm-ci-github-runner0/svc.sh start
-sudo  ~/Workspace/btm-ci-github-runner1/svc.sh start
-sudo  ~/Workspace/btm-ci-github-runner2/svc.sh start
-sudo  ~/Workspace/btm-ci-github-runner3/svc.sh start
+./~/Workspace/btm-ci-github-runner0/svc.sh start
+./~/Workspace/btm-ci-github-runner1/svc.sh start
+./~/Workspace/btm-ci-github-runner2/svc.sh start
+./~/Workspace/btm-ci-github-runner3/svc.sh start
