@@ -80,6 +80,7 @@ const eraseAborted = function (val) {
 }
 
 const main = async function () {
+    console.log('starting+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
     let owner = await getBoardOwner(BOARD_ID);
 
     if (owner === OWNER_REF) {
