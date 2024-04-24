@@ -55,12 +55,12 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     ];
     return new Promise((reject, resolve) => {
         const eraseCmd = spawn('openocd', args);
-        eraseCmd.stdout.on('data', data => { console.log(data) });
-        eraseCmd.stderr.on('data', data => { console.log(data) });
-        eraseCmd.on('error', error => {
+        eraseCmd.stdout.on('data', (data) => { console.log(data) });
+        eraseCmd.stderr.on('data', (data) => { console.log(data) });
+        eraseCmd.on('error', (error) => {
             console.error(`ERROR: ${error.message}`);
         });
-        eraseCmd.on('close', code => {
+        eraseCmd.on('close', (code) => {
             console.log(`Process exited with code ${code}`);
             if (code != 0) reject(code);
             else {
@@ -94,6 +94,7 @@ const main = async function () {
             eraseSuccessful,
             eraseAborted
         )
+        console.log('============RETCODE --> %s===================', retCode);
         if (retCode == 0) {
             if (HAS_TWO_FLASH_BANKS) {
                 flashBank = 1;
