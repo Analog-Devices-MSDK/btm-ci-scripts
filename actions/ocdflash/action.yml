@@ -1,0 +1,20 @@
+name: OCDFlash
+description: 'Flash a board using OpenOCD'
+inputs:
+  board:
+    description: 'ID of the board to flash'
+    required: true
+  project:
+    description: 'Name of the project to flash'
+    required: true
+  msdk_path:
+    description: 'Path to root of MSDK'
+    required: false
+    default: '.'
+  build:
+    description: 'Build before flashing?'
+    required: false
+    default: 'true'
+runs:
+  using: 'node20'
+  main: 'run.js'

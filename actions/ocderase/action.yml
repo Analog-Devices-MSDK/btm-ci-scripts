@@ -1,0 +1,13 @@
+name: OCDErase
+description: 'Mass erase a board using OpenOCD'
+inputs:
+  board:
+    description: 'ID of the board to erase'
+    required: true
+  has_two_flash_banks:
+    description: 'Used to indicated if the board has 2 flash banks'
+    required: false
+    default: 'false'
+runs:
+  using: 'node20'
+  main: 'run.js'

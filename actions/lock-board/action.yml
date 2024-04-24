@@ -1,0 +1,13 @@
+name: lockBoard
+description: 'Lock/Unlock boards'
+inputs:
+  boards:
+    description: 'Board(s) to lock/unlock'
+    required: true
+  lock:
+    description: 'Lock boards?'
+    required: false
+    default: 'true'
+runs:
+  using: 'node20'
+  main: 'run.js'
