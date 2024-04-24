@@ -21,5 +21,4 @@ cp .env /home/btm-ci/Workspace/btm-ci-github-runner$i
 pwd
 done
 
-
 rm .env
