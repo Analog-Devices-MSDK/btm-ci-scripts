@@ -1,6 +1,6 @@
 #! /usr/bin/bash
-
-source ~/Tools/btm-ci-scripts/str-utils.sh
+pwd
+source /home/btm-ci/Tools/btm-ci-scripts/str-utils.sh
 function ocdflash() {
     if [[ "$1" == "--help" || $1 == "-h" ]]; then
         printf "flash --> flash a board\n"
@@ -142,4 +142,3 @@ export -f ocdflash
 export -f ocderase
 export -f ocdreset
 export -f ocdopen
-
