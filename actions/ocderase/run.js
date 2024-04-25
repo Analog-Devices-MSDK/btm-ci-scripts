@@ -45,7 +45,7 @@ const getBoardOwner = function (boardId) {
             }
         });
     });
-    console.log('x created')
+    console.log(x)
     return x
 }
 
