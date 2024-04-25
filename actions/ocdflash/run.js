@@ -44,7 +44,7 @@ const getBoardOwner = function (boardId) {
 }
 
 const makeProject = function (projectPath) {
-    return new Promise((reject, resolve) => {
+    return new Promise((resolve, reject) => {
         const makeCmd = spawn('make', ['-j', projectPath]);
         makeCmd.stdout.on('data', data => { console.log(data) });
         makeCmd.stderr.on('data', data => { console.log(data) });
@@ -68,7 +68,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
         '-c', `"gdb_port ${gdb}"`, '-c', `"telnet_port ${telnet}"`, '-c', `"tcl_port ${tcl}"`,
         '-c', `"program ${elf} verify; reset; exit"`
     ];
-    return new Promise((reject, resolve) => {
+    return new Promise((resolve, reject) => {
         const flashCmd = spawn('openocd', args);
         flashCmd.stdout.on('data', data => { console.log(data) });
         flashCmd.stderr.on('data', data => { console.log(data) });

@@ -46,7 +46,7 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
         '-c', `"gdb_port ${gdb}`, '-c', `"telnet_port ${telnet}"`, '-c', `"tcl_port ${tcl}"`,
         '-c', '"init; reset; exit"'
     ];
-    return new Promise((reject, resolve) => {
+    return new Promise((resolve, reject) => {
         const resetCmd = spawn('openocd', args);
         resetCmd.stdout.on('data', data => { console.log(data) });
         resetCmd.stderr.on('data', data => { console.log(data) });

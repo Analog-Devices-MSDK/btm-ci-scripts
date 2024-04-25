@@ -47,10 +47,10 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
         '-c', `"gdb_port ${gdb}"`, '-c', `"telnet_port ${telnet}"`, '-c', `"tcl_port ${tcl}"`,
         '-c', `"init; reset halt; max32xxx mass_erase ${bank}"; exit`
     ];
-    return new Promise((reject, resolve) => {
+    return new Promise((resolve, reject) => {
         const eraseCmd = spawn('openocd', args);
-        eraseCmd.stdout.on('data', (data) => { console.log(data) });
-        eraseCmd.stderr.on('data', (data) => { console.log(data) });
+        eraseCmd.stdout.on('data', (data) => { console.log(data.toString()) });
+        eraseCmd.stderr.on('data', (data) => { console.log(data.toString()) });
         eraseCmd.on('error', (error) => {
             console.error(`ERROR: ${error.message}`);
         });
