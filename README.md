@@ -73,8 +73,9 @@ For convenience, the ``envsetup.sh``, located in the envsetup folder, can be ran
 
 ## Past lessons learned and moving forward
 - Pathing is incredibly easy to mess up in yaml files. So all commonly used fucntions are now global.
-- Bash is easy to mess up and no one on our team is very good at it. Simple bash only
+- Bash is easy to mess up in a workflow. Simple bash only.
 - If you find yourself using loops or arrays in bash it is time to use python or some other language like golang.
-- If your test runs on walle, put it in the the btm-ci scripts folder. No need to add to the tangled mess that is the workflows.
+- If your test runs on walle, put it in the the btm-ci scripts folder.
+- Test the workflows in the btm-ci-scripts repo before deploying it to other repos first. 
 - Keep workflows as flat as possible. Tracking dependencies is difficult.
 - If you find yourself doing a very common thing. Make it a script and put it into the btm-ci-scripts
