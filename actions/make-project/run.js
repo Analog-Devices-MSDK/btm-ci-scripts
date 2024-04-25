@@ -42,7 +42,7 @@ const makeClean = function (projectPath) {
 }
 
 const makeProject = async function (projectPath, distclean) {
-    console.log(projectPath)
+    console.log(await projectPath)
     if (distclean) {
         await makeDistclean(projectPath);
     } else {
