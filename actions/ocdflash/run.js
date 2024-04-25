@@ -46,8 +46,8 @@ const getBoardOwner = function (boardId) {
 const makeProject = function (projectPath) {
     return new Promise((resolve, reject) => {
         const makeCmd = spawn('make', ['-j', projectPath]);
-        makeCmd.stdout.on('data', data => { console.log(data).toString() });
-        makeCmd.stderr.on('data', data => { console.log(data).toString() });
+        makeCmd.stdout.on('data', data => { console.log(data.toString()) });
+        makeCmd.stderr.on('data', data => { console.log(data.toString()) });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
