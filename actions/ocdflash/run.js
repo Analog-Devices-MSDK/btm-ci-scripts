@@ -4,7 +4,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
-const { makeProject } = require('../make-project/');
+const { makeProject, cleanProject } = require('../make-project/');
 
 const BOARD_ID = Core.getInput('board');
 const PROJECT_DIR = Core.getInput('project');
@@ -87,9 +87,8 @@ const main = async function () {
         let projectPath = path.join(MSDK_PATH, 'Examples', await target, 'Bluetooth', PROJECT_DIR);
         console.log("PROJECT PATH: %s", projectPath);
         if (BUILD_FLAG) {
-            await makeProject(projectPath, DISTCLEAN_FLAG);
-            // await makeClean(projectPath);
-            // await makeProject(_projectPath);
+            await cleanProject(projectPath, DISTCLEAN_FLAG);
+            await makeProject(projectPath);
         }
         let elfPath = path.join(projectPath, 'build', `${target.toLowerCase()}.elf`);
         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
