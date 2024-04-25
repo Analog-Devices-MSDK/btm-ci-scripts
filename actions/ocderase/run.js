@@ -28,6 +28,7 @@ const getBoardData = function (boardId, itemName) {
 }
 
 const getBoardOwner = function (boardId) {
+    console.log('HERE')
     let options = {
         mode: 'text',
         pythonPath: 'python3',
