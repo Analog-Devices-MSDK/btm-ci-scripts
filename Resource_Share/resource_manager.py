@@ -66,24 +66,30 @@ from tabulate import tabulate
 class ResourceManager:
     """BTM-CI Resource Manager"""
 
+    ENV_RESOURCE_LOCK_DIR = "RESOURCE_LOCK_DIR"
+    ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
+    ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
+
     def __init__(self, timeout=60) -> None:
         # Initialize the resource file
-        base_resource_path = os.environ.get("CI_BOARD_CONFIG")
-        with open(base_resource_path, "r", encoding="utf-8") as resource_file:
-            self.resources: dict = json.load(resource_file)
-
-        self._add_custom_config()
-
         self.timeout = timeout
-        self.resource_lock_dir = os.environ.get("RESOURCE_LOCK_DIR")
+        self.resources = self._add_base_config()
+        self._add_custom_config()
+        self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
         self._add_lockdir()
 
     def _add_lockdir(self):
         if not os.path.exists(self.resource_lock_dir):
             os.mkdir(self.resource_lock_dir)
 
+    def _add_base_config(self):
+        base_resource_path = os.environ.get(self.ENV_CI_BOARD_CONFIG)
+        with open(base_resource_path, "r", encoding="utf-8") as resource_file:
+            resources = json.load(resource_file)
+        return resources
+
     def _add_custom_config(self):
-        custom_resource_filepath = os.environ.get("CI_BOARD_CONFIG_CUSTOM")
+        custom_resource_filepath = os.environ.get(self.ENV_CI_BOARD_CONFIG_CUSTOM)
         if custom_resource_filepath is not None:
             with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
                 custom_resources = json.load(resource_file)
@@ -102,9 +108,8 @@ class ResourceManager:
         bool
             True if resource in use. False otherwise
         """
-        locks = os.listdir(self.resource_lock_dir)
-
-        return resource in locks
+        lockfile_path = self.get_lock_path(resource)
+        return os.path.exists(lockfile_path)
 
     def get_resource_lock_info(self, resource: str) -> Dict[str, object]:
         """Get lockfile info associated to locked resource
@@ -167,8 +172,6 @@ class ResourceManager:
                 "owner": resource_info.get("owner", ""),
             }
 
-            # resource_used[resource].update(resource_info)
-
         return resource_used
 
     def get_lock_path(self, resource: str) -> str:
@@ -186,15 +189,35 @@ class ResourceManager:
         """
         return os.path.join(self.resource_lock_dir, resource)
 
-    def unlock_resource(self, resource: str, owner=""):
-        """
-        Delete Resource lock
+    def unlock_resource(self, resource: str, owner="") -> bool:
+        """Unlock resource
 
+        Parameters
+        ----------
+        resource : str
+            Resource name found in board config or custom config
+        owner : str, optional
+            Owner who originally locked the board, by default ""
+
+        Returns
+        -------
+        bool
+            True unlocked. False if lockfile exists but owner does not match
+
+        Raises
+        ------
+        ValueError
+            If resource does not exist or lockfile does not exist
         """
+        if resource not in self.resources:
+            raise ValueError(
+                f"Resource {resource} not found in either the board config or custom config"
+            )
+
         lock = self.get_lock_path(resource)
 
         if not os.path.exists(lock):
-            return False
+            raise ValueError("Lockfile does not exist")
 
         created_owner = self.get_resource_lock_info(resource)["owner"]
 
@@ -211,8 +234,8 @@ class ResourceManager:
 
         Parameters
         ----------
-        resources : str
-            _description_
+        resources : Set[str]
+            Set of resources to unlock
         """
         unlock_count = 0
         for resource in resources:
@@ -227,22 +250,6 @@ class ResourceManager:
             print(f"Unlocking - {os.path.basename(lock)}")
             os.remove(lock)
 
-    def is_locked(self, resource: str) -> bool:
-        """Check if a resource is locked
-
-        Parameters
-        ----------
-        resource : str
-            Name of resource
-
-        Returns
-        -------
-        bool
-            True if locked. False otherwise.
-        """
-        lockfile_path = self.get_lock_path(resource)
-        return os.path.exists(lockfile_path)
-
     def lock_resource(self, resource: str, owner="") -> bool:
         """Lock resource
 
@@ -256,9 +263,14 @@ class ResourceManager:
         bool
             True is locked successfully. False otherwise.
         """
+        if resource not in self.resources:
+            raise ValueError(
+                f"Resource {resource} not found in either the board config or custom config"
+            )
+
         lockfile_path = self.get_lock_path(resource)
 
-        if not self.is_locked(resource):
+        if not self.resource_in_use(resource):
             with open(lockfile_path, "w", encoding="utf-8") as lockfile:
                 now = datetime.now()
 
@@ -288,17 +300,18 @@ class ResourceManager:
 
         boards_locked = False
         start = datetime.now()
-
+        locked_boards = []
         while not boards_locked:
             unlocked_count = 0
             for resource in resources:
-                if not self.is_locked(resource):
+                if not self.resource_in_use(resource):
                     unlocked_count += 1
             # Attempt to lock them all at once
             if unlocked_count == len(resources):
                 lockcount = 0
                 for resource in resources:
                     lockcount += 1 if self.lock_resource(resource, owner) else 0
+                    locked_boards.append((resource, owner))
                     boards_locked = True
 
             now = datetime.now()
@@ -308,8 +321,8 @@ class ResourceManager:
 
         # if we failed to lock all the boards, release the ones we locked
         if boards_locked and lockcount != len(resources):
-            for resource in resources:
-                self.unlock_resource(resource)
+            for resource, resource_owner in locked_boards:
+                rm.unlock_resource(resource, resource_owner)
                 boards_locked = False
 
         return boards_locked
