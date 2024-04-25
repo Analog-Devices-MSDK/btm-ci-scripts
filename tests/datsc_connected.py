@@ -368,7 +368,7 @@ if __name__ == "__main__":
     client_t = threading.Thread(target=_client_thread, args=(client_port,))
     server_t = threading.Thread(target=_server_thread, args=(server_port,))
 
-    # # Reset to start from scratch
+    # Reset to start from scratch
     rm.resource_reset(SERVER_BOARD)
     rm.resource_reset(CLIENT_BOARD)
 
