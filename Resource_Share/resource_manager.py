@@ -615,7 +615,7 @@ if __name__ == "__main__":
         print(rm.get_item_value(args.get_value))
 
     if args.get_owner:
-        print(rm.get_resource_lock_info(args.get_owner).get("owner", "None"))
+        print(rm.get_resource_lock_info(args.get_owner).get("owner", ""))
 
     if args.version:
         print(VERSION)
