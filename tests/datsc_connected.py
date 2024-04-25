@@ -342,21 +342,27 @@ if __name__ == "__main__":
     # Get the boards under test and the file paths
     SERVER_BOARD = sys.argv[1]
     CLIENT_BOARD = sys.argv[2]
-    dats_file = sys.argv[3]
-    datc_file = sys.argv[4]
+    DATS_FILE = sys.argv[3]
+    DATC_FILE = sys.argv[4]
+
+    # sanity check
+    assert (
+        SERVER_BOARD != CLIENT_BOARD
+    ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
+    assert (
+        DATS_FILE != DATC_FILE
+    ), f"OTAC ELF ({DATS_FILE}) must not  be the same as Server ({DATC_FILE})"
 
     # Make sure all bonding information is wiped
     rm.resource_erase(SERVER_BOARD)
     rm.resource_erase(CLIENT_BOARD)
 
-    rm.resource_flash(SERVER_BOARD, dats_file)
-    rm.resource_flash(CLIENT_BOARD, datc_file)
+    rm.resource_flash(SERVER_BOARD, DATS_FILE)
+    rm.resource_flash(CLIENT_BOARD, DATC_FILE)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
-
-    assert client_port != server_port
 
     # Configure and run tests
     client_t = threading.Thread(target=_client_thread, args=(client_port,))
