@@ -57,17 +57,18 @@ const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
 
     if (owner === OWNER_REF) {
-        let target = await getBoardData(BOARD_ID, 'target');
+        let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
+            getBoardData(BOARD_ID, 'target'),
+            getBoardData(BOARD_ID, 'dap_sn'),
+            getBoardData(BOARD_ID, 'ocdports.gdb'),
+            getBoardData(BOARD_ID, 'ocdports.tcl'),
+            getBoardData(BOARD_ID, 'ocdports.telnet'),
+        ]);
         let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR)
         if (BUILD_FLAG) {
             await makeProject(projectPath);
         }
         let elfPath = path.join(projectPath, 'build', `${target.toLowerCase()}.elf`);
-        let dapSN = await getBoardData(BOARD_ID, 'dap_sn');
-        let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
-        let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
-        let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
-
         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
             (success) => { return procSuccess(success, 'Flash'); },
             (error) => { return procFail(error, 'Flash', true); }

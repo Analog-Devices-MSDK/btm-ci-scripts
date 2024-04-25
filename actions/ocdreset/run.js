@@ -43,11 +43,6 @@ const main = async function () {
             getBoardData(BOARD_ID, 'ocdports.tcl'),
             getBoardData(BOARD_ID, 'ocdports.telnet'),
         ]);
-        // let target = await getBoardData(BOARD_ID, 'target');
-        // let dapSN = await getBoardData(BOARD_ID, 'dap_sn');
-        // let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
-        // let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
-        // let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
         await resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
             (success) => { return procSuccess(success, 'Reset'); },
             (error) => { return procFail(error, 'Reset', false); }
