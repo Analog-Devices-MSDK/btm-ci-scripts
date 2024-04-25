@@ -19,14 +19,11 @@ const getBoardData = function (boardId, itemName) {
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: ['-g', `${boardId}.${itemName}`]
     };
-    return new Promise((reject, resolve) => {
-        PythonShell.run('resource_manager.py', options, function (err, results) {
-            if (err) reject(err);
-            else {
-                console.log('%s --> %s', itemName, results[0]);
-                resolve(results[0]);
-            }
-        });
+    return new Promise((resolve, reject) => {
+        PythonShell.run('resource_manager.py', options).then(
+            (item) => { console.log('%s --> %s', itemName, item); resolve(item); },
+            (error) => reject(error)
+        );
     });
 }
 
@@ -37,15 +34,12 @@ const getBoardOwner = function (boardId) {
         pythonOptions: ['-u'],
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: ['--get-owner', `${boardId}`]
-    }
-    return new Promise((reject, resolve) => {
-        PythonShell.run('resource_manager.py', options, function (err, results) {
-            if (err) reject(err);
-            else {
-                console.log('owner --> %s', results[0]);
-                resolve(results[0]);
-            }
-        });
+    };
+    return new Promise((resolve, reject) => {
+        PythonShell.run('resource_manager.py', options).then(
+            (ownerId) => {console.log('owner --> %s', ownerId); resolve(ownerId) },
+            (error) => reject(error)
+        );
     });
 }
 

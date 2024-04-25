@@ -16,20 +16,15 @@ const getBoardData = function (boardId, itemName) {
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: ['-g', `${boardId}.${itemName}`]
     };
-    return new Promise((reject, resolve) => {
-        PythonShell.run('resource_manager.py', options, function (err, results) {
-            if (err) reject(err);
-            else {
-                console.log('%s --> %s', itemName, results[0]);
-                resolve(results[0]);
-            }
-        });
+    return new Promise((resolve, reject) => {
+        PythonShell.run('resource_manager.py', options).then(
+            (item) => { console.log('%s --> %s', itemName, item); resolve(item); },
+            (error) => reject(error)
+        );
     });
 }
 
-const getBoardOwner = async function (boardId) {
-    var ownerId;
-    console.log('HERE')
+const getBoardOwner = function (boardId) {
     let options = {
         mode: 'text',
         pythonPath: 'python3',
@@ -37,21 +32,12 @@ const getBoardOwner = async function (boardId) {
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: ['--get-owner', `${boardId}`]
     };
-    let pyShellPromise = new Promise((reject, resolve) => {
-        PythonShell.run('resource_manager.py', options, function (err, results) {
-            if (err) reject(err);
-            else {
-                console.log('owner retrieved.')
-                console.log('owner --> %s', results[0]);
-                resolve(results[0]);
-            }
-        });
+    return new Promise((resolve, reject) => {
+        PythonShell.run('resource_manager.py', options).then(
+            (ownerId) => {console.log('owner --> %s', ownerId); resolve(ownerId) },
+            (error) => reject(error)
+        );
     });
-    console.log('pycall finished');
-    ownerId = await pyShellPromise;
-    console.log(ownerId);
-
-    return ownerId;
 }
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
