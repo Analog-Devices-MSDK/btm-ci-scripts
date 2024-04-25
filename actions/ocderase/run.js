@@ -38,10 +38,10 @@ const getBoardOwner = function (boardId) {
     };
     const x = new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
-            if (err) reject(err);
+            if (err) return reject(err);
             else {
                 console.log('owner --> %s', results[0]);
-                resolve(results[0]);
+                return resolve(results[0]);
             }
         });
     });
