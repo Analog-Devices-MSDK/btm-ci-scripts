@@ -33,10 +33,7 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
 }
 
 const main = async function () {
-    console.log('starting+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
     let owner = await getBoardOwner(BOARD_ID);
-    console.log('owner received');
-    console.log(owner);
     if (owner === OWNER_REF) {
         let target = await getBoardData(BOARD_ID, 'target');
         let dapSN = await getBoardData(BOARD_ID, 'dap_sn');
@@ -49,7 +46,6 @@ const main = async function () {
             (success) => { return procSuccess(success, 'Erase'); },
             (error) => { return procFail(error, 'Erase', false); }
         )
-        console.log('============RETCODE --> %s===================', retCode);
         if (retCode == 0) {
             if (HAS_TWO_FLASH_BANKS) {
                 bank = 1;
