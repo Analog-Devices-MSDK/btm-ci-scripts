@@ -34,7 +34,8 @@ Example:
 ### Optional fields
 All fields are optional if they do not require the field. For example, a spectrum anaylzer does not need a board field. This can be left null in that case.
 
-Any value can be queried using the resource manager for use in workflows, actions, and est scripts.
+### Value usage
+Any value can be queried using the resource manager for use in workflows, actions, and test scripts.
 
 ## Resource Manager
 The resource manager is a global script on walle, which can be used both in other python scripts and from the command line. It's primary functions are
