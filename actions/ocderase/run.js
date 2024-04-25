@@ -1,44 +1,12 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
-const { PythonShell } = require('python-shell');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
+const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
 const BOARD_ID = Core.getInput('board');
 const HAS_TWO_FLASH_BANKS = Core.getBooleanInput('has_two_flash_banks', { required: false });
 const OWNER_REF = Github.context.ref;
-
-const getBoardData = function (boardId, itemName) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['-g', `${boardId}.${itemName}`]
-    };
-    return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (item) => { console.log('%s --> %s', itemName, item[0]); resolve(item[0]); },
-            (error) => reject(error)
-        );
-    });
-}
-
-const getBoardOwner = function (boardId) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['--get-owner', `${boardId}`]
-    };
-    return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (ownerId) => {console.log('owner --> %s', ownerId[0]); resolve(ownerId[0]) },
-            (error) => reject(error)
-        );
-    });
-}
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     const args = [
@@ -64,14 +32,14 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     });
 }
 
-const eraseSuccessful = function (val) {
-     console.log('Erase successful.');
-     return val;
-}
-const eraseAborted = function (val) {
-    console.log('!! ERROR: Erase failed. Aborting. !!');
-    return val;
-}
+// const eraseSuccessful = function (val) {
+//      console.log('Erase successful.');
+//      return val;
+// }
+// const eraseAborted = function (val) {
+//     console.log('!! ERROR: Erase failed. Aborting. !!');
+//     return val;
+// }
 
 const main = async function () {
     console.log('starting+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
@@ -84,22 +52,36 @@ const main = async function () {
         let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
-        let flashBank = 0;
-        let retCode = eraseFlash(target, flashBank, dapSN, gdbPort, tclPort, telnetPort).then(
-            eraseSuccessful,
-            eraseAborted
+        let bank = 0;
+        // let retCode = eraseFlash(target, flashBank, dapSN, gdbPort, tclPort, telnetPort).then(
+        //     eraseSuccessful,
+        //     eraseAborted
+        // )
+        // console.log('============RETCODE --> %s===================', retCode);
+        // if (retCode == 0) {
+        //     if (HAS_TWO_FLASH_BANKS) {
+        //         flashBank = 1;
+        //         eraseFlash(target, flashBank, dapSN, gdbPort, tclPort, telnetPort).then(
+        //             eraseSuccessful,
+        //             eraseAborted
+        //         );
+        //     }
+        // }
+
+        let retCode = eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
+            (success) => { return procSuccess(success, 'Erase'); },
+            (error) => { return procFail(error, 'Erase', false); }
         )
         console.log('============RETCODE --> %s===================', retCode);
         if (retCode == 0) {
             if (HAS_TWO_FLASH_BANKS) {
-                flashBank = 1;
-                eraseFlash(target, flashBank, dapSN, gdbPort, tclPort, telnetPort).then(
-                    eraseSuccessful,
-                    eraseAborted
+                bank = 1;
+                eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
+                    (success) => { return procSuccess(success, 'Erase'); },
+                    (error) => { return procFail(error, 'Erase', false); }
                 );
             }
         }
-
     } else {
         console.log("!! ERROR: Improper permissions. Board could not be erased. !!");
     }

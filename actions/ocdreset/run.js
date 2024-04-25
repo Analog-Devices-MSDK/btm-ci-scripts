@@ -1,43 +1,11 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
-const { PythonShell } = require('python-shell');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
+const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
 const BOARD_ID = Core.getInput('board');
 const OWNER_REF = Github.context.ref;
-
-const getBoardData = function (boardId, itemName) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['-g', `${boardId}.${itemName}`]
-    };
-    return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (item) => { console.log('%s --> %s', itemName, item[0]); resolve(item[0]); },
-            (error) => reject(error)
-        );
-    });
-}
-
-const getBoardOwner = function (boardId) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['--get-owner', `${boardId}`]
-    };
-    return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (ownerId) => {console.log('owner --> %s', ownerId[0]); resolve(ownerId[0]) },
-            (error) => reject(error)
-        );
-    });
-}
 
 const resetBoard = function(target, dap, gdb, tcl, telnet) {
     const args = [
@@ -63,14 +31,14 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
     });
 }
 
-const resetSuccessful = function (val) {
-    console.log('Reset successful.');
-    return val;
-}
-const resetAborted = function (val) {
-    console.log('!! ERROR: Reset failed. Aborting. !!');
-    return val;
-}
+// const resetSuccessful = function (val) {
+//     console.log('Reset successful.');
+//     return val;
+// }
+// const resetAborted = function (val) {
+//     console.log('!! ERROR: Reset failed. Aborting. !!');
+//     return val;
+// }
 
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
@@ -81,10 +49,14 @@ const main = async function () {
         let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
-        resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
-            resetSuccessful,
-            resetAborted
-        );
+        // resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
+        //     resetSuccessful,
+        //     resetAborted
+        // );
+        await resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
+            (success) => { return procSuccess(success, 'Reset'); },
+            (error) => { return procFail(error, 'Reset', false); }
+        )
     } else {
         console.log("!! ERROR: Improper permissions. Board could not be reset. !!");
     }

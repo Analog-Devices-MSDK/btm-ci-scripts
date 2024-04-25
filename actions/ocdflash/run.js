@@ -1,47 +1,15 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
-const { PythonShell } = require('python-shell');
+const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const path = require('path');
+const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
 const BOARD_ID = Core.getInput('board');
 const PROJECT_DIR = Core.getInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
 const OWNER_REF = Github.context.ref;
-
-const getBoardData = function (boardId, itemName) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['-g', `${boardId}.${itemName}`]
-    };
-    return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (item) => { console.log('%s --> %s', itemName, item[0]); resolve(item[0]); },
-            (error) => reject(error)
-        );
-    });
-}
-
-const getBoardOwner = function (boardId) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['--get-owner', `${boardId}`]
-    };
-    return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (ownerId) => {console.log('owner --> %s', ownerId[0]); resolve(ownerId[0]) },
-            (error) => reject(error)
-        );
-    });
-}
 
 const makeProject = function (projectPath) {
     return new Promise((resolve, reject) => {
@@ -85,20 +53,20 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     })
 }
 
-const flashSuccessful = function (val) {
-    console.log('Flash Successful');
-    return val;
-}
+// const flashSuccessful = function (val) {
+//     console.log('Flash Successful');
+//     return val;
+// }
 
-const flashAborted = function (val) {
-    console.log('!! ERROR: Flash failed. Aborting !!');
-    return val;
-}
+// const flashAborted = function (val) {
+//     console.log('!! ERROR: Flash failed. Aborting !!');
+//     return val;
+// }
 
-const flashFailed = function (val) {
-    console.log('!! ERROR: Flash failed. Retrying 1 time. !!');
-    return val;
-}
+// const flashFailed = function (val) {
+//     console.log('!! ERROR: Flash failed. Retrying 1 time. !!');
+//     return val;
+// }
 
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
@@ -115,14 +83,24 @@ const main = async function () {
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
 
+        // retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
+        //     flashSuccessful,
+        //     flashFailed
+        // );
+        // if (retCode != 0) {
+        //     flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
+        //         flashSuccessful,
+        //         flashAborted
+        //     );
+        // }
         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
-            flashSuccessful,
-            flashFailed
+            (success) => { return procSuccess(success, 'Flash'); },
+            (error) => { return procFail(error, 'Flash', true); }
         );
         if (retCode != 0) {
             flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
-                flashSuccessful,
-                flashAborted
+                (success) => { return procSuccess(success, 'Flash'); },
+                (error) => { return procFail(error, 'Flash', false); }
             );
         }
     } else {
