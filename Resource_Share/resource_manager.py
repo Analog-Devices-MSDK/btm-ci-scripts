@@ -427,9 +427,9 @@ class ResourceManager:
         resource_name : str
             Name of resource to reset
         """
-        if self._is_ocd_capable(resource_name):
+        if not self._is_ocd_capable(resource_name):
             raise AttributeError(
-                f"Resource {resource_name} does not contain the info to flash."
+                f"Resource {resource_name} does not contain the info to reset."
                 ""
                 """Requires dap_sn and ocdports"""
             )
@@ -447,9 +447,9 @@ class ResourceManager:
         resource_name : str
             Name of resource to erase
         """
-        if self._is_ocd_capable(resource_name):
+        if not self._is_ocd_capable(resource_name):
             raise AttributeError(
-                f"""Resource {resource_name} does not contain the info to flash."""
+                f"""Resource {resource_name} does not contain the info to erase."""
                 """Requires dap_sn and ocdports"""
             )
 
@@ -467,7 +467,7 @@ class ResourceManager:
         elf_file : str
             Elf file to program resource with
         """
-        if self._is_ocd_capable(resource_name):
+        if not self._is_ocd_capable(resource_name):
             raise AttributeError(
                 f"""Resource {resource_name} does not contain the info to flash."""
                 """Requires dap_sn and ocdports"""
