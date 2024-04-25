@@ -55,7 +55,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from typing import Set, List, Dict
+from typing import Dict, List, Set
 
 # pylint: disable=import-error
 from tabulate import tabulate
