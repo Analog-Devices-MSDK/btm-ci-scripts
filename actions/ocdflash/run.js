@@ -45,9 +45,9 @@ const getBoardOwner = function (boardId) {
 
 const makeProject = function (projectPath) {
     return new Promise((resolve, reject) => {
-        const makeCmd = spawn('make', ['-j', projectPath]);
-        makeCmd.stdout.on('data', data => { console.log(data.toString()) });
-        makeCmd.stderr.on('data', data => { console.log(data.toString()) });
+        const makeCmd = spawn('make', ['-j', '-C', projectPath]);
+        makeCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
+        makeCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
@@ -70,8 +70,8 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     ];
     return new Promise((resolve, reject) => {
         const flashCmd = spawn('openocd', args);
-        flashCmd.stdout.on('data', data => { console.log(data.toString()) });
-        flashCmd.stderr.on('data', data => { console.log(data.toString()) });
+        flashCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
+        flashCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
         flashCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
