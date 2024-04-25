@@ -4,30 +4,32 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
+const { makeProject } = require('../make-project/');
 
 const BOARD_ID = Core.getInput('board');
 const PROJECT_DIR = Core.getInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
+const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required : false });
 const OWNER_REF = Github.context.ref;
 
-const makeProject = function (projectPath) {
-    return new Promise((resolve, reject) => {
-        const makeCmd = spawn('make', ['-j', '-C', projectPath]);
-        makeCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
-        makeCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
-        makeCmd.on('error', error => {
-            console.error(`ERROR: ${error.message}`);
-        });
-        makeCmd.on('close', code => {
-            console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
-                resolve(code);
-            }
-        })
-    })
-}
+// const makeProject = function (projectPath) {
+//     return new Promise((resolve, reject) => {
+//         const makeCmd = spawn('make', ['-j', '-C', projectPath]);
+//         makeCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
+//         makeCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
+//         makeCmd.on('error', error => {
+//             console.error(`ERROR: ${error.message}`);
+//         });
+//         makeCmd.on('close', code => {
+//             console.log(`Process exited with code ${code}`);
+//             if (code != 0) reject(code);
+//             else {
+//                 resolve(code);
+//             }
+//         });
+//     });
+// }
 
 const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     const args = [
@@ -50,7 +52,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
                 resolve(code);
             }
         });
-    })
+    });
 }
 
 const main = async function () {
@@ -66,7 +68,7 @@ const main = async function () {
         ]);
         let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR)
         if (BUILD_FLAG) {
-            await makeProject(projectPath);
+            await makeProject(projectPath, DISTCLEAN_FLAG);
         }
         let elfPath = path.join(projectPath, 'build', `${target.toLowerCase()}.elf`);
         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
