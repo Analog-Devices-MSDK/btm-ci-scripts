@@ -57,7 +57,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
 
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
-
+    
     if (owner === OWNER_REF) {
         let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
             getBoardData(BOARD_ID, 'target'),
@@ -67,6 +67,7 @@ const main = async function () {
             getBoardData(BOARD_ID, 'ocdports.telnet'),
         ]);
         let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR)
+        console.log(projectPath)
         if (BUILD_FLAG) {
             await makeProject(projectPath, DISTCLEAN_FLAG);
         }
