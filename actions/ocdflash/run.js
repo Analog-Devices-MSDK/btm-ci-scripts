@@ -115,7 +115,7 @@ const main = async function () {
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
 
-        retCode = flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
+        retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
             flashSuccessful,
             flashFailed
         );
