@@ -394,6 +394,18 @@ class ResourceManager:
 
         print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
 
+    def _is_ocd_capable(self, resource):
+        if resource not in self.resources:
+            return False
+
+        info = self.resources[resource]
+        if "dap_sn" not in info:
+            return False
+        if "ocdports" not in info:
+            return False
+
+        return True
+
     def resource_reset(self, resource_name: str) -> bool:
         """Reset resource found in board_config.json or custom config
 
@@ -402,8 +414,12 @@ class ResourceManager:
         resource_name : str
             Name of resource to reset
         """
-        if resource_name not in self.resources:
-            return False
+        if self._is_ocd_capable(resource_name):
+            raise AttributeError(
+                f"Resource {resource_name} does not contain the info to flash."
+                ""
+                """Requires dap_sn and ocdports"""
+            )
 
         with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name}"]) as process:
             process.wait()
@@ -418,8 +434,11 @@ class ResourceManager:
         resource_name : str
             Name of resource to erase
         """
-        if resource_name not in self.resources:
-            return False
+        if self._is_ocd_capable(resource_name):
+            raise AttributeError(
+                f"""Resource {resource_name} does not contain the info to flash."""
+                """Requires dap_sn and ocdports"""
+            )
 
         with subprocess.Popen(["bash", "-c", f"ocderase {resource_name}"]) as process:
             process.wait()
@@ -435,8 +454,11 @@ class ResourceManager:
         elf_file : str
             Elf file to program resource with
         """
-        if resource_name not in self.resources:
-            return False
+        if self._is_ocd_capable(resource_name):
+            raise AttributeError(
+                f"""Resource {resource_name} does not contain the info to flash."""
+                """Requires dap_sn and ocdports"""
+            )
 
         with subprocess.Popen(
             ["bash", "-c", f"ocdflash {resource_name} {elf_file}"]
@@ -444,6 +466,16 @@ class ResourceManager:
             process.wait()
 
         return process.returncode == 0
+
+    def clean_environment(self):
+        """Erase all boards and delete all locks"""
+        for resource in self.resources:
+            try:
+                self.resource_erase(resource)
+            except AttributeError:
+                pass
+
+        self.unlock_all_resources()
 
 
 if __name__ == "__main__":
@@ -513,12 +545,21 @@ if __name__ == "__main__":
         help="Get owner of resource if locked",
     )
 
+    parser.add_argument(
+        "--clean-env",
+        action="store_true",
+        help="Delete all locks and erase all boards with a programmable feature",
+    )
+
     args = parser.parse_args()
 
     lock_boards = set(args.lock)
     unlock_boards = set(args.unlock)
 
     rm = ResourceManager(timeout=int(args.timeout))
+
+    if args.clean_env:
+        rm.clean_environment()
 
     if args.list_usage:
         rm.print_usage()
