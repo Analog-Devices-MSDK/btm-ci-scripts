@@ -46,10 +46,11 @@ const getBoardOwner = async function (boardId) {
             }
         });
     });
+    print('pycall finished');
     ownerId = await pyShellPromise;
-    print(ownerId)
+    print(ownerId);
 
-    return ownerId
+    return ownerId;
 }
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
