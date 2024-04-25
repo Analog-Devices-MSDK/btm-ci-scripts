@@ -1,9 +1,17 @@
 #!/bin/bash
 # MUST RUN AS SUDO!
-set -e
+
+is_not_running_as_root() {
+    [[ $EUID -ne 0 ]]
+}
+
+if is_not_running_as_root; then
+    echo "Script must be ran using sudo!"
+    exit -1
+fi
+
+
 source /home/btm-ci/.bashrc
-envcheck 4 CI_BOARD_CONFIG RESOURCE_LOCK_DIR RESOURCE_SHARE_DIR OPENOCD_PATH
-set +e
 
 env="LANG=en_US.UTF-16"
 printf '%s\n' \
