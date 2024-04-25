@@ -17,8 +17,8 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     ];
     return new Promise((resolve, reject) => {
         const eraseCmd = spawn('openocd', args);
-        eraseCmd.stdout.on('data', (data) => { console.log(data.toString()) });
-        eraseCmd.stderr.on('data', (data) => { console.log(data.toString()) });
+        eraseCmd.stdout.on('data', (data) => { console.log(data.toString().trim()) });
+        eraseCmd.stderr.on('data', (data) => { console.log(data.toString().trim()) });
         eraseCmd.on('error', (error) => {
             console.error(`ERROR: ${error.message}`);
         });
@@ -32,15 +32,6 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     });
 }
 
-// const eraseSuccessful = function (val) {
-//      console.log('Erase successful.');
-//      return val;
-// }
-// const eraseAborted = function (val) {
-//     console.log('!! ERROR: Erase failed. Aborting. !!');
-//     return val;
-// }
-
 const main = async function () {
     console.log('starting+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
     let owner = await getBoardOwner(BOARD_ID);
@@ -53,22 +44,8 @@ const main = async function () {
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
         let bank = 0;
-        // let retCode = eraseFlash(target, flashBank, dapSN, gdbPort, tclPort, telnetPort).then(
-        //     eraseSuccessful,
-        //     eraseAborted
-        // )
-        // console.log('============RETCODE --> %s===================', retCode);
-        // if (retCode == 0) {
-        //     if (HAS_TWO_FLASH_BANKS) {
-        //         flashBank = 1;
-        //         eraseFlash(target, flashBank, dapSN, gdbPort, tclPort, telnetPort).then(
-        //             eraseSuccessful,
-        //             eraseAborted
-        //         );
-        //     }
-        // }
 
-        let retCode = eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
+        let retCode = await eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
             (success) => { return procSuccess(success, 'Erase'); },
             (error) => { return procFail(error, 'Erase', false); }
         )
@@ -76,7 +53,7 @@ const main = async function () {
         if (retCode == 0) {
             if (HAS_TWO_FLASH_BANKS) {
                 bank = 1;
-                eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
+                await eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
                     (success) => { return procSuccess(success, 'Erase'); },
                     (error) => { return procFail(error, 'Erase', false); }
                 );

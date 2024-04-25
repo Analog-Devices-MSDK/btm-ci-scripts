@@ -16,8 +16,8 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
     ];
     return new Promise((resolve, reject) => {
         const resetCmd = spawn('openocd', args);
-        resetCmd.stdout.on('data', data => { console.log(data.toString()) });
-        resetCmd.stderr.on('data', data => { console.log(data.toString()) });
+        resetCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
+        resetCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
         resetCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
@@ -31,14 +31,6 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
     });
 }
 
-// const resetSuccessful = function (val) {
-//     console.log('Reset successful.');
-//     return val;
-// }
-// const resetAborted = function (val) {
-//     console.log('!! ERROR: Reset failed. Aborting. !!');
-//     return val;
-// }
 
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
@@ -49,10 +41,6 @@ const main = async function () {
         let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
-        // resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
-        //     resetSuccessful,
-        //     resetAborted
-        // );
         await resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
             (success) => { return procSuccess(success, 'Reset'); },
             (error) => { return procFail(error, 'Reset', false); }

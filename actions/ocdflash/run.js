@@ -53,21 +53,6 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     })
 }
 
-// const flashSuccessful = function (val) {
-//     console.log('Flash Successful');
-//     return val;
-// }
-
-// const flashAborted = function (val) {
-//     console.log('!! ERROR: Flash failed. Aborting !!');
-//     return val;
-// }
-
-// const flashFailed = function (val) {
-//     console.log('!! ERROR: Flash failed. Retrying 1 time. !!');
-//     return val;
-// }
-
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
 
@@ -83,22 +68,12 @@ const main = async function () {
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
 
-        // retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
-        //     flashSuccessful,
-        //     flashFailed
-        // );
-        // if (retCode != 0) {
-        //     flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
-        //         flashSuccessful,
-        //         flashAborted
-        //     );
-        // }
         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
             (success) => { return procSuccess(success, 'Flash'); },
             (error) => { return procFail(error, 'Flash', true); }
         );
         if (retCode != 0) {
-            flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
+            await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
                 (success) => { return procSuccess(success, 'Flash'); },
                 (error) => { return procFail(error, 'Flash', false); }
             );
