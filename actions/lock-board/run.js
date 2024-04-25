@@ -17,7 +17,7 @@ const main = async function () {
         args: [`${mode}`, `${BOARD_IDS.join(" ")}`, '--owner', `${OWNER_REF}`]
     };
     await PythonShell.run('resource_manager.py', options).then(
-        (results) => console.log(results.toString()),
+        (results) => console.log(results.join("\n")),
         (error) => console.error(error)
     );
 }
