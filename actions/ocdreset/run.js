@@ -43,8 +43,8 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
     const args = [
         '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
         '-f', `target/${target.toLowerCase()}.cfg`, '-c', `adapter serial ${dap}`,
-        '-c', `"gdb_port ${gdb}"`, '-c', `"telnet_port ${telnet}"`, '-c', `"tcl_port ${tcl}"`,
-        '-c', '"init; reset; exit"'
+        '-c', `gdb_port ${gdb}`, '-c', `telnet_port ${telnet}`, '-c', `tcl_port ${tcl}`,
+        '-c', 'init; reset; exit'
     ];
     return new Promise((resolve, reject) => {
         const resetCmd = spawn('openocd', args);
