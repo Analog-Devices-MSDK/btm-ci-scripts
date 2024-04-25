@@ -27,7 +27,8 @@ const getBoardData = function (boardId, itemName) {
     });
 }
 
-const getBoardOwner = function (boardId) {
+const getBoardOwner = async function (boardId) {
+    var ownerId;
     console.log('HERE')
     let options = {
         mode: 'text',
@@ -36,7 +37,7 @@ const getBoardOwner = function (boardId) {
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: ['--get-owner', `${boardId}`]
     };
-    const x = new Promise((reject, resolve) => {
+    let pyShellPromise = new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
             if (err) return reject(err);
             else {
@@ -45,8 +46,10 @@ const getBoardOwner = function (boardId) {
             }
         });
     });
-    console.log(x)
-    return x
+    ownerId = await pyShellPromise;
+    print(ownerId)
+
+    return ownerId
 }
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
