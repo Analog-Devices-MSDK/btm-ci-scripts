@@ -504,6 +504,7 @@ if __name__ == "__main__":
     Query resource information
     Monitor resources
     """
+    VERSION = '1.0.0'
 
     # Parse the command line arguments
     parser = argparse.ArgumentParser(
@@ -570,6 +571,12 @@ if __name__ == "__main__":
         help="Delete all locks and erase all boards with a programmable feature",
     )
 
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_true",
+        help="Delete all locks and erase all boards with a programmable feature",
+    )
     args = parser.parse_args()
 
     lock_boards = set(args.lock)
@@ -610,4 +617,7 @@ if __name__ == "__main__":
     if args.get_owner:
         print(rm.get_resource_lock_info(args.get_owner).get("owner", ""))
 
+    if args.version:
+        print(VERSION)
+        
     sys.exit(0)
