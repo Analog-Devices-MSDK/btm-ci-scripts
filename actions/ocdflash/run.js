@@ -64,14 +64,14 @@ const makeProject = function (projectPath) {
 const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     const args = [
         '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
-        '-f', `target/${target.toLowerCase()}`, '-c', `"adapter serial ${dap}"`,
+        '-f', `target/${target.toLowerCase()}`, '-c', '"adapter', 'serial', `${dap}"`,
         '-c', `"gdb_port ${gdb}"`, '-c', `"telnet_port ${telnet}"`, '-c', `"tcl_port ${tcl}"`,
         '-c', `"program ${elf} verify; reset; exit"`
     ];
     return new Promise((resolve, reject) => {
         const flashCmd = spawn('openocd', args);
-        flashCmd.stdout.on('data', data => { console.log(data) });
-        flashCmd.stderr.on('data', data => { console.log(data) });
+        flashCmd.stdout.on('data', data => { console.log(data).toString() });
+        flashCmd.stderr.on('data', data => { console.log(data).toString() });
         flashCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
