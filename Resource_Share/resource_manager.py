@@ -84,6 +84,12 @@ class ResourceManager:
 
     def _add_base_config(self):
         base_resource_path = os.environ.get(self.ENV_CI_BOARD_CONFIG)
+
+        if not base_resource_path:
+            if os.getlogin() == "btm-ci":
+                print("Warning! BOARD CONFIG Environment Variable DOES NOT EXIST!")
+            return {}
+
         with open(base_resource_path, "r", encoding="utf-8") as resource_file:
             resources = json.load(resource_file)
         return resources
@@ -166,7 +172,7 @@ class ResourceManager:
             resource_info = self.get_resource_lock_info(resource)
 
             resource_used[resource] = {
-                "in-use": in_use,
+                "locked": in_use,
                 "group": self.resources[resource].get("group"),
                 "start": resource_info.get("start", ""),
                 "owner": resource_info.get("owner", ""),
