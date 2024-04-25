@@ -36,7 +36,7 @@ const getBoardOwner = function (boardId) {
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: ['--get-owner', `${boardId}`]
     };
-    return new Promise((reject, resolve) => {
+    const x = new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
             if (err) reject(err);
             else {
@@ -45,6 +45,8 @@ const getBoardOwner = function (boardId) {
             }
         });
     });
+    console.log('x created')
+    return x
 }
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
