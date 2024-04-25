@@ -39,16 +39,17 @@ const getBoardOwner = async function (boardId) {
     };
     let pyShellPromise = new Promise((reject, resolve) => {
         PythonShell.run('resource_manager.py', options, function (err, results) {
-            if (err) return reject(err);
+            if (err) reject(err);
             else {
+                console.log('owner retrieved.')
                 console.log('owner --> %s', results[0]);
-                return resolve(results[0]);
+                resolve(results[0]);
             }
         });
     });
-    print('pycall finished');
+    console.log('pycall finished');
     ownerId = await pyShellPromise;
-    print(ownerId);
+    console.log(ownerId);
 
     return ownerId;
 }
