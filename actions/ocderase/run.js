@@ -84,9 +84,13 @@ const eraseAborted = function (val) {
 
 const main = async function () {
     console.log('starting+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
-    let owner = await getBoardOwner(BOARD_ID);
-    console.log('owner received');
-    console.log(owner);
+    try {
+        let owner = await getBoardOwner(BOARD_ID);
+        console.log('owner received');
+        console.log(owner);
+    } catch (error) {
+        console.error(error);
+    }
     if (owner === OWNER_REF) {
         let target = await getBoardData(BOARD_ID, 'target');
         let dapSN = await getBoardData(BOARD_ID, 'dap_sn');
