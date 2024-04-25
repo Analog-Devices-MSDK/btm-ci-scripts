@@ -70,8 +70,8 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     ];
     return new Promise((resolve, reject) => {
         const flashCmd = spawn('openocd', args);
-        flashCmd.stdout.on('data', data => { console.log(data).toString() });
-        flashCmd.stderr.on('data', data => { console.log(data).toString() });
+        flashCmd.stdout.on('data', data => { console.log(data.toString()) });
+        flashCmd.stderr.on('data', data => { console.log(data.toString()) });
         flashCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
