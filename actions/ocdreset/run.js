@@ -17,7 +17,7 @@ const getBoardData = function (boardId, itemName) {
     };
     return new Promise((resolve, reject) => {
         PythonShell.run('resource_manager.py', options).then(
-            (item) => { console.log('%s --> %s', itemName, item); resolve(item); },
+            (item) => { console.log('%s --> %s', itemName, item[0]); resolve(item[0]); },
             (error) => reject(error)
         );
     });
@@ -33,7 +33,7 @@ const getBoardOwner = function (boardId) {
     };
     return new Promise((resolve, reject) => {
         PythonShell.run('resource_manager.py', options).then(
-            (ownerId) => {console.log('owner --> %s', ownerId); resolve(ownerId) },
+            (ownerId) => {console.log('owner --> %s', ownerId[0]); resolve(ownerId[0]) },
             (error) => reject(error)
         );
     });

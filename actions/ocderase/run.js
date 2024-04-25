@@ -18,7 +18,7 @@ const getBoardData = function (boardId, itemName) {
     };
     return new Promise((resolve, reject) => {
         PythonShell.run('resource_manager.py', options).then(
-            (item) => { console.log('%s --> %s', itemName, item); resolve(item); },
+            (item) => { console.log('%s --> %s', itemName, item[0]); resolve(item[0]); },
             (error) => reject(error)
         );
     });
@@ -34,7 +34,7 @@ const getBoardOwner = function (boardId) {
     };
     return new Promise((resolve, reject) => {
         PythonShell.run('resource_manager.py', options).then(
-            (ownerId) => {console.log('owner --> %s', ownerId); resolve(ownerId) },
+            (ownerId) => {console.log('owner --> %s', ownerId[0]); resolve(ownerId[0]) },
             (error) => reject(error)
         );
     });
@@ -75,13 +75,9 @@ const eraseAborted = function (val) {
 
 const main = async function () {
     console.log('starting+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
-    try {
-        let owner = await getBoardOwner(BOARD_ID);
-        console.log('owner received');
-        console.log(owner);
-    } catch (error) {
-        console.error(error);
-    }
+    let owner = await getBoardOwner(BOARD_ID);
+    console.log('owner received');
+    console.log(owner);
     if (owner === OWNER_REF) {
         let target = await getBoardData(BOARD_ID, 'target');
         let dapSN = await getBoardData(BOARD_ID, 'dap_sn');

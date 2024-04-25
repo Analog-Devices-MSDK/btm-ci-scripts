@@ -16,10 +16,10 @@ const main = async function () {
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: [`${mode}`, `${BOARD_IDS.join(" ")}`, '--owner', `${OWNER_REF}`]
     };
-    PythonShell.run('resource_manager.py', options, function (err, results) {
-        if (err) throw err;
-        console.log(results)
-    })
+    PythonShell.run('resource_manager.py', options).then(
+        (results) => console.log(results.toString()),
+        (error) => console.error(error)
+    );
 }
 
 main();
