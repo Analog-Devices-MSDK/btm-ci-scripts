@@ -46,8 +46,8 @@ const getBoardOwner = function (boardId) {
 const makeProject = function (projectPath) {
     return new Promise((resolve, reject) => {
         const makeCmd = spawn('make', ['-j', projectPath]);
-        makeCmd.stdout.on('data', data => { console.log(data) });
-        makeCmd.stderr.on('data', data => { console.log(data) });
+        makeCmd.stdout.on('data', data => { console.log(data).toString() });
+        makeCmd.stderr.on('data', data => { console.log(data).toString() });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
@@ -64,7 +64,7 @@ const makeProject = function (projectPath) {
 const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     const args = [
         '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
-        '-f', `target/${target.toLowerCase()}`, '-c', `adapter serial ${dap}`,
+        '-f', `target/${target.toLowerCase()}.cfg`, '-c', `adapter serial ${dap}`,
         '-c', `gdb_port ${gdb}`, '-c', `telnet_port ${telnet}`, '-c', `tcl_port ${tcl}`,
         '-c', `program ${elf} verify; reset; exit`
     ];
