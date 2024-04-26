@@ -97,11 +97,6 @@ const main = async function () {
             console.log("PROJECT PATH: %s", projectPath);
             // await cleanProject(projectPath, DISTCLEAN_FLAG);
             await makeProject(projectPath, DISTCLEAN_FLAG);
-        } else {
-            projectPath = new Promise((resolve, reject) => {
-                resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR));
-            });
-            await projectPath;
         }
         let elfPath = path.join(projectPath, 'build', `${target.toLowerCase()}.elf`);
         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
