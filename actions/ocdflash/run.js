@@ -84,7 +84,7 @@ const main = async function () {
         //     getBoardData(BOARD_ID, 'ocdports.telnet'),
         // ]);
         // let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
-        let target = await getBoardData(BOARD_ID, 'target');
+        var target = await getBoardData(BOARD_ID, 'target');
         let dapSN = await getBoardData(BOARD_ID, 'dap_sn');
         let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
         let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
