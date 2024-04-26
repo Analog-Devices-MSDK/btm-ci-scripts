@@ -59,7 +59,7 @@ const main = async function () {
 
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
-        if (owner !== OWNER_REF && OWNER_REF !== '') {
+        if (owner !== OWNER_REF && OWNER_REF !== undefined) {
             throw new Error(
                 "!! ERROR: Improper permissions. Board could not be flashed. !!"
             );
