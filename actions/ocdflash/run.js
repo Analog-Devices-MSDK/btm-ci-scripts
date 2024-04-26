@@ -76,7 +76,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
     if (owner === OWNER_REF) {
-        const [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
+        let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
             getBoardData(BOARD_ID, 'target'),
             getBoardData(BOARD_ID, 'dap_sn'),
             getBoardData(BOARD_ID, 'ocdports.gdb'),
@@ -90,7 +90,7 @@ const main = async function () {
         // let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
         console.log(target);
         console.log(dapSN);
-        const projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
+        let projectPath = await new Promise((resolve, reject) => resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR)));
         console.log("PROJECT PATH: %s", projectPath);
         if (BUILD_FLAG) {
             await cleanProject(projectPath, DISTCLEAN_FLAG);
