@@ -64,7 +64,7 @@ const main = async function () {
                 "!! ERROR: Improper permissions. Board could not be flashed. !!"
             );
         }
-        [targets[i], dapSN[i], gdbPort[i], tclPort[i], telnetPort[i]] = await Promise.all([
+        [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]] = await Promise.all([
             getBoardData(BOARD_IDS, 'target'),
             getBoardData(BOARD_IDS, 'dap_sn'),
             getBoardData(BOARD_IDS, 'ocdports.gdb'),
