@@ -43,8 +43,8 @@ const main = async function () {
             getBoardData(BOARD_ID, 'ocdports.telnet'),
         ]);
         await resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
-            (success) => { return procSuccess(success, 'Reset'); },
-            (error) => { return procFail(error, 'Reset', false); }
+            (success) => procSuccess(success, 'Reset'),
+            (error) => procFail(error, 'Reset', false)
         )
     } else {
         console.log("!! ERROR: Improper permissions. Board could not be reset. !!");

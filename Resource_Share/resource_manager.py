@@ -374,6 +374,43 @@ class ResourceManager:
             applicable_items.append(rname)
 
         return applicable_items
+    
+    def print_applicable_item(self, target: str = None, group: str = None) -> List[str]:
+        """Print an item that matches criteria of group and target
+
+        Parameters
+        ----------
+        target : str, optional
+            Target type, by default None
+        group : str, optional
+            Group target should be in, by default None
+
+        Returns
+        -------
+        None
+
+        """
+        applicable_items_open = []
+        applicable_items_inuse = []
+        for rname in self.resources:
+            if target is not None:
+                if self.get_item_value(f"{rname}.target") != target.upper():
+                    continue
+            if group is not None:
+                if self.get_item_value(f"{rname}.group") != group.upper():
+                    continue
+            if self.resource_in_use(rname):
+                applicable_items_inuse.append(rname)
+            else:
+                applicable_items_open.append(rname)
+
+        if applicable_items_open:
+            print(applicable_items_open[0])
+            return
+        if applicable_items_inuse:
+            print(applicable_items_inuse[0])
+            return
+        print('')
 
     def print_usage(self):
         """Pretty print the resource usage"""

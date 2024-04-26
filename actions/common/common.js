@@ -34,17 +34,15 @@ const getBoardOwner = function (boardId) {
 }
 
 const procSuccess = function(exitCode, procName) {
-    console.log('%s successful.', procName);
-    return exitCode;
+    console.log('%s successful. (%s)', procName, `${exitCode}`);
 }
 
 const procFail = function(exitCode, procName, retry) {
     if (retry) {
-        console.log('!! ERROR: %s failed. Retrying 1 time. !!', procName);
+        console.log('!! ERROR(%s): %s failed. Retrying 1 time. !!', `${exitCode}`, procName);
     } else {
-        console.log('!! ERROR: %s failed. Aborting. !!', procName);
+        console.log('!! ERROR(%s): %s failed. Aborting. !!', `${exitCode}`, procName);
     }
-    return exitCode;
 }
 
 module.exports = { getBoardData, getBoardOwner, procSuccess, procFail };

@@ -53,8 +53,8 @@ const main = async function () {
             if (HAS_TWO_FLASH_BANKS) {
                 bank = 1;
                 await eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
-                    (success) => { return procSuccess(success, 'Erase'); },
-                    (error) => { return procFail(error, 'Erase', false); }
+                    (success) => procSuccess(success, 'Erase'),
+                    (error) => procFail(error, 'Erase', false)
                 );
             }
         }

@@ -25,7 +25,10 @@ const cleanProject = function (projectPath, distclean) {
 }
 
 const makeProject = async function (projectPath, distclean) {
-    await cleanProject(projectPath, distclean)
+    await cleanProject(projectPath, distclean).then(
+        (success) => procSuccess(success, 'Clean'),
+        (error) => procFail(error, 'Clean', false)
+    );
     return new Promise((resolve, reject) => {
         const makeCmd = spawn('make', ['-j', '-C', projectPath]);
         makeCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
@@ -44,13 +47,13 @@ const makeProject = async function (projectPath, distclean) {
 }
 
 const main = async function () {
-    await cleanProject(BUILD_PATH, DISTCLEAN_FLAG).then(
-        (success) => { return procSuccess(success, 'Clean'); },
-        (error) => { return procFail(error, 'Clean', false); }
-    );
-    await makeProject(BUILD_PATH).then(
-        (success) => { return procSuccess(success, 'Build'); },
-        (error) => { return procFail(error, 'Build', false); }
+    // await cleanProject(BUILD_PATH, DISTCLEAN_FLAG).then(
+    //     (success) => { return procSuccess(success, 'Clean'); },
+    //     (error) => { return procFail(error, 'Clean', false); }
+    // );
+    await makeProject(BUILD_PATH, DISTCLEAN_FLAG).then(
+        (success) => procSuccess(success, 'Build'),
+        (error) => procFail(error, 'Build', false)
     );
 }
 
@@ -58,4 +61,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { makeProject, cleanProject };
+module.exports = { makeProject };

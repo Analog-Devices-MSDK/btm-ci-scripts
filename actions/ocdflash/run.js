@@ -4,10 +4,10 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
-const { makeProject, cleanProject } = require('../make-project/');
+const { makeProject } = require('../make-project/');
 
-const BOARD_ID = Core.getInput('board');
-const PROJECT_DIR = Core.getInput('project');
+const BOARD_IDS = Core.getMultilineInput('board');
+const PROJECT_DIRS = Core.getMultilineInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required : false });
@@ -40,32 +40,65 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
 }
 
 const main = async function () {
-    let owner = await getBoardOwner(BOARD_ID);
-    if (owner === OWNER_REF) {
-        let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
-            getBoardData(BOARD_ID, 'target'),
-            getBoardData(BOARD_ID, 'dap_sn'),
-            getBoardData(BOARD_ID, 'ocdports.gdb'),
-            getBoardData(BOARD_ID, 'ocdports.tcl'),
-            getBoardData(BOARD_ID, 'ocdports.telnet'),
-        ]);
-        let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
-        if (BUILD_FLAG) {
-            await makeProject(projectPath, DISTCLEAN_FLAG);
+    if (PROJECT_DIRS.length === 1 && BOARD_IDS.length > 1) {
+        for (let i = 0; i < BOARD_IDS.length; i++) {
+            PROJECT_DIRS[i] = PROJECT_DIRS[0];
         }
-        let elfPath = path.join(projectPath, 'build', `${target.toLowerCase()}.elf`);
-        retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
-            (success) => { return procSuccess(success, 'Flash'); },
-            (error) => { return procFail(error, 'Flash', true); }
+    } else if (PROJECT_DIRS.length !== BOARD_IDS.length) {
+        console.log("Length of projects list must be 1 or the same as length of boards list.");
+        throw new Error(
+            '!! ERROR: Mismatched parameter lengths. Board could not be flashed. !!'
         );
-        if (retCode != 0) {
-            await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
-                (success) => { return procSuccess(success, 'Flash'); },
-                (error) => { return procFail(error, 'Flash', false); }
+    }
+    const targets = [];
+    const dapSNs = [];
+    const gdbPorts = [];
+    const tclPorts = [];
+    const telnetPorts = [];
+    const elfPaths = [];
+
+    for (let i = 0; i < BOARD_IDS.length; i++) {
+        let owner = await getBoardOwner(BOARD_IDS[i]);
+        if (owner !== OWNER_REF || OWNER_REF !== '') {
+            throw new Error(
+                "!! ERROR: Improper permissions. Board could not be flashed. !!"
             );
         }
-    } else {
-        console.log("!! ERROR: Improper permissions. Board could not be flashed. !!");
+        [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]] = await Promise.all([
+            getBoardData(BOARD_IDS, 'target'),
+            getBoardData(BOARD_IDS, 'dap_sn'),
+            getBoardData(BOARD_IDS, 'ocdports.gdb'),
+            getBoardData(BOARD_IDS, 'ocdports.tcl'),
+            getBoardData(BOARD_IDS, 'ocdports.telnet'),
+        ]).catch((err) => console.error(err));
+        let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
+        elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
+        if (BUILD_FLAG) {   
+            await makeProject(projPath, DISTCLEAN_FLAG);
+        }
+    }
+    let promises = [];
+    for (let i = 0; i < BOARD_IDS.length; i++) {
+        promises[i] = flashBoard(
+            targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+        ).catch((err) => procFail(err, 'Flash', true));
+    }
+    let retCodes = await Promise.all(promises).then(
+        (values) => {
+            for (const val of values) {
+                procSuccess(val, 'Flash');
+            }
+        }
+    );
+    for (const i in retCodes) {
+        if (retCodes[i] != 0) {
+            await flashBoard(
+                targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+            ).then(
+                (success) => procSuccess(success, 'Flash'),
+                (error) => procFail(error, 'Flash', false)
+            );
+        }
     }
 }
 
