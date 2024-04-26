@@ -23,8 +23,8 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     let logOut = '';
     return new Promise((resolve, reject) => {
         const flashCmd = spawn('openocd', args);
-        flashCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
-        flashCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
+        flashCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+        flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         flashCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
