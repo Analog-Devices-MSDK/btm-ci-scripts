@@ -90,7 +90,7 @@ const main = async function () {
         // let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
         console.log(target);
         console.log(dapSN);
-        let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
+        const projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
         console.log("PROJECT PATH: %s", projectPath);
         if (BUILD_FLAG) {
             await cleanProject(projectPath, DISTCLEAN_FLAG);
