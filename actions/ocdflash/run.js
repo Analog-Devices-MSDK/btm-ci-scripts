@@ -73,9 +73,43 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
     });
 }
 
+// const main = async function () {
+//     var projectPath;
+//     let owner = await getBoardOwner(BOARD_ID);
+//     if (owner === OWNER_REF) {
+//         let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
+//             getBoardData(BOARD_ID, 'target'),
+//             getBoardData(BOARD_ID, 'dap_sn'),
+//             getBoardData(BOARD_ID, 'ocdports.gdb'),
+//             getBoardData(BOARD_ID, 'ocdports.tcl'),
+//             getBoardData(BOARD_ID, 'ocdports.telnet'),
+//         ]);
+//         console.log(target);
+//         console.log(dapSN);
+//         let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
+//         console.log("PROJECT PATH: %s", projectPath);
+//         if (BUILD_FLAG) {
+//             await cleanProject(projectPath, DISTCLEAN_FLAG);
+//             await makeProject(projectPath);
+//         }
+//         let elfPath = path.join(projectPath, 'build', `${target.toLowerCase()}.elf`);
+//         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
+//             (success) => { return procSuccess(success, 'Flash'); },
+//             (error) => { return procFail(error, 'Flash', true); }
+//         );
+//         if (retCode != 0) {
+//             await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(
+//                 (success) => { return procSuccess(success, 'Flash'); },
+//                 (error) => { return procFail(error, 'Flash', false); }
+//             );
+//         }
+//     } else {
+//         console.log("!! ERROR: Improper permissions. Board could not be flashed. !!");
+//     }
+// }
 const main = async function () {
+    var projectPath;
     let owner = await getBoardOwner(BOARD_ID);
-    
     if (owner === OWNER_REF) {
         let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
             getBoardData(BOARD_ID, 'target'),
@@ -83,10 +117,12 @@ const main = async function () {
             getBoardData(BOARD_ID, 'ocdports.gdb'),
             getBoardData(BOARD_ID, 'ocdports.tcl'),
             getBoardData(BOARD_ID, 'ocdports.telnet'),
-        ]).catch((error) => console.log(error));
+        ]).then((data) => {
+            projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
+        });
         console.log(target);
         console.log(dapSN);
-        let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
+        // let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
         console.log("PROJECT PATH: %s", projectPath);
         if (BUILD_FLAG) {
             await cleanProject(projectPath, DISTCLEAN_FLAG);
