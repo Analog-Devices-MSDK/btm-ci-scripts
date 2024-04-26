@@ -29,6 +29,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
             console.error(`ERROR: ${error.message}`);
         });
         flashCmd.on('close', code => {
+            console.log(logOut);
             console.log(`Process exited with code ${code}`);
             if (code != 0) reject(code);
             else {
