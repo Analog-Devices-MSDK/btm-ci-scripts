@@ -90,11 +90,11 @@ const main = async function () {
         // let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
         console.log(target);
         console.log(dapSN);
-        let projectPath = await new Promise((resolve, reject) => resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR)));
+        let projectPath = new Promise((resolve, reject) => resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR)));
         console.log("PROJECT PATH: %s", projectPath);
         if (BUILD_FLAG) {
-            await cleanProject(projectPath, DISTCLEAN_FLAG);
-            await makeProject(projectPath);
+            // await cleanProject(projectPath, DISTCLEAN_FLAG);
+            await makeProject(projectPath, DISTCLEAN_FLAG);
         }
         let elfPath = path.join(projectPath, 'build', `${target.toLowerCase()}.elf`);
         retCode = await flashBoard(target, elfPath, dapSN, gdbPort, tclPort, telnetPort).then(

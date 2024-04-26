@@ -24,7 +24,9 @@ const cleanProject = function (projectPath, distclean) {
     });
 }
 
-const makeProject = function (projectPath) {
+const makeProject = async function (projectPath, distclean) {
+    await projectPath;
+    await cleanProject(projectPath, distclean);
     return new Promise((resolve, reject) => {
         const makeCmd = spawn('make', ['-j', '-C', projectPath]);
         makeCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
