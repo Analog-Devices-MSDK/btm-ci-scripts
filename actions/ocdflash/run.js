@@ -65,11 +65,11 @@ const main = async function () {
             );
         }
         [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]] = await Promise.all([
-            getBoardData(BOARD_IDS, 'target'),
-            getBoardData(BOARD_IDS, 'dap_sn'),
-            getBoardData(BOARD_IDS, 'ocdports.gdb'),
-            getBoardData(BOARD_IDS, 'ocdports.tcl'),
-            getBoardData(BOARD_IDS, 'ocdports.telnet')
+            getBoardData(BOARD_IDS[i], 'target'),
+            getBoardData(BOARD_IDS[i], 'dap_sn'),
+            getBoardData(BOARD_IDS[i], 'ocdports.gdb'),
+            getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
+            getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
         // targets[i] = target;
         // dapSNs[i] = dapSN;
