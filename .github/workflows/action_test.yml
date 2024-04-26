@@ -92,10 +92,19 @@ jobs:
           lock: true
       # #----------------------------------------------------------------------------------------------
       # # Test OCDFlash action
-      - name: TestFlash
+      - name: TestFlash1Board
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
         with:
           board: max32655_board1
+          project: BLE5_ctr
+          msdk_path: ${{ github.workspace }}
+          build: true
+      - name: TestFlash2Boards1Dir
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
+        with:
+          board: |
+            max32655_board1
+            max32655_board2
           project: BLE5_ctr
           msdk_path: ${{ github.workspace }}
           build: true

@@ -13,10 +13,10 @@ const cleanProject = function (projectPath, distclean) {
         cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
         cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         cleanCmd.on('error', error => {
-            console.log(logOut);
             console.error(`ERROR: ${error.message}`);
         });
         cleanCmd.on('close', code => {
+            console.log(logOut);
             console.log(`Process exited with code ${code}`);
             if (code != 0) reject(code);
             else {
