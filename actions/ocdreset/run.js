@@ -14,14 +14,16 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
         '-c', `gdb_port ${gdb}`, '-c', `telnet_port ${telnet}`, '-c', `tcl_port ${tcl}`,
         '-c', 'init; reset; exit'
     ];
+    let logOut = '';
     return new Promise((resolve, reject) => {
         const resetCmd = spawn('openocd', args);
-        resetCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
-        resetCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
+        resetCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        resetCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         resetCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
         resetCmd.on('close', code => {
+            console.log(logOut);
             console.log(`Process exited with code ${code}`);
             if (code != 0) reject(code);
             else {

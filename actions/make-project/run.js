@@ -7,11 +7,13 @@ const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 
 const cleanProject = function (projectPath, distclean) {
     let cleanOpt = distclean ? 'distclean' : 'clean';
+    let logOut = '';
     return new Promise((resolve, reject) => {
         const cleanCmd = spawn('make', ['-C', projectPath, cleanOpt]);
-        cleanCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
-        cleanCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
+        cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         cleanCmd.on('error', error => {
+            console.log(logOut);
             console.error(`ERROR: ${error.message}`);
         });
         cleanCmd.on('close', code => {
@@ -29,14 +31,16 @@ const makeProject = async function (projectPath, distclean) {
         (success) => procSuccess(success, 'Clean'),
         (error) => procFail(error, 'Clean', false)
     );
+    let logOut = '';
     return new Promise((resolve, reject) => {
         const makeCmd = spawn('make', ['-j', '-C', projectPath]);
-        makeCmd.stdout.on('data', data => { console.log(data.toString().trim()) });
-        makeCmd.stderr.on('data', data => { console.log(data.toString().trim()) });
+        makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
         makeCmd.on('close', code => {
+            console.log(logOut);
             console.log(`Process exited with code ${code}`);
             if (code != 0) reject(code);
             else {
@@ -47,10 +51,6 @@ const makeProject = async function (projectPath, distclean) {
 }
 
 const main = async function () {
-    // await cleanProject(BUILD_PATH, DISTCLEAN_FLAG).then(
-    //     (success) => { return procSuccess(success, 'Clean'); },
-    //     (error) => { return procFail(error, 'Clean', false); }
-    // );
     await makeProject(BUILD_PATH, DISTCLEAN_FLAG).then(
         (success) => procSuccess(success, 'Build'),
         (error) => procFail(error, 'Build', false)
