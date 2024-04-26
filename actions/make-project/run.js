@@ -54,6 +54,8 @@ const main = async function () {
     );
 }
 
-main();
+if (require.main === module) {
+    main();
+}
 
 module.exports = { makeProject, cleanProject };
