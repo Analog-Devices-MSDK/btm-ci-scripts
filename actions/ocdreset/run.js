@@ -4,7 +4,7 @@ const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
-const BOARD_ID = Core.getInput('board');
+const BOARD_IDS = Core.getMultilineInput('board');
 const OWNER_REF = Github.context.ref;
 
 const resetBoard = function(target, dap, gdb, tcl, telnet) {
@@ -34,23 +34,40 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
 }
 
 const main = async function () {
-    let owner = await getBoardOwner(BOARD_ID);
-
-    if (owner === OWNER_REF) {
-        let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
-            getBoardData(BOARD_ID, 'target'),
-            getBoardData(BOARD_ID, 'dap_sn'),
-            getBoardData(BOARD_ID, 'ocdports.gdb'),
-            getBoardData(BOARD_ID, 'ocdports.tcl'),
-            getBoardData(BOARD_ID, 'ocdports.telnet'),
-        ]);
-        await resetBoard(target, dapSN, gdbPort, tclPort, telnetPort).then(
-            (success) => procSuccess(success, 'Reset'),
+    let owner = await getBoardOwner(BOARD_IDS);
+    const targets = [];
+    const dapSNs = [];
+    const gdbPorts = [];
+    const tclPorts = [];
+    const telnetPorts = [];
+    let promises = [];
+    for (let i = 0; i < BOARD_IDS.length; i++) {
+        let owner = await getBoardOwner(BOARD_IDS[i]);
+        if (owner !== OWNER_REF && owner !== undefined) {
+            throw new Error(
+                "!! ERROR: Improper permissions. Board could not be flashed. !!"
+            );
+        }
+        [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]] = await Promise.all([
+            getBoardData(BOARD_IDS[i], 'target'),
+            getBoardData(BOARD_IDS[i], 'dap_sn'),
+            getBoardData(BOARD_IDS[i], 'ocdports.gdb'),
+            getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
+            getBoardData(BOARD_IDS[i], 'ocdports.telnet')
+        ]).catch((err) => console.error(err));
+        promises[i] = resetBoard(
+            targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+        ).catch(
             (error) => procFail(error, 'Reset', false)
         )
-    } else {
-        console.log("!! ERROR: Improper permissions. Board could not be reset. !!");
     }
+    await Promise.all(promises).then(
+        (values) => {
+            for (const val of values) {
+                procSuccess(val, 'Reset');
+            }
+        }
+    );
 }
 
 main();

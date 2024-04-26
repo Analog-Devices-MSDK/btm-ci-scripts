@@ -4,8 +4,8 @@ const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
-const BOARD_ID = Core.getInput('board');
-const HAS_TWO_FLASH_BANKS = Core.getBooleanInput('has_two_flash_banks', { required: false });
+const BOARD_IDS = Core.getInput('board');
+const HAS_TWO_FLASH_BANKS = Core.getMultilineInput('has_two_flash_banks', { required: false });
 const OWNER_REF = Github.context.ref;
 
 const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
@@ -35,33 +35,59 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
 }
 
 const main = async function () {
-    let owner = await getBoardOwner(BOARD_ID);
-    if (owner === OWNER_REF) {
-        let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
-            getBoardData(BOARD_ID, 'target'),
-            getBoardData(BOARD_ID, 'dap_sn'),
-            getBoardData(BOARD_ID, 'ocdports.gdb'),
-            getBoardData(BOARD_ID, 'ocdports.tcl'),
-            getBoardData(BOARD_ID, 'ocdports.telnet'),
-        ]);
-        let bank = 0;
+    if (HAS_TWO_FLASH_BANKS.length === 1 && BOARD_IDS.length > 1) {
+        for (let i = 0; i < BOARD_IDS.length; i++) {
+            HAS_TWO_FLASH_BANKS[i] = HAS_TWO_FLASH_BANKS[0];
+        }
+    } else if (HAS_TWO_FLASH_BANKS.length !== BOARD_IDS.length) {
+        console.log("Length of projects list must be 1 or the same as length of boards list.");
+        throw new Error(
+            '!! ERROR: Mismatched parameter lengths. Board could not be flashed. !!'
+        );
+    }
+    const targets = [];
+    const dapSNs = [];
+    const gdbPorts = [];
+    const tclPorts = [];
+    const telnetPorts = [];
 
-        let retCode = await eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
-            (success) => procSuccess(success, 'Erase'),
-            (error) => procFail(error, 'Erase', false)
-        )
-        if (retCode == 0) {
-            console.log('RETURN GOOD!!');
-            if (HAS_TWO_FLASH_BANKS) {
-                bank = 1;
-                await eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
+    for (let i = 0; i < BOARD_IDS.length; i++) {
+        let owner = await getBoardOwner(BOARD_IDS[i]);
+        if (owner !== OWNER_REF && owner !== undefined) {
+            throw new Error(
+                "!! ERROR: Improper permissions. Board could not be flashed. !!"
+            );
+        }
+        [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]] = await Promise.all([
+            getBoardData(BOARD_IDS[i], 'target'),
+            getBoardData(BOARD_IDS[i], 'dap_sn'),
+            getBoardData(BOARD_IDS[i], 'ocdports.gdb'),
+            getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
+            getBoardData(BOARD_IDS[i], 'ocdports.telnet')
+        ]).catch((err) => console.error(err));
+        let promises = [];
+        for (let i = 0; i < BOARD_IDS.length; i++) {
+            promises[i] = eraseFlash(
+                targets[i], 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i]
+            ).catch((error) => procFail(error, 'Erase', false));
+        }
+        let retCodes = await Promise.all(promises).then(
+            (values) => {
+                for (const val of values) {
+                    procSuccess(val, 'Erase');
+                }
+            }
+        );
+        for (const i in retCodes) {
+            if (retCodes[i] === 0 && HAS_TWO_FLASH_BANKS[i]) {
+                await eraseFlash(
+                    targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+                ).then(
                     (success) => procSuccess(success, 'Erase'),
                     (error) => procFail(error, 'Erase', false)
                 );
             }
         }
-    } else {
-        console.log("!! ERROR: Improper permissions. Board could not be erased. !!");
     }
 }
 

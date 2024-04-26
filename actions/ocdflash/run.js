@@ -71,11 +71,6 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
-        // targets[i] = target;
-        // dapSNs[i] = dapSN;
-        // gdbPorts[i] = gdbPort;
-        // tclPorts[i] = tclPort;
-        // telnetPorts[i] = telnetPort;
         let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
