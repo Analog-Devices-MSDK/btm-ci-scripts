@@ -25,6 +25,7 @@ const cleanProject = function (projectPath, distclean) {
 }
 
 const makeProject = async function (projectPath, distclean) {
+    console.log(projectPath);
     await projectPath;
     await cleanProject(projectPath, distclean);
     return new Promise((resolve, reject) => {
