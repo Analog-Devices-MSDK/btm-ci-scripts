@@ -76,6 +76,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
     var projectPath;
+    console.log("CODE START")
     if (owner === OWNER_REF) {
         let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
             getBoardData(BOARD_ID, 'target'),
