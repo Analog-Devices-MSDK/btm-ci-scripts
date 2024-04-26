@@ -64,13 +64,18 @@ const main = async function () {
                 "!! ERROR: Improper permissions. Board could not be flashed. !!"
             );
         }
-        [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]] = await Promise.all([
+        [targets[i], dapSN[i], gdbPort[i], tclPort[i], telnetPort[i]] = await Promise.all([
             getBoardData(BOARD_IDS, 'target'),
             getBoardData(BOARD_IDS, 'dap_sn'),
             getBoardData(BOARD_IDS, 'ocdports.gdb'),
             getBoardData(BOARD_IDS, 'ocdports.tcl'),
-            getBoardData(BOARD_IDS, 'ocdports.telnet'),
+            getBoardData(BOARD_IDS, 'ocdports.telnet')
         ]).catch((err) => console.error(err));
+        // targets[i] = target;
+        // dapSNs[i] = dapSN;
+        // gdbPorts[i] = gdbPort;
+        // tclPorts[i] = tclPort;
+        // telnetPorts[i] = telnetPort;
         let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
