@@ -48,6 +48,7 @@ const main = async function () {
             (success) => procSuccess(success, 'Erase'),
             (error) => procFail(error, 'Erase', false)
         )
+        console.log(retCode);
         if (retCode == 0) {
             if (HAS_TWO_FLASH_BANKS) {
                 bank = 1;
