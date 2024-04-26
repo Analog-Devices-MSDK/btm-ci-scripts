@@ -111,14 +111,15 @@ const main = async function () {
     var projectPath;
     let owner = await getBoardOwner(BOARD_ID);
     if (owner === OWNER_REF) {
-        let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
+        let [target, dapSN, gdbPort, tclPort, telnetPort] = Promise.all([
             getBoardData(BOARD_ID, 'target'),
             getBoardData(BOARD_ID, 'dap_sn'),
             getBoardData(BOARD_ID, 'ocdports.gdb'),
             getBoardData(BOARD_ID, 'ocdports.tcl'),
             getBoardData(BOARD_ID, 'ocdports.telnet'),
         ]).then((data) => {
-            projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
+            projectPath = path.join(MSDK_PATH, 'Examples', data[0], 'Bluetooth', PROJECT_DIR);
+            return data;
         });
         console.log(target);
         console.log(dapSN);
