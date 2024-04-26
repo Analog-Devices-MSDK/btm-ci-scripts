@@ -90,7 +90,7 @@ const main = async function () {
         // let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
         // let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         // let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
-        projectPath = resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR));
+        projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
         console.log(target);
         console.log(dapSN);
         if (BUILD_FLAG) {
