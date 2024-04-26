@@ -84,7 +84,7 @@ const main = async function () {
             getBoardData(BOARD_ID, 'ocdports.tcl'),
             getBoardData(BOARD_ID, 'ocdports.telnet'),
         ]).catch((error) => console.log(error));
-        let projectPath = path.join(MSDK_PATH, 'Examples', await target, 'Bluetooth', PROJECT_DIR);
+        let projectPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR);
         console.log("PROJECT PATH: %s", projectPath);
         if (BUILD_FLAG) {
             await cleanProject(projectPath, DISTCLEAN_FLAG);
