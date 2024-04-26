@@ -45,8 +45,8 @@ const main = async function () {
         let bank = 0;
 
         let retCode = await eraseFlash(target, bank, dapSN, gdbPort, tclPort, telnetPort).then(
-            (success) => { return procSuccess(success, 'Erase'); },
-            (error) => { return procFail(error, 'Erase', false); }
+            (success) => procSuccess(success, 'Erase'),
+            (error) => procFail(error, 'Erase', false)
         )
         if (retCode == 0) {
             if (HAS_TWO_FLASH_BANKS) {
