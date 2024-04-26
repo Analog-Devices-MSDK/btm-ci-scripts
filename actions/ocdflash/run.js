@@ -76,7 +76,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
 const main = async function () {
     let owner = await getBoardOwner(BOARD_ID);
     var projectPath;
-    console.log("CODE START")
+    console.log("CODE START");
     if (owner === OWNER_REF) {
         let [target, dapSN, gdbPort, tclPort, telnetPort] = await Promise.all([
             getBoardData(BOARD_ID, 'target'),
@@ -90,18 +90,13 @@ const main = async function () {
         // let gdbPort = await getBoardData(BOARD_ID, 'ocdports.gdb');
         // let tclPort = await getBoardData(BOARD_ID, 'ocdports.tcl');
         // let telnetPort = await getBoardData(BOARD_ID, 'ocdports.telnet');
+        projectPath = resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR));
         console.log(target);
         console.log(dapSN);
         if (BUILD_FLAG) {
-            projectPath = new Promise((resolve, reject) => {
-                resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR));
-            }).then(
-                (projPath) => makeProject(projPath, DISTCLEAN_FLAG),
-                (err) => console.log(err)
-            );
             console.log("PROJECT PATH: %s", projectPath);
             // await cleanProject(projectPath, DISTCLEAN_FLAG);
-            // await makeProject(projectPath, DISTCLEAN_FLAG);
+            await makeProject(projectPath, DISTCLEAN_FLAG);
         } else {
             projectPath = new Promise((resolve, reject) => {
                 resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR));
