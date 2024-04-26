@@ -95,7 +95,7 @@ const main = async function () {
             projectPath = new Promise((resolve, reject) => {
                 resolve(path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', PROJECT_DIR));
             }).then(
-                (projPath) => makeProject(projectPath, DISTCLEAN_FLAG),
+                (projPath) => makeProject(projPath, DISTCLEAN_FLAG),
                 (err) => console.log(err)
             );
             console.log("PROJECT PATH: %s", projectPath);
