@@ -9,12 +9,13 @@ const getBoardData = async function (boardId, itemName) {
         scriptPath: env.RESOURCE_SHARE_DIR,
         args: ['-g', `${boardId}.${itemName}`]
     };
-    return await new Promise((resolve, reject) => {
+    let item = await new Promise((resolve, reject) => {
         PythonShell.run('resource_manager.py', options).then(
             (item) => { console.log('%s --> %s', itemName, item[0]); resolve(item[0]); },
             (error) => reject(error)
         );
     });
+    return item
 }
 
 const getBoardOwner = async function (boardId) {
