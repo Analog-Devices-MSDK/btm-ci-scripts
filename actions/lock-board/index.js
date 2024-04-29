@@ -12,7 +12,7 @@ const main = async function() {
     let mode = LOCK_FLAG ? '-l' : '-u'
     let pyArgs = [
         mode,
-        BOARD_IDS.join(" "),
+        ...BOARD_IDS,
         '--owner', OWNER_REF,
         '--timeout', TIMEOUT
     ]
