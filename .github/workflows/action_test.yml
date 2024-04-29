@@ -27,25 +27,6 @@ concurrency:
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
-  #   branches: ["main"]
-  #   types: [opened, reopened, synchronize, ready_for_review] # When to run the workflow on PR
-
-  #   paths-ignore:
-  #     # Any files in a docs directory anywhere in the repository.
-  #     - "**/docs/**"
-  #     - "**/Documentation/**"
-  #     # Any README.md file anywhere in the repository.
-  #     - "**/README.md"
-  #     # Any .pdf file anywhere in the repository.
-  #     - "**/*.pdf"
-  #     # Any .yml file anywhere in the repository.
-  #     # can comment this out when testing changes to THIS yml file
-  #     - "**/*.yml"
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 env:
@@ -71,59 +52,50 @@ jobs:
     steps:
       #----------------------------------------------------------------------------------------------
       # Checks out repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: false
           repository: analogdevicesinc/msdk
           ref: main
-      # #----------------------------------------------------------------------------------------------
-      # # Test enviornment variables.
-      # - name: TestEnv
-      #   run: | 
-      #       echo $CI_BOARD_CONFIG
+      #----------------------------------------------------------------------------------------------
+      # Test enviornment variables.
+      - name: TestEnv
+        run: | 
+            echo $CI_BOARD_CONFIG
 
-      #       printenv
-      # #----------------------------------------------------------------------------------------------
-      # # Test lockBoard --> lock action
+            printenv
+      #----------------------------------------------------------------------------------------------
+      # Test lockBoard --> lock action
       - name: TestLock
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
         with:
-          boards: max32655_board1
+          boards: |
+            max32655_board1
           lock: true
       # #----------------------------------------------------------------------------------------------
-      # # Test OCDFlash action
-      # - name: TestFlash1Board
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
-      #   with:
-      #     board: max32655_board1
-      #     project: BLE5_ctr
-      #     msdk_path: ${{ github.workspace }}
-      #     build: true
-      # - name: TestFlash2Boards1Dir
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
-      #   with:
-      #     board: |
-      #       max32655_board1
-      #       max32655_board2
-      #     project: BLE5_ctr
-      #     msdk_path: ${{ github.workspace }}
-      #     build: true
+      # Test OCDFlash action
+      - name: TestFlash
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
+        with:
+          board: |
+            max32655_board1
+          project: BLE5_ctr
+          msdk_path: ${{ github.workspace }}
+          build: true
       # # #----------------------------------------------------------------------------------------------
-      # # Test OCDReset action
-      # - name: TestReset2Boards
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
-      #   with:
-      #     board: |
-      #       max32655_board1
-      #       max32655_board2
+      # Test OCDReset action
+      - name: TestReset
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
+        with:
+          board: |
+            max32655_board1
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
-      - name: TestErase2Boards
+      - name: TestErase
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@action-testing
         with:
           board: |
             max32655_board1
-            max32655_board2
           has_two_flash_banks: false
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> unlock action
@@ -131,5 +103,6 @@ jobs:
         if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
         with:
-          boards: max32655_board1
+          boards: |
+            max32655_board1
           lock: false
