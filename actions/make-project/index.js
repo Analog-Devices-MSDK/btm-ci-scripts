@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const { procSuccess, procFail } = require('../common');
 
 const BUILD_PATH = Core.getInput('path');
-const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
+
 
 const cleanProject = function (projectPath, distclean) {
     let cleanOpt = distclean ? 'distclean' : 'clean';
@@ -51,6 +51,7 @@ const makeProject = async function (projectPath, distclean) {
 }
 
 const main = async function () {
+    const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
     await makeProject(BUILD_PATH, DISTCLEAN_FLAG).then(
         (success) => procSuccess(success, 'Build'),
         (error) => procFail(error, 'Build', false)
