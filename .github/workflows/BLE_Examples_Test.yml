@@ -614,7 +614,7 @@ jobs:
     #----------------------------------------------------------------------------------------------
 
       - name: Lock Boards
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           boards: |
             max32655_board1
@@ -667,7 +667,7 @@ jobs:
 
 
       - name: Unlock Boards
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           boards: |
             max32655_board1
