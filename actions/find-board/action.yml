@@ -1,0 +1,19 @@
+name: findBoard
+description: 'Find boards matching the given criteria'
+inputs:
+  target:
+    description: 'Desired part number.'
+    required: true
+  group:
+    description: 'Desired test group, either RFPHY or APP.'
+    required: true
+  num_boards:
+    description: 'When criteria for multiple boards is the same, indicate how many to fetch.'
+    required: false
+    default: '1'
+outputs:
+  board_ids:
+    description: 'Space separated list of board IDs'
+runs:
+  using: 'node20'
+  main: 'index.js'

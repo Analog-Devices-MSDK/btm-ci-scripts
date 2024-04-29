@@ -8,6 +8,10 @@ inputs:
     description: 'Lock boards?'
     required: false
     default: 'true'
+  timeout:
+    description: 'Lock timeout'
+    required: false
+    default: '1800'
 runs:
   using: 'node20'
-  main: 'run.js'
+  main: 'index.js'

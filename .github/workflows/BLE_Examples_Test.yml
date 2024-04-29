@@ -609,12 +609,8 @@ jobs:
             echo "no tests enabled, NOT locking anything at this step"
           fi
 
-    #----------------------------------------------------------------------------------------------
-    #------------------------------| Lock all required boards at once |-----------------------------
-    #----------------------------------------------------------------------------------------------
-
       - name: Lock Boards
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           boards: |
             max32655_board1
@@ -622,9 +618,48 @@ jobs:
             max32665_board1
             max32690_board_w1
           lock: true
-          timeout: 3600
+          # timeout: 3600
 
-    
+      - name: OTAS MAX32655
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/otas-test@main
+        with: 
+          board_client: max32655_board1
+          board_server: max32655_board1
+          msdk_path: ${{ github.workspace }}
+
+      - name: OTAS MAX32665
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/otas-test@main
+        with:
+          board_client: max32665_board1
+          board_server: max32655_board1
+          msdk_path: ${{ github.workspace }}
+        
+      - name: OTAS MAX32690
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/otas-test@main
+        with:
+          board_client: max32690_board_w1
+          board_server: max32655_board1
+          msdk_path: ${{ github.workspace }}
+
+      - name: DATS MAX32655
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/datsc-test@main
+        with:
+          board_client: max32655_board1
+          board_server: max32655_board1
+          
+        
+      - name: DATS MAX32665
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/datsc-test@main
+        with:
+          board_client: max32665_board1
+          board_server: max32655_board1
+        
+      - name: DATS MAX32690
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/datsc-test@main
+        with:
+          board_client: max32690_board_w1
+          board_server: max32655_board1
+
       #----------------------------------------------------------------------------------------------
       #----------------------------------------------------------------------------------------------
       #------------------------------| Erase & Unlock all required boards at once |------------------
@@ -635,10 +670,18 @@ jobs:
           git clean -ffdx
           git reset --hard
 
-
-
+      - name: Erase Boards
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
+        with:
+          boards: |
+            max32655_board1
+            max32655_board2
+            max32665_board1
+            max32690_board_w1
+          
       - name: Unlock Boards
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.0
+        if: always()
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           boards: |
             max32655_board1
@@ -646,7 +689,7 @@ jobs:
             max32665_board1
             max32690_board_w1
           lock: false
-          timeout: 3600
+
 
       #----------------------------------------------------------------------------------------------
       # Save test reports

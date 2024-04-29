@@ -17,14 +17,25 @@ function ocdflash() {
         printf "usage: flash BOARDNAME ELFFILE\n"
         printf "\tBOARDNAME => board to flash, names defined in boards_config.json.\n"
         printf "\tELFFILE   => path to the elf file to flash onto board.\n"
+        printf "\tOwner   => Optional name of owner who created lockfile.\n"
+
         return 0
     fi
-    if [[ $# -ne 2 ]]; then
+    # Need at least the name of thre resource 
+    if [[ $# -lt 2 ]]; then
         echo "Improper use! Expected: 2 arguments, Received: $#" 
         return -1
     fi
     name=$1
     elfFile=$2
+    owner=$3
+    current_owner=$(resource_manager.py --get-owner $name)
+
+    if [[ -n $current_owner && $owner != $current_owner ]]; then
+        echo Owner $owner does not match current owner $current_owner
+        echo Refusing to flash!
+        return -1
+    fi
 
     target=$(resource_manager.py -g $name.target)
     dapsn=$(resource_manager.py -g $name.dap_sn)
@@ -54,15 +65,23 @@ function ocderase() {
         printf "==========================\n"
         printf "usage: erase BOARDNAME\n"
         printf "\tBOARDNAME => board to erase, names defined in boards_config.json.\n"
+        printf "\tOwner   => Optional name of owner who created lockfile.\n"
         return 0
     fi
-    if [[ $# -ne 1 ]]; then
+    if [[ $# -lt 1 ]]; then
         echo "Improper use! Expected: 1 argument, Received: $#"
         return -1
     fi
 
     name=$1
+    owner=$2
+    current_owner=$(resource_manager.py --get-owner $name)
 
+    if [[ -n $current_owner && $owner != $current_owner ]]; then
+        echo Owner $owner does not match current owner $current_owner
+        echo Refusing to erase!
+        return -1
+    fi
 
 
     target=$(resource_manager.py -g $name.target)
@@ -94,14 +113,23 @@ function ocdreset() {
         printf "==========================\n"
         printf "usage: erase BOARDNAME\n"
         printf "\tBOARDNAME => board to reset, names defined in boards_config.json.\n"
+        printf "\tOwner   => Optional name of owner who created lockfile.\n"
         return 0
     fi
-    if [[ $# -ne 1 ]]; then
+    if [[ $# -lt 1 ]]; then
         echo "Improper use! Expected: 1 argument, Received: $#"
+        return -1
     fi
 
     name=$1
+    owner=$2
+    current_owner=$(resource_manager.py --get-owner $name)
 
+    if [[ -n $current_owner && $owner != $current_owner ]]; then
+        echo Owner $owner does not match current owner $current_owner
+        echo Refusing to reset!
+        return -1
+    fi
 
     target=$(resource_manager.py -g $name.target)
     dapsn=$(resource_manager.py -g $name.dap_sn)
@@ -124,13 +152,23 @@ function ocdopen() {
         printf "==========================\n"
         printf "usage: erase BOARDNAME\n"
         printf "\tBOARDNAME => board to reset, names defined in boards_config.json.\n"
+        printf "\tOwner   => Optional name of owner who created lockfile.\n"
         return 0
     fi
-    if [[ $# -ne 1 ]]; then
-        echo "Improper use! Expected: 1 argument, Received: $#"
+    if [[ $# -lt 1 ]]; then
+        echo "Improper use! Expected: at least 1 argument, Received: $#"
+        return -1
     fi
 
     name=$1
+    owner=$2
+    current_owner=$(resource_manager.py --get-owner $name)
+
+    if [[ -n $current_owner && $owner != $current_owner ]]; then
+        echo Owner $owner does not match current owner $current_owner
+        return -1
+    fi
+
 
 
     target=$(resource_manager.py -g $name.target)

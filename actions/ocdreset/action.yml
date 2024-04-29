@@ -1,9 +1,9 @@
 name: OCDReset
-description: 'Mass erase a board using OpenOCD'
+description: 'reset a board using OpenOCD'
 inputs:
   board:
-    description: 'ID of the board to erase'
+    description: 'ID of the board to reset'
     required: true
 runs:
   using: 'node20'
-  main: 'run.js'
+  main: 'index.js'
