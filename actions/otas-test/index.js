@@ -23,8 +23,10 @@ const runOtasTest = function (targetServer, targetClient, elfServer, elfClient) 
         pyshell.end((err, code, signal) => {
             console.log('Process exited with code ' + code);
             console.log('The exit signal was: ' + signal);
-            if (err) reject(code);
-            else {
+            if (err) {
+                console.log(err)
+                reject(code);
+            } else {
                 resolve(code);
             }
         });
