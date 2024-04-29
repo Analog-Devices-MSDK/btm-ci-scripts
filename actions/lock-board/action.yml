@@ -14,4 +14,4 @@ inputs:
     default: '1800'
 runs:
   using: 'node20'
-  main: 'run.js'
+  main: 'index.js'

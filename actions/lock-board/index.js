@@ -8,7 +8,7 @@ const LOCK_FLAG = Core.getBooleanInput('lock', {required: false});
 const TIMEOUT = Core.getInput('timeout', {required: false });
 const OWNER_REF = Github.context.ref;
 
-const main = async function () {
+const main = async function() {
     let mode = LOCK_FLAG ? '-l' : '-u'
     let pyArgs = [
         `${mode}`,
