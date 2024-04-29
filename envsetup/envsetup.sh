@@ -1,6 +1,18 @@
 #!/bin/bash
 # MUST RUN AS SUDO!
 
+is_not_running_as_root() {
+    [[ $EUID -ne 0 ]]
+}
+
+if is_not_running_as_root; then
+    echo "Script must be ran using sudo!"
+    exit -1
+fi
+
+
+source /home/btm-ci/.bashrc
+
 env="LANG=en_US.UTF-16"
 printf '%s\n' \
     $env \
@@ -12,10 +24,9 @@ printf '%s\n' \
 
 for i in {0..3}; do
 cp .env /home/btm-ci/Workspace/btm-ci-github-runner$i
-cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh stop
-cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh start
+(cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh stop)
+(cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh start)
+pwd
 done
-
-
 
 rm .env
