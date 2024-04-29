@@ -639,7 +639,6 @@ jobs:
           board_server: max32655_board1
 
       - name: DATS MAX32655
-        if:  MAX32655_DATS_CONNECTED_TEST == "true"
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/datsc-test@main
         with:
           board_client: max32655_board1
@@ -652,7 +651,6 @@ jobs:
           board_server: max32655_board1
         
       - name: DATS MAX32690
-        if: MAX32690_DATS_CONNECTED_TEST == "true"
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/datsc-test@main
         with:
           board_client: max32690_board_w1
