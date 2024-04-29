@@ -1,14 +1,22 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
-const { PythonShell } = require('python-shell');
-const { spawn } = require('child_process');
-const { env } = require('node:process');
+const {
+    PythonShell
+} = require('python-shell');
+const {
+    spawn
+} = require('child_process');
+const {
+    env
+} = require('node:process');
 
 const BOARD_ID = Core.getInput('board');
-const HAS_TWO_FLASH_BANKS = Core.getBooleanInput('has_two_flash_banks', { required: false });
+const HAS_TWO_FLASH_BANKS = Core.getBooleanInput('has_two_flash_banks', {
+    required: false
+});
 const OWNER_REF = Github.context.ref;
 
-const getBoardData = function (boardId, itemName) {
+const getBoardData = function(boardId, itemName) {
     let options = {
         mode: 'text',
         pythonPath: 'python3',
@@ -17,7 +25,7 @@ const getBoardData = function (boardId, itemName) {
         args: [`-g ${boardId}.${itemName}`]
     };
     return new Promise((reject, resolve) => {
-        PythonShell.run('resource_manager.py', options, function (err, results) {
+        PythonShell.run('resource_manager.py', options, function(err, results) {
             if (err) reject(err);
             else {
                 console.log('%s --> %s', itemName, results[0]);
@@ -27,7 +35,7 @@ const getBoardData = function (boardId, itemName) {
     });
 }
 
-const getBoardOwner = function (boardId) {
+const getBoardOwner = function(boardId) {
     let options = {
         mode: 'text',
         pythonPath: 'python3',
@@ -36,7 +44,7 @@ const getBoardOwner = function (boardId) {
         args: [`--get-owner ${boardId}`]
     };
     return new Promise((reject, resolve) => {
-        PythonShell.run('resource_manager.py', options, function (err, results) {
+        PythonShell.run('resource_manager.py', options, function(err, results) {
             if (err) reject(err);
             else {
                 console.log('owner --> %s', results[0]);
@@ -55,8 +63,12 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     ];
     return new Promise((reject, resolve) => {
         const eraseCmd = spawn('openocd', args);
-        eraseCmd.stdout.on('data', data => { console.log(data) });
-        eraseCmd.stderr.on('data', data => { console.log(data) });
+        eraseCmd.stdout.on('data', data => {
+            console.log(data)
+        });
+        eraseCmd.stderr.on('data', data => {
+            console.log(data)
+        });
         eraseCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
@@ -70,16 +82,16 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
     });
 }
 
-const eraseSuccessful = function (val) {
-     console.log('Erase successful.');
-     return val;
+const eraseSuccessful = function(val) {
+    console.log('Erase successful.');
+    return val;
 }
-const eraseAborted = function (val) {
+const eraseAborted = function(val) {
     console.log('!! ERROR: Erase failed. Aborting. !!');
     return val;
 }
 
-const main = async function () {
+const main = async function() {
     let owner = await getBoardOwner(BOARD_ID);
 
     if (owner === OWNER_REF) {

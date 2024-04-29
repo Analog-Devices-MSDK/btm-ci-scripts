@@ -1,13 +1,19 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
-const { PythonShell } = require('python-shell');
-const { spawn } = require('child_process');
-const { env } = require('node:process');
+const {
+    PythonShell
+} = require('python-shell');
+const {
+    spawn
+} = require('child_process');
+const {
+    env
+} = require('node:process');
 
 const BOARD_ID = Core.getInput('board');
 const OWNER_REF = Github.context.ref;
 
-const getBoardData = function (boardId, itemName) {
+const getBoardData = function(boardId, itemName) {
     let options = {
         mode: 'text',
         pythonPath: 'python3',
@@ -16,7 +22,7 @@ const getBoardData = function (boardId, itemName) {
         args: [`-g ${boardId}.${itemName}`]
     };
     return new Promise((reject, resolve) => {
-        PythonShell.run('resource_managet.py', options, function (err, results) {
+        PythonShell.run('resource_managet.py', options, function(err, results) {
             if (err) reject(err);
             else {
                 console.log('%s --> %s', itemName, results[0]);
@@ -26,7 +32,7 @@ const getBoardData = function (boardId, itemName) {
     });
 }
 
-const getBoardOwner = function (boardId) {
+const getBoardOwner = function(boardId) {
     let options = {
         mode: 'text',
         pythonPath: 'python3',
@@ -54,8 +60,12 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
     ];
     return new Promise((reject, resolve) => {
         const resetCmd = spawn('openocd', args);
-        resetCmd.stdout.on('data', data => { console.log(data) });
-        resetCmd.stderr.on('data', data => { console.log(data) });
+        resetCmd.stdout.on('data', data => {
+            console.log(data)
+        });
+        resetCmd.stderr.on('data', data => {
+            console.log(data)
+        });
         resetCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
@@ -69,16 +79,16 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
     });
 }
 
-const resetSuccessful = function (val) {
+const resetSuccessful = function(val) {
     console.log('Reset successful.');
     return val;
 }
-const resetAborted = function (val) {
+const resetAborted = function(val) {
     console.log('!! ERROR: Reset failed. Aborting. !!');
     return val;
 }
 
-const main = async function () {
+const main = async function() {
     let owner = await getBoardOwner(BOARD_ID);
 
     if (owner === OWNER_REF) {

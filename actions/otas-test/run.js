@@ -1,6 +1,10 @@
 const Core = require('@actions/core');
-const { PythonShell } = require('python-shell');
-const { spawn } = require('child_process');
+const {
+    PythonShell
+} = require('python-shell');
+const {
+    spawn
+} = require('child_process');
 const path = require('path');
 
 const BOARD_CLIENT = Core.getInput('board_client');
@@ -9,7 +13,7 @@ const MSDK_PATH = Core.getInput('msdk_path');
 const SERVER = 10;
 const CLIENT = 20;
 
-const getTarget = function (boardId) {
+const getTarget = function(boardId) {
     let options = {
         mode: 'text',
         pythonPath: 'python3',
@@ -18,7 +22,7 @@ const getTarget = function (boardId) {
         args: [`-g ${boardId}.target`]
     };
     return new Promise((reject, resolve) => {
-        PythonShell.run('resource_manager.py', options, function (err, results) {
+        PythonShell.run('resource_manager.py', options, function(err, results) {
             if (err) reject(err);
             else {
                 console.log('target --> %s', results[0]);
@@ -28,13 +32,17 @@ const getTarget = function (boardId) {
     });
 }
 
-const makeProject = function (target, role) {
+const makeProject = function(target, role) {
     let project = (role === SERVER) ? 'BLE_otas' : 'BLE_otac';
     let fullPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', project);
     return new Promise((reject, resolve) => {
         const makeCmd = spawn('make', ['-j', fullPath]);
-        makeCmd.stdout.on('data', data => { console.log(data) });
-        makeCmd.stderr.on('data', data => { console.log(data) });
+        makeCmd.stdout.on('data', data => {
+            console.log(data)
+        });
+        makeCmd.stderr.on('data', data => {
+            console.log(data)
+        });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
             reject(error);
@@ -47,7 +55,7 @@ const makeProject = function (target, role) {
     });
 }
 
-const main = async function () {
+const main = async function() {
     let targetServer = await getTarget(BOARD_SERVER);
     let targetClient = await getTarget(BOARD_CLIENT);
 
@@ -62,8 +70,10 @@ const main = async function () {
         args: [targetServer, targetClient, elfServer, elfClient]
     };
     let otasTest = new PythonShell('otas_connected.py', options);
-    otasTest.on('message', function (message) { console.log(message) });
-    otasTest.end(function (err) {
+    otasTest.on('message', function(message) {
+        console.log(message)
+    });
+    otasTest.end(function(err) {
         if (err) throw err;
         console.log('Test finished.')
     });

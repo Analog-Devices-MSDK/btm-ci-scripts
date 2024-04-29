@@ -1,6 +1,10 @@
 const Core = require('@actions/core');
-const {PythonShell} = require('python-shell');
-const { spawn } = require('child_process');
+const {
+    PythonShell
+} = require('python-shell');
+const {
+    spawn
+} = require('child_process');
 const path = require('path');
 
 const BOARD_CLIENT = Core.getInput('board_client');
@@ -33,8 +37,12 @@ const makeProject = function (target, role) {
     let fullPath = path.join(MSDK_PATH, 'Examples', target, 'Bluetooth', project);
     return new Promise((reject, resolve) => {
         const makeCmd = spawn('make', ['-j', fullPath]);
-        makeCmd.stdout.on('data', data => { console.log(data) });
-        makeCmd.stderr.on('data', data => { console.log(data) });
+        makeCmd.stdout.on('data', data => {
+            console.log(data)
+        });
+        makeCmd.stderr.on('data', data => {
+            console.log(data)
+        });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
         });
@@ -62,7 +70,9 @@ const main = async function () {
         args: [targetServer, targetClient, elfServer, elfClient]
     };
     let datscTest = new PythonShell('datsc_connected.py', options);
-    datscTest.on('message', function (message) { console.log(message) });
+    datscTest.on('message', function (message) {
+        console.log(message)
+    });
     datscTest.end(function (err) {
         if (err) throw err;
         console.log('Test finished.')
