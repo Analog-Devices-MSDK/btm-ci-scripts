@@ -65,6 +65,7 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
+        console.log(targets[i])
         let promises = [];
         for (let i = 0; i < BOARD_IDS.length; i++) {
             promises[i] = eraseFlash(
