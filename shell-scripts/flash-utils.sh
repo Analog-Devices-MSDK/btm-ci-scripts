@@ -98,6 +98,7 @@ function ocdreset() {
     fi
     if [[ $# -ne 1 ]]; then
         echo "Improper use! Expected: 1 argument, Received: $#"
+        return -1
     fi
 
     name=$1
@@ -128,6 +129,7 @@ function ocdopen() {
     fi
     if [[ $# -ne 1 ]]; then
         echo "Improper use! Expected: 1 argument, Received: $#"
+        return -1
     fi
 
     name=$1
