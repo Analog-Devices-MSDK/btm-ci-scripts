@@ -20,6 +20,8 @@ printf '%s\n' \
     "RESOURCE_LOCK_DIR=$RESOURCE_LOCK_DIR" \
     "RESOURCE_SHARE_DIR=$RESOURCE_SHARE_DIR" \
     "OPENOCD_PATH=$OPENOCD_PATH" \
+    "TEST_DIR=$TEST_DIR" \
+
     > .env
 
 for i in {0..3}; do
