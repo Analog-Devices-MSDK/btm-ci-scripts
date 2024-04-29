@@ -65,29 +65,28 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
-        console.log(targets[i])
-        let promises = [];
-        for (let i = 0; i < BOARD_IDS.length; i++) {
-            promises[i] = eraseFlash(
-                targets[i], 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i]
-            ).catch((error) => procFail(error, 'Erase', false));
+    }
+    let promises = [];
+    for (let i = 0; i < BOARD_IDS.length; i++) {
+        promises[i] = eraseFlash(
+            targets[i], 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i]
+        ).catch((error) => procFail(error, 'Erase', false));
+    }
+    let retCodes = await Promise.all(promises).then(
+        (values) => {
+            for (const val of values) {
+                procSuccess(val, 'Erase');
+            }
         }
-        let retCodes = await Promise.all(promises).then(
-            (values) => {
-                for (const val of values) {
-                    procSuccess(val, 'Erase');
-                }
-            }
-        );
-        for (const i in retCodes) {
-            if (retCodes[i] === 0 && HAS_TWO_FLASH_BANKS[i]) {
-                await eraseFlash(
-                    targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
-                ).then(
-                    (success) => procSuccess(success, 'Erase'),
-                    (error) => procFail(error, 'Erase', false)
-                );
-            }
+    );
+    for (const i in retCodes) {
+        if (retCodes[i] === 0 && HAS_TWO_FLASH_BANKS[i]) {
+            await eraseFlash(
+                targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+            ).then(
+                (success) => procSuccess(success, 'Erase'),
+                (error) => procFail(error, 'Erase', false)
+            );
         }
     }
 }
