@@ -394,7 +394,7 @@ class ResourceManager:
 
         return applicable_items
     
-    def print_applicable_item(self, target: str = None, group: str = None) -> List[str]:
+    def print_applicable_items(self, target: str = None, group: str = None) -> List[str]:
         """Print an item that matches criteria of group and target
 
         Parameters
@@ -422,12 +422,11 @@ class ResourceManager:
                 applicable_items_inuse.append(rname)
             else:
                 applicable_items_open.append(rname)
-
-        if applicable_items_open:
-            print(applicable_items_open[0])
-            return
-        if applicable_items_inuse:
-            print(applicable_items_inuse[0])
+        applicable_items = []
+        applicable_items.extend(applicable_items_open)
+        applicable_items.extend(applicable_items_inuse)
+        if applicable_items:
+            print(" ".join(applicable_items))
             return
         print('')
 
@@ -613,6 +612,13 @@ if __name__ == "__main__":
         "--version",
         action="store_true",
         help="Delete all locks and erase all boards with a programmable feature",
+    )
+    parser.add_argument(
+        "-f",
+        "--find-board",
+        nargs=2,
+        default=["", ""],
+        help="Find a board which matches the criteria TARGET GROUP",
     )
     args = parser.parse_args()
 
