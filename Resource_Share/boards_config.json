@@ -15,7 +15,7 @@
             "tcl"    : null,
             "telnet" : null
         },
-        "lockfile"     : "max32570_board0.txt",
+        
         "dbbfile"      : null
     },
 
@@ -35,7 +35,7 @@
             "tcl"    : "4550",
             "telnet" : "6550"
         },
-        "lockfile"     : "max32655_board1.txt",
+     
         "dbbfile"      : "max32655_board1_dbb.json"
     },
 
@@ -55,7 +55,7 @@
             "tcl"    : "4551",
             "telnet" : "6551"
         },
-        "lockfile"     : "max32655_board2.txt",
+        
         "dbbfile"      : "max32655_board2.json"
     },
 
@@ -75,7 +75,6 @@
             "tcl"    : "4552",
             "telnet" : "6552"
         },
-        "lockfile"     : "max32655_board_2.txt",
         "dbbfile"      : "max32655_board_2.json"
     },
 
@@ -95,7 +94,6 @@
             "tcl"    : "4554",
             "telnet" : "6554"
         },
-        "lockfile"     : "max32655_board_mban.txt",
         "dbbfile"      : null
     },
 
@@ -135,7 +133,6 @@
             "tcl"    : "4650",
             "telnet" : "6650"
         },
-        "lockfile"     : "max32665_board1.txt",
         "dbbfile"      : "max32665_board1.json"
     },
 
@@ -155,7 +152,6 @@
             "tcl"    : "4651",
             "telnet" : "6651"
         },
-        "lockfile"     : "max32665_board_w3.txt",
         "dbbfile"      : "max32665_board_w3.json"
     },
 
@@ -175,7 +171,6 @@
             "tcl"    : "4652",
             "telnet" : "6652"
         },
-        "lockfile"     : "max32665_board_w4.txt",
         "dbbfile"      : "max32665_board_w4.json"
     },
 
@@ -195,7 +190,6 @@
             "tcl"    : "4900",
             "telnet" : "6900"
         },
-        "lockfile"     : "max32690_board_w1.txt",
         "dbbfile"      : "max32690_board_w1.json"
     },
 
@@ -215,7 +209,6 @@
             "tcl"    : "4902",
             "telnet" : "6902"
         },
-        "lockfile"     : "max32690_board_w2.txt",
         "dbbfile"      : "max32690_board_w2.json"
     },
 
@@ -235,7 +228,6 @@
             "tcl"    : "4903",
             "telnet" : "6903"
         },
-        "lockfile"     : "max32690_board_A1.txt",
         "dbbfile"      : "max32690_board_A1.json"
     },
 
@@ -255,7 +247,7 @@
             "tcl"    : null,
             "telnet" : null
         },
-        "lockfile"     : "nRF52840_1.txt",
+        
         "dbbfile"      : null
     },
 
@@ -275,7 +267,7 @@
             "tcl"    : null,
             "telnet" : null
         },
-        "lockfile"     : "nRF52840_4.txt",
+        
         "dbbfile"      : null
     },
 
@@ -295,7 +287,7 @@
             "tcl"    : null,
             "telnet" : null
         },
-        "lockfile"     : "rsl15_1.txt",
+        
         "dbbfile"      : null
     },
 
@@ -304,15 +296,15 @@
         "target"       : null,
         "group"        : "RFPHY",
         "sw_model"     : "USB-1SP8T-63H",
-        "sw_state"     : "1",
-        "lockfile"     : "RS_SA.txt"
+        "sw_state"     : "1"
+        
     },
 
     "minicircuits_rf_switch" : {
         "desc"         : "one lock file is enough for the two switches",
         "target"       : null,
-        "group"        : "RFPHY",
-        "lockfile"     : "minicircuits_rf_switch.txt"
+        "group"        : "RFPHY"
+        
     }
 
 }

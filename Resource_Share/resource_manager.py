@@ -55,7 +55,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from typing import Set, List, Dict
+from typing import Dict, List, Set
 
 # pylint: disable=import-error
 from tabulate import tabulate
@@ -66,24 +66,36 @@ from tabulate import tabulate
 class ResourceManager:
     """BTM-CI Resource Manager"""
 
+    ENV_RESOURCE_LOCK_DIR = "RESOURCE_LOCK_DIR"
+    ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
+    ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
+
     def __init__(self, timeout=60) -> None:
         # Initialize the resource file
-        base_resource_path = os.environ.get("CI_BOARD_CONFIG")
-        with open(base_resource_path, "r", encoding="utf-8") as resource_file:
-            self.resources: dict = json.load(resource_file)
-
-        self._add_custom_config()
-
         self.timeout = timeout
-        self.resource_lock_dir = os.environ.get("RESOURCE_LOCK_DIR")
+        self.resources = self._add_base_config()
+        self._add_custom_config()
+        self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
         self._add_lockdir()
 
     def _add_lockdir(self):
         if not os.path.exists(self.resource_lock_dir):
             os.mkdir(self.resource_lock_dir)
 
+    def _add_base_config(self):
+        base_resource_path = os.environ.get(self.ENV_CI_BOARD_CONFIG)
+
+        if not base_resource_path:
+            if os.getlogin() == "btm-ci":
+                print("Warning! BOARD CONFIG Environment Variable DOES NOT EXIST!")
+            return {}
+
+        with open(base_resource_path, "r", encoding="utf-8") as resource_file:
+            resources = json.load(resource_file)
+        return resources
+
     def _add_custom_config(self):
-        custom_resource_filepath = os.environ.get("CI_BOARD_CONFIG_CUSTOM")
+        custom_resource_filepath = os.environ.get(self.ENV_CI_BOARD_CONFIG_CUSTOM)
         if custom_resource_filepath is not None:
             with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
                 custom_resources = json.load(resource_file)
@@ -102,9 +114,8 @@ class ResourceManager:
         bool
             True if resource in use. False otherwise
         """
-        locks = os.listdir(self.resource_lock_dir)
-
-        return resource in locks
+        lockfile_path = self.get_lock_path(resource)
+        return os.path.exists(lockfile_path)
 
     def get_resource_lock_info(self, resource: str) -> Dict[str, object]:
         """Get lockfile info associated to locked resource
@@ -161,13 +172,11 @@ class ResourceManager:
             resource_info = self.get_resource_lock_info(resource)
 
             resource_used[resource] = {
-                "in-use": in_use,
+                "locked": in_use,
                 "group": self.resources[resource].get("group"),
                 "start": resource_info.get("start", ""),
                 "owner": resource_info.get("owner", ""),
             }
-
-            # resource_used[resource].update(resource_info)
 
         return resource_used
 
@@ -186,15 +195,35 @@ class ResourceManager:
         """
         return os.path.join(self.resource_lock_dir, resource)
 
-    def unlock_resource(self, resource: str, owner=""):
-        """
-        Delete Resource lock
+    def unlock_resource(self, resource: str, owner="") -> bool:
+        """Unlock resource
 
+        Parameters
+        ----------
+        resource : str
+            Resource name found in board config or custom config
+        owner : str, optional
+            Owner who originally locked the board, by default ""
+
+        Returns
+        -------
+        bool
+            True unlocked. False if lockfile exists but owner does not match
+
+        Raises
+        ------
+        ValueError
+            If resource does not exist or lockfile does not exist
         """
+        if resource not in self.resources:
+            raise ValueError(
+                f"Resource {resource} not found in either the board config or custom config"
+            )
+
         lock = self.get_lock_path(resource)
 
         if not os.path.exists(lock):
-            return False
+            raise ValueError("Lockfile does not exist")
 
         created_owner = self.get_resource_lock_info(resource)["owner"]
 
@@ -211,8 +240,8 @@ class ResourceManager:
 
         Parameters
         ----------
-        resources : str
-            _description_
+        resources : Set[str]
+            Set of resources to unlock
         """
         unlock_count = 0
         for resource in resources:
@@ -227,22 +256,6 @@ class ResourceManager:
             print(f"Unlocking - {os.path.basename(lock)}")
             os.remove(lock)
 
-    def is_locked(self, resource: str) -> bool:
-        """Check if a resource is locked
-
-        Parameters
-        ----------
-        resource : str
-            Name of resource
-
-        Returns
-        -------
-        bool
-            True if locked. False otherwise.
-        """
-        lockfile_path = self.get_lock_path(resource)
-        return os.path.exists(lockfile_path)
-
     def lock_resource(self, resource: str, owner="") -> bool:
         """Lock resource
 
@@ -256,9 +269,14 @@ class ResourceManager:
         bool
             True is locked successfully. False otherwise.
         """
+        if resource not in self.resources:
+            raise ValueError(
+                f"Resource {resource} not found in either the board config or custom config"
+            )
+
         lockfile_path = self.get_lock_path(resource)
 
-        if not self.is_locked(resource):
+        if not self.resource_in_use(resource):
             with open(lockfile_path, "w", encoding="utf-8") as lockfile:
                 now = datetime.now()
 
@@ -288,17 +306,18 @@ class ResourceManager:
 
         boards_locked = False
         start = datetime.now()
-
+        locked_boards = []
         while not boards_locked:
             unlocked_count = 0
             for resource in resources:
-                if not self.is_locked(resource):
+                if not self.resource_in_use(resource):
                     unlocked_count += 1
             # Attempt to lock them all at once
             if unlocked_count == len(resources):
                 lockcount = 0
                 for resource in resources:
                     lockcount += 1 if self.lock_resource(resource, owner) else 0
+                    locked_boards.append((resource, owner))
                     boards_locked = True
 
             now = datetime.now()
@@ -308,8 +327,8 @@ class ResourceManager:
 
         # if we failed to lock all the boards, release the ones we locked
         if boards_locked and lockcount != len(resources):
-            for resource in resources:
-                self.unlock_resource(resource)
+            for resource, resource_owner in locked_boards:
+                rm.unlock_resource(resource, resource_owner)
                 boards_locked = False
 
         return boards_locked
@@ -431,6 +450,18 @@ class ResourceManager:
 
         print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
 
+    def _is_ocd_capable(self, resource):
+        if resource not in self.resources:
+            return False
+
+        info = self.resources[resource]
+        if "dap_sn" not in info:
+            return False
+        if "ocdports" not in info:
+            return False
+
+        return True
+
     def resource_reset(self, resource_name: str) -> bool:
         """Reset resource found in board_config.json or custom config
 
@@ -439,8 +470,12 @@ class ResourceManager:
         resource_name : str
             Name of resource to reset
         """
-        if resource_name not in self.resources:
-            return False
+        if not self._is_ocd_capable(resource_name):
+            raise AttributeError(
+                f"Resource {resource_name} does not contain the info to reset."
+                ""
+                """Requires dap_sn and ocdports"""
+            )
 
         with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name}"]) as process:
             process.wait()
@@ -455,8 +490,11 @@ class ResourceManager:
         resource_name : str
             Name of resource to erase
         """
-        if resource_name not in self.resources:
-            return False
+        if not self._is_ocd_capable(resource_name):
+            raise AttributeError(
+                f"""Resource {resource_name} does not contain the info to erase."""
+                """Requires dap_sn and ocdports"""
+            )
 
         with subprocess.Popen(["bash", "-c", f"ocderase {resource_name}"]) as process:
             process.wait()
@@ -472,8 +510,11 @@ class ResourceManager:
         elf_file : str
             Elf file to program resource with
         """
-        if resource_name not in self.resources:
-            return False
+        if not self._is_ocd_capable(resource_name):
+            raise AttributeError(
+                f"""Resource {resource_name} does not contain the info to flash."""
+                """Requires dap_sn and ocdports"""
+            )
 
         with subprocess.Popen(
             ["bash", "-c", f"ocdflash {resource_name} {elf_file}"]
@@ -481,6 +522,16 @@ class ResourceManager:
             process.wait()
 
         return process.returncode == 0
+
+    def clean_environment(self):
+        """Erase all boards and delete all locks"""
+        for resource in self.resources:
+            try:
+                self.resource_erase(resource)
+            except AttributeError:
+                pass
+
+        self.unlock_all_resources()
 
 
 if __name__ == "__main__":
@@ -490,6 +541,7 @@ if __name__ == "__main__":
     Query resource information
     Monitor resources
     """
+    VERSION = '1.0.0'
 
     # Parse the command line arguments
     parser = argparse.ArgumentParser(
@@ -550,12 +602,27 @@ if __name__ == "__main__":
         help="Get owner of resource if locked",
     )
 
+    parser.add_argument(
+        "--clean-env",
+        action="store_true",
+        help="Delete all locks and erase all boards with a programmable feature",
+    )
+
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_true",
+        help="Delete all locks and erase all boards with a programmable feature",
+    )
     args = parser.parse_args()
 
     lock_boards = set(args.lock)
     unlock_boards = set(args.unlock)
 
     rm = ResourceManager(timeout=int(args.timeout))
+
+    if args.clean_env:
+        rm.clean_environment()
 
     if args.list_usage:
         rm.print_usage()
@@ -587,4 +654,7 @@ if __name__ == "__main__":
     if args.get_owner:
         print(rm.get_resource_lock_info(args.get_owner).get("owner", ""))
 
+    if args.version:
+        print(VERSION)
+        
     sys.exit(0)

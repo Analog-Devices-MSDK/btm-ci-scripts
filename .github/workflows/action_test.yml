@@ -57,6 +57,7 @@ jobs:
           submodules: false
           repository: analogdevicesinc/msdk
           ref: main
+          fetch-depth: 0
       #----------------------------------------------------------------------------------------------
       # Test enviornment variables.
       - name: TestEnv

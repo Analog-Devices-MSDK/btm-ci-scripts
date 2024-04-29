@@ -1,6 +1,15 @@
 #! /usr/bin/bash
 
-source ~/Tools/btm-ci-scripts/str-utils.sh
+function lower() {
+    val=$1
+    echo ${val,,}
+}
+
+function upper() {
+    val=$1
+    echo ${val^^}
+}
+
 function ocdflash() {
     if [[ "$1" == "--help" || $1 == "-h" ]]; then
         printf "flash --> flash a board\n"
@@ -138,8 +147,10 @@ function ocdopen() {
     return $?
 
 }
+
+export -f lower
+export -f upper
 export -f ocdflash
 export -f ocderase
 export -f ocdreset
 export -f ocdopen
-
