@@ -609,10 +609,6 @@ jobs:
             echo "no tests enabled, NOT locking anything at this step"
           fi
 
-    #----------------------------------------------------------------------------------------------
-    #------------------------------| Lock all required boards at once |-----------------------------
-    #----------------------------------------------------------------------------------------------
-
       - name: Lock Boards
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:

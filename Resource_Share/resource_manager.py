@@ -575,7 +575,7 @@ if __name__ == "__main__":
         "-v",
         "--version",
         action="store_true",
-        help="Delete all locks and erase all boards with a programmable feature",
+        help="Get application version",
     )
     args = parser.parse_args()
 
