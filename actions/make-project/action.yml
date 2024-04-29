@@ -1,0 +1,14 @@
+name: makeProject
+description: 'Build a project with make'
+inputs:
+  path:
+    description: 'Path to the project'
+    required: false
+    default: '.'
+  distclean:
+    description: 'Perform distclean before building?'
+    required: false
+    default: 'false'
+runs:
+  using: 'node20'
+  main: 'run.js'

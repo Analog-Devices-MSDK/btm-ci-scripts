@@ -393,6 +393,42 @@ class ResourceManager:
             applicable_items.append(rname)
 
         return applicable_items
+    
+    def print_applicable_items(self, target: str = None, group: str = None) -> List[str]:
+        """Print an item that matches criteria of group and target
+
+        Parameters
+        ----------
+        target : str, optional
+            Target type, by default None
+        group : str, optional
+            Group target should be in, by default None
+
+        Returns
+        -------
+        None
+
+        """
+        applicable_items_open = []
+        applicable_items_inuse = []
+        for rname in self.resources:
+            if target is not None:
+                if self.get_item_value(f"{rname}.target") != target.upper():
+                    continue
+            if group is not None:
+                if self.get_item_value(f"{rname}.group") != group.upper():
+                    continue
+            if self.resource_in_use(rname):
+                applicable_items_inuse.append(rname)
+            else:
+                applicable_items_open.append(rname)
+        applicable_items = []
+        applicable_items.extend(applicable_items_open)
+        applicable_items.extend(applicable_items_inuse)
+        if applicable_items:
+            print(" ".join(applicable_items))
+            return
+        print('')
 
     def print_usage(self):
         """Pretty print the resource usage"""
@@ -576,6 +612,13 @@ if __name__ == "__main__":
         "--version",
         action="store_true",
         help="Get application version",
+    )
+    parser.add_argument(
+        "-f",
+        "--find-board",
+        nargs=2,
+        default=["", ""],
+        help="Find a board which matches the criteria TARGET GROUP",
     )
     args = parser.parse_args()
 
