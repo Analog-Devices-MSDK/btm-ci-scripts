@@ -664,8 +664,15 @@ jobs:
           git clean -ffdx
           git reset --hard
 
-
-
+      - name: Erase Boards
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
+        with:
+          boards: |
+            max32655_board1
+            max32655_board2
+            max32665_board1
+            max32690_board_w1
+          
       - name: Unlock Boards
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
