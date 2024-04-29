@@ -37,6 +37,7 @@ const main = async function() {
         getBoardData(BOARD_CLIENT, 'target')
     ]);
     let projectServer = path.join(MSDK_PATH, 'Examples', targetServer, 'Bluetooth', 'BLE_otas');
+    console.log(projectServer);
     let projectClient = path.join(MSDK_PATH, 'Examples', targetClient, 'Bluetooth', 'BLE_otac');
     await Promise.all([
         makeProject(projectServer, false),
