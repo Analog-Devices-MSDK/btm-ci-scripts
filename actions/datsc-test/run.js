@@ -58,7 +58,7 @@ const main = async function () {
         mode: 'text',
         pythonPath: 'python3',
         pythonOptions: ['-u'],
-        scriptPath: '../../tests',
+        scriptPath: '../../tests/dats',
         args: [targetServer, targetClient, elfServer, elfClient]
     };
     let datscTest = new PythonShell('datsc_connected.py', options);

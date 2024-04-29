@@ -58,7 +58,7 @@ const main = async function () {
         mode: 'text',
         pythonPath: 'python3',
         pythonOptions: ['-u'],
-        scriptPath: '../../tests',
+        scriptPath: '../../tests/otas',
         args: [targetServer, targetClient, elfServer, elfClient]
     };
     let otasTest = new PythonShell('otas_connected.py', options);
