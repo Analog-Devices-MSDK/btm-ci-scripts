@@ -11,10 +11,10 @@ const OWNER_REF = Github.context.ref;
 const main = async function() {
     let mode = LOCK_FLAG ? '-l' : '-u'
     let pyArgs = [
-        `${mode}`,
-        `${BOARD_IDS.join(" ")}`,
-        '--owner', `${OWNER_REF}`,
-        '--timeout', `${TIMEOUT}`
+        mode,
+        BOARD_IDS.join(" "),
+        '--owner', OWNER_REF,
+        '--timeout', TIMEOUT
     ]
     let options = {
         mode: 'text',
