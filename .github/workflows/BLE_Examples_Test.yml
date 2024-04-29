@@ -626,7 +626,7 @@ jobs:
           board_client: max32655_board1
           board_server: max32655_board1
           msdk_path: ${{ github.workspace }}
-        
+
       - name: OTAS MAX32665
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/otas-test@main
         with:

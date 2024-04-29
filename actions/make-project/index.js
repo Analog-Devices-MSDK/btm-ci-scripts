@@ -6,6 +6,7 @@ const BUILD_PATH = Core.getInput('path');
 const DISTCLEAN_FLAG = Core.getInput('distclean', { required: false });
 
 
+
 const cleanProject = function (projectPath, distclean) {
     let cleanOpt = distclean ? 'distclean' : 'clean';
     let logOut = '';
@@ -53,7 +54,6 @@ const makeProject = async function (projectPath, distclean) {
 }
 
 const main = async function () {
-
     await makeProject(BUILD_PATH, (DISTCLEAN_FLAG.toLowerCase() === 'true')).then(
         (success) => procSuccess(success, 'Build'),
         (error) => procFail(error, 'Build', false)
