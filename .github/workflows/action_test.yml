@@ -108,14 +108,14 @@ jobs:
       #     project: BLE5_ctr
       #     msdk_path: ${{ github.workspace }}
       #     build: true
-      # #----------------------------------------------------------------------------------------------
-      # Test OCDReset action
-      - name: TestReset2Boards
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
-        with:
-          board: |
-            max32655_board1
-            max32655_board2
+      # # #----------------------------------------------------------------------------------------------
+      # # Test OCDReset action
+      # - name: TestReset2Boards
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
+      #   with:
+      #     board: |
+      #       max32655_board1
+      #       max32655_board2
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
       - name: TestErase2Boards
