@@ -680,6 +680,7 @@ jobs:
             max32690_board_w1
           
       - name: Unlock Boards
+        if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           boards: |
