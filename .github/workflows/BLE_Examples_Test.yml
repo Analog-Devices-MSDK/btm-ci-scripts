@@ -625,25 +625,28 @@ jobs:
         with: 
           board_client: max32655_board1
           board_server: max32655_board1
-          
-        
+          msdk_path: ${{ github.workspace }}
+
       - name: OTAS MAX32665
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/otas-test@main
         with:
           board_client: max32665_board1
           board_server: max32655_board1
+          msdk_path: ${{ github.workspace }}
         
       - name: OTAS MAX32690
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/otas-test@main
         with:
           board_client: max32690_board_w1
           board_server: max32655_board1
+          msdk_path: ${{ github.workspace }}
 
       - name: DATS MAX32655
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/datsc-test@main
         with:
           board_client: max32655_board1
           board_server: max32655_board1
+          
         
       - name: DATS MAX32665
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/datsc-test@main
