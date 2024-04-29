@@ -99,28 +99,32 @@ jobs:
       #     project: BLE5_ctr
       #     msdk_path: ${{ github.workspace }}
       #     build: true
-      - name: TestFlash2Boards1Dir
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
+      # - name: TestFlash2Boards1Dir
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
+      #   with:
+      #     board: |
+      #       max32655_board1
+      #       max32655_board2
+      #     project: BLE5_ctr
+      #     msdk_path: ${{ github.workspace }}
+      #     build: true
+      # #----------------------------------------------------------------------------------------------
+      # Test OCDReset action
+      - name: TestReset2Boards
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
         with:
           board: |
             max32655_board1
             max32655_board2
-          project: BLE5_ctr
-          msdk_path: ${{ github.workspace }}
-          build: true
-      # #----------------------------------------------------------------------------------------------
-      # # Test OCDReset action
-      # - name: TestReset
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
-      #   with:
-      #     board: max32655_board1
       #----------------------------------------------------------------------------------------------
-      # # Test OCDErase action
-      # - name: TestErase
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@action-testing
-      #   with:
-      #     board: max32655_board1
-      #     has_two_flash_banks: false
+      # Test OCDErase action
+      - name: TestErase2Boards
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@action-testing
+        with:
+          board: |
+            max32655_board1
+            max32655_board2
+          has_two_flash_banks: false
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> unlock action
       - name: TestUnlock

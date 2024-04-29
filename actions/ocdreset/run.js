@@ -34,7 +34,6 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
 }
 
 const main = async function () {
-    let owner = await getBoardOwner(BOARD_IDS);
     const targets = [];
     const dapSNs = [];
     const gdbPorts = [];
