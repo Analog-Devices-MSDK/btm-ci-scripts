@@ -24,6 +24,7 @@ const cleanProject = function (projectPath, distclean) {
             }
         });
     });
+    
 }
 
 const makeProject = async function (projectPath, distclean) {
