@@ -4,7 +4,7 @@ const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
-const BOARD_IDS = Core.getInput('board');
+const BOARD_IDS = Core.getMultilineInput('board');
 const HAS_TWO_FLASH_BANKS = Core.getMultilineInput('has_two_flash_banks', { required: false });
 const OWNER_REF = Github.context.ref;
 
