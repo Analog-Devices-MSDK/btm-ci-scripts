@@ -70,6 +70,15 @@ The environment variables loaded into the bashrc will not be sourced by GitHub. 
 The variables need to be placed into the ``.env`` files located in the runner directories on Wall-E. 
 For convenience, the ``envsetup.sh``, located in the envsetup folder, can be ran on Wall-E. This will automatically load the .env file into the runner.
 
+## Actions
+In order to make some of the common tasks reliable and easy to use, we have created some basic actions that can perform these tasks. 
+More information can be found in the ``actions`` folder.
+
+<br>
+
+Some actions include 
+- Locking/Unlocking resources
+- Resetting, flashing, and erasing boards
 
 ## Past lessons learned and moving forward
 - Pathing is incredibly easy to mess up in yaml files. So all commonly used fucntions are now global.
