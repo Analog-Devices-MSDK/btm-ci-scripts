@@ -11,7 +11,7 @@ if is_not_running_as_root; then
 fi
 
 source /home/btm-ci/.bashrc
-
+git push --set-upstream origin exit-error
 env="LANG=en_US.UTF-16"
 printf '%s\n' \
     $env \
@@ -21,7 +21,6 @@ printf '%s\n' \
     "OPENOCD_PATH=$OPENOCD_PATH" \
     "TEST_DIR=$TEST_DIR" \
     >.env
-
 
 set -e
 for i in {0..3}; do
