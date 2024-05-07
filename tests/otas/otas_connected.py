@@ -331,34 +331,21 @@ if __name__ == "__main__":
     # Get the boards under test and the file paths
     SERVER_BOARD = sys.argv[1]
     CLIENT_BOARD = sys.argv[2]
-    # OTAS_FILE = sys.argv[3]
-    # OTAC_FILE = sys.argv[4]
+    assert (
+        SERVER_BOARD != CLIENT_BOARD
+    ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
 
-    # assert (
-    #     SERVER_BOARD != CLIENT_BOARD
-    # ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
-    # assert (
-    #     OTAS_FILE != OTAC_FILE
-    # ), f"OTAC ELF ({OTAC_FILE}) must not  be the same as Server ({OTAS_FILE})"
+    OWNER = rm.get_owner(SERVER_BOARD)
 
-    owner = rm.get_resource_lock_info(SERVER_BOARD).get("owner", "")
-
-    # Make sure all bonding information is wiped
-
-    # rm.resource_erase(SERVER_BOARD, owner)
-    # rm.resource_erase(CLIENT_BOARD, owner)
-
-    # rm.resource_flash(SERVER_BOARD, OTAS_FILE, owner)
-    # rm.resource_flash(CLIENT_BOARD, OTAC_FILE, owner)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    rm.resource_reset(SERVER_BOARD, owner)
-    rm.resource_reset(CLIENT_BOARD, owner)
-    rm.resource_reset(SERVER_BOARD, owner)
-    rm.resource_reset(CLIENT_BOARD, owner)
+    rm.resource_reset(SERVER_BOARD, OWNER)
+    rm.resource_reset(CLIENT_BOARD, OWNER)
+    rm.resource_reset(SERVER_BOARD, OWNER)
+    rm.resource_reset(CLIENT_BOARD, OWNER)
 
     # give time for connection
     time.sleep(5)
