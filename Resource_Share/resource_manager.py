@@ -100,7 +100,22 @@ class ResourceManager:
             with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
                 custom_resources = json.load(resource_file)
                 self.resources.update(custom_resources)
+    
+    def get_owner(self, resource:str) -> str:
+        """Get the current owner of a resource
 
+        Parameters
+        ----------
+        resource : str
+            Name of resource
+
+        Returns
+        -------
+        str
+            Owner
+        """
+        return rm.get_resource_lock_info(resource).get("owner", "")
+    
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
 
@@ -461,7 +476,7 @@ class ResourceManager:
 
         return True
 
-    def resource_reset(self, resource_name: str) -> bool:
+    def resource_reset(self, resource_name: str, owner:str = "") -> bool:
         """Reset resource found in board_config.json or custom config
 
         Parameters
@@ -476,12 +491,12 @@ class ResourceManager:
                 """Requires dap_sn and ocdports"""
             )
 
-        with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name}"]) as process:
+        with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name} {owner}"]) as process:
             process.wait()
 
         return process.returncode == 0
 
-    def resource_erase(self, resource_name: str):
+    def resource_erase(self, resource_name: str, owner:str = ""):
         """Erase resource found in board_config.json or custom config
 
         Parameters
@@ -495,12 +510,12 @@ class ResourceManager:
                 """Requires dap_sn and ocdports"""
             )
 
-        with subprocess.Popen(["bash", "-c", f"ocderase {resource_name}"]) as process:
+        with subprocess.Popen(["bash", "-c", f"ocderase {resource_name} {owner}"]) as process:
             process.wait()
 
         return process.returncode == 0
 
-    def resource_flash(self, resource_name: str, elf_file: str):
+    def resource_flash(self, resource_name: str, elf_file: str, owner:str = ""):
         """Flash a resource in board_config.json or custom config with given elf
         Parameters
         ----------
@@ -516,7 +531,7 @@ class ResourceManager:
             )
 
         with subprocess.Popen(
-            ["bash", "-c", f"ocdflash {resource_name} {elf_file}"]
+            ["bash", "-c", f"ocdflash {resource_name} {elf_file} {owner}"]
         ) as process:
             process.wait()
 
@@ -526,7 +541,7 @@ class ResourceManager:
         """Erase all boards and delete all locks"""
         for resource in self.resources:
             try:
-                self.resource_erase(resource)
+                self.resource_erase(resource, self.get_owner(resource))
             except AttributeError:
                 pass
 
@@ -658,7 +673,7 @@ if __name__ == "__main__":
         print(rm.get_item_value(args.get_value))
 
     if args.get_owner:
-        print(rm.get_resource_lock_info(args.get_owner).get("owner", ""))
+        print(rm.get_owner(args.get_owner))
 
     if args.version:
         print(VERSION)
