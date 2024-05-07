@@ -8,6 +8,10 @@ inputs:
     description: 'Used to indicated if the board has 2 flash banks'
     required: false
     default: 'false'
+  suppress_output:
+    description: 'Used to suppress console unless an error is encountered.'
+    required: false
+    default: 'false'
 runs:
   using: 'node20'
   main: 'run.js'
