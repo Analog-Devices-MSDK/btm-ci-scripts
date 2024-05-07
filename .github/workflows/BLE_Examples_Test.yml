@@ -635,8 +635,8 @@ jobs:
           OTAS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/otas
           OTAS_BOARD=max32655_board1
           OTAC_BOARD=max32655_board2
-          make -j -C Examples/MAX32655/Bluetooth/BLE_dats
-          make -j -C Examples/MAX32655/Bluetooth/BLE_datc
+          make -s -j -C Examples/MAX32655/Bluetooth/BLE_dats
+          make -s -j -C Examples/MAX32655/Bluetooth/BLE_datc
 
           OTAS_FILE="./Examples/MAX32655/Bluetooth/BLE_dats/build/max32655.elf"
           OTAC_FILE="./Examples/MAX32655/Bluetooth/BLE_datc/build/max32655.elf"
