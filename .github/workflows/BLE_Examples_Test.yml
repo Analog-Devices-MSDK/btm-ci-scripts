@@ -71,7 +71,7 @@ jobs:
       #----------------------------------------------------------------------------------------------
       #----------------------------------------------------------------------------------------------
       # Checks out repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: false
           repository: analogdevicesinc/msdk
@@ -651,6 +651,7 @@ jobs:
             BLE_otac
           
           build: true
+          distclean: true
 
       - name: OTAS MAX32655
         run: | 
