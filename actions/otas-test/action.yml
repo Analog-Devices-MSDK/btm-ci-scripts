@@ -10,7 +10,7 @@ inputs:
   msdk_path:
     description: "Path to root of MSDK"
     required: false
-    default: '.'
+    default: "."
 runs:
   using: 'node20'
-  main: 'run.js'
+  main: 'index.js'

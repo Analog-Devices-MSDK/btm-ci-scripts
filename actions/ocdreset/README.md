@@ -12,7 +12,6 @@ This action resets a board using openOCD. Both single or multiple boards are acc
 
 Flag used to indicate that console stdout data should be suppressed. Console stderr, error, and exit data will still be printed. Default: `"false"`.
 
-
 ## Example usage
 
 ```yaml
