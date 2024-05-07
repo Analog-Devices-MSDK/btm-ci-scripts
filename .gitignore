@@ -1,5 +1,6 @@
 **/Locks
 **/__pycache__
 Resource_Share/__pycache__
+Resource_Share/__pycache__/*
 
 envsetup/.env
