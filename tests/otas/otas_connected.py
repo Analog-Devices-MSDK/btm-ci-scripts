@@ -356,6 +356,8 @@ if __name__ == "__main__":
 
     rm.resource_reset(SERVER_BOARD, owner)
     rm.resource_reset(CLIENT_BOARD, owner)
+    rm.resource_reset(SERVER_BOARD, owner)
+    rm.resource_reset(CLIENT_BOARD, owner)
 
     # give time for connection
     time.sleep(5)
