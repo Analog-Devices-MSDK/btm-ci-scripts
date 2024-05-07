@@ -647,7 +647,7 @@ jobs:
             max32655_board2
             max32665_board1
             max32690_board_w1
-          project:
+          project: |
             BLE_otas
             BLE_otac
             BLE_otac
