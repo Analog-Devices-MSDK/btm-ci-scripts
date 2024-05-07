@@ -48,7 +48,7 @@ datsc_connected.py
 Description: Data server-client connection test
 
 """
-
+import os
 import sys
 import re
 import time
@@ -56,7 +56,14 @@ from datetime import datetime
 from typing import Dict
 import serial
 
-sys.path.append("..")
+
+RESOURCE_SHARE_DIR = os.environ.get("RESOURCE_SHARE_DIR")
+
+if RESOURCE_SHARE_DIR is None:
+    print("Cannot find resource share directory in environment!")
+    sys.exit(-1)
+
+sys.path.append(RESOURCE_SHARE_DIR)
 # pylint: disable=import-error,wrong-import-position
 from Resource_Share.resource_manager import ResourceManager
 
