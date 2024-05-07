@@ -4,6 +4,10 @@ inputs:
   board:
     description: 'ID of the board to reset'
     required: true
+  suppress_output:
+    description: 'Used to suppress console unless an error is encountered.'
+    required: false
+    default: 'false'
 runs:
   using: 'node20'
   main: 'index.js'

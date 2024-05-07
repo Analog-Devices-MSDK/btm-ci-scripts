@@ -10,10 +10,11 @@ const BOARD_IDS = Core.getMultilineInput('board');
 const PROJECT_DIRS = Core.getMultilineInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
-const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required : false });
+const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
+const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
 
-const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
+const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
     const args = [
         '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
         '-f', `target/${target.toLowerCase()}.cfg`, '-c', `adapter serial ${dap}`,
@@ -21,9 +22,14 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
         '-c', `program ${elf} verify; reset; exit`
     ];
     let logOut = '';
+    let dumpOut = '';
     return new Promise((resolve, reject) => {
         const flashCmd = spawn('openocd', args);
-        flashCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+        if (suppress) {
+            flashCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+        } else {
+            flashCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+        }
         flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         flashCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
@@ -74,13 +80,16 @@ const main = async function () {
         let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
-            await makeProject(projPath, DISTCLEAN_FLAG);
+            await makeProject(projPath, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
+                (success) => procSuccess(success, 'Build'),
+                (error) => procFail(error, 'Build', false)
+            );
         }
     }
     let promises = [];
     for (let i = 0; i < BOARD_IDS.length; i++) {
         promises[i] = flashBoard(
-            targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+            targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch((err) => procFail(err, 'Flash', true));
     }
     let retCodes = await Promise.all(promises).then(
@@ -93,7 +102,7 @@ const main = async function () {
     for (const i in retCodes) {
         if (retCodes[i] != 0) {
             await flashBoard(
-                targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+                targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
                 (success) => procSuccess(success, 'Flash'),
                 (error) => procFail(error, 'Flash', false)

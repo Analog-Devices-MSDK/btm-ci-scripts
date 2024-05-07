@@ -5,9 +5,10 @@ const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
 const BOARD_IDS = Core.getMultilineInput('board');
+const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
 
-const resetBoard = function(target, dap, gdb, tcl, telnet) {
+const resetBoard = function(target, dap, gdb, tcl, telnet, suppress) {
     const args = [
         '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
         '-f', `target/${target.toLowerCase()}.cfg`, '-c', `adapter serial ${dap}`,
@@ -15,9 +16,14 @@ const resetBoard = function(target, dap, gdb, tcl, telnet) {
         '-c', 'init; reset; exit'
     ];
     let logOut = '';
+    let dumpOut = '';
     return new Promise((resolve, reject) => {
         const resetCmd = spawn('openocd', args);
-        resetCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        if (suppress) {
+            resetCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+        } else {
+            resetCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        }
         resetCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         resetCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
@@ -55,7 +61,7 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
         promises[i] = resetBoard(
-            targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+            targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch(
             (error) => procFail(error, 'Reset', false)
         )

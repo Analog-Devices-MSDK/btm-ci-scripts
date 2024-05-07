@@ -12,6 +12,10 @@ This action erases the flash on a board using openOCD. Both a single board or mu
 
 Flag used to indicate that at least one of the boards to erase uses two flash banks which should both be erased. Default: `"false"`.
 
+### suppress_output
+
+Flag used to indicate that console stdout data should be suppressed. Console stderr, error, and exit data will still be printed. Default: `"false"`.
+
 ## Example usage
 
 ```yaml
@@ -21,4 +25,5 @@ with:
     max32665_board1
     max32690_board_w1
   has_two_flash_banks: true
+  suppress_output: true
 ```

@@ -620,6 +620,13 @@ if __name__ == "__main__":
         default=["", ""],
         help="Find a board which matches the criteria TARGET GROUP",
     )
+    parser.add_argument(
+        "-f",
+        "--find-board",
+        nargs=2,
+        default=["", ""],
+        help="Find a board which matches the criteria TARGET GROUP",
+    )
     args = parser.parse_args()
 
     lock_boards = set(args.lock)

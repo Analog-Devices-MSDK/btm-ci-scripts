@@ -6,9 +6,10 @@ const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../commo
 
 const BOARD_IDS = Core.getMultilineInput('board');
 const HAS_TWO_FLASH_BANKS = Core.getMultilineInput('has_two_flash_banks', { required: false });
+const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
 
-const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
+const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
     const args = [
         '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
         '-f', `target/${target.toLowerCase()}.cfg`, '-c', `adapter serial ${dap}`,
@@ -16,9 +17,14 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet) {
         '-c', `init; reset halt; max32xxx mass_erase ${bank}; exit`
     ];
     let logOut = '';
+    let dumpOut = '';
     return new Promise((resolve, reject) => {
         const eraseCmd = spawn('openocd', args);
-        eraseCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+        if (suppress) {
+            eraseCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+        } else {
+            eraseCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+        }
         eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         eraseCmd.on('error', (error) => {
             console.error(`ERROR: ${error.message}`);
@@ -69,7 +75,7 @@ const main = async function () {
     let promises = [];
     for (let i = 0; i < BOARD_IDS.length; i++) {
         promises[i] = eraseFlash(
-            targets[i], 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i]
+            targets[i], 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch((error) => procFail(error, 'Erase', false));
     }
     let retCodes = await Promise.all(promises).then(
@@ -82,7 +88,7 @@ const main = async function () {
     for (const i in retCodes) {
         if (retCodes[i] === 0 && HAS_TWO_FLASH_BANKS[i]) {
             await eraseFlash(
-                targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+                targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
                 (success) => procSuccess(success, 'Erase'),
                 (error) => procFail(error, 'Erase', false)

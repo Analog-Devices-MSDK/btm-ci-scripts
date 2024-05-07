@@ -3,16 +3,20 @@ const { spawn } = require('child_process');
 const { procSuccess, procFail } = require('../common');
 
 const BUILD_PATH = Core.getInput('path');
-const DISTCLEAN_FLAG = Core.getInput('distclean', { required: false });
+const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
+const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 
-
-
-const cleanProject = function (projectPath, distclean) {
+const cleanProject = function (projectPath, distclean, suppress) {
     let cleanOpt = distclean ? 'distclean' : 'clean';
-    let logOut = '';
     return new Promise((resolve, reject) => {
+        let logOut = '';
+        let dumpOut = '';
         const cleanCmd = spawn('make', ['-C', projectPath, cleanOpt]);
-        cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        if (suppress) {
+            cleanCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+        } else {
+            cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        }
         cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         cleanCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
@@ -26,18 +30,22 @@ const cleanProject = function (projectPath, distclean) {
             }
         });
     });
-
 }
 
-const makeProject = async function (projectPath, distclean) {
-    await cleanProject(projectPath, distclean).then(
+const makeProject = async function (projectPath, distclean, suppress) {
+    await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
         (error) => procFail(error, 'Clean', false)
     );
     let logOut = '';
+    let dumpOut = '';
     return new Promise((resolve, reject) => {
         const makeCmd = spawn('make', ['-j', '-C', projectPath]);
-        makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        if (suppress) {
+            makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+        } else {
+            makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        }
         makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         makeCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
@@ -54,7 +62,7 @@ const makeProject = async function (projectPath, distclean) {
 }
 
 const main = async function () {
-    await makeProject(BUILD_PATH, (DISTCLEAN_FLAG.toLowerCase() === 'true')).then(
+    await makeProject(BUILD_PATH, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
         (success) => procSuccess(success, 'Build'),
         (error) => procFail(error, 'Build', false)
     );
