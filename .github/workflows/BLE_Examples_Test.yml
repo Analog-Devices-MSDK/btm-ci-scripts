@@ -649,7 +649,7 @@ jobs:
             BLE_otas
             BLE_otac
             BLE_otac
-            
+          suppress_output: true
           
           build: true
           distclean: true
