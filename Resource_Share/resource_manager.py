@@ -114,7 +114,7 @@ class ResourceManager:
         str
             Owner
         """
-        return rm.get_resource_lock_info(resource).get("owner", "")
+        return self.get_resource_lock_info(resource).get("owner", "")
     
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
