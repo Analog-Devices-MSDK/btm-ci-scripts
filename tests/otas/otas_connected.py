@@ -122,8 +122,8 @@ def client_test_discover_filespace(serial_port: serial.Serial) -> bool:
     while True:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
-        if new_text:
-            print(new_text)
+        
+        print(new_text, end='')
 
         if "File discovery complete" in text:
             return True
@@ -207,8 +207,9 @@ def client_verify_xfer(serial_port: serial.Serial) -> bool:
     while True:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
-        if new_text:
-            print(new_text)
+        if new_text.strip() != '':
+            print(new_text, end='')
+
         status_match = re.search(pattern, text)
 
         # Check for successful completion
