@@ -37,10 +37,11 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
         flashCmd.on('close', code => {
             console.log(logOut);
             console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
-                resolve(code);
-            }
+            // if (code != 0) reject(code);
+            // else {
+            //     resolve(code);
+            // }
+            resolve(code);
         });
     });
 }
@@ -62,7 +63,7 @@ const main = async function () {
     const tclPorts = [];
     const telnetPorts = [];
     const elfPaths = [];
-
+    retVal = 0;
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -82,33 +83,56 @@ const main = async function () {
         if (BUILD_FLAG) {   
             await makeProject(projPath, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
                 (success) => procSuccess(success, 'Build'),
-                (error) => procFail(error, 'Build', false)
+                (error) => {
+                    retVal--;
+                    procFail(error, 'Build', false);
+                    Core.setFailed(`Build ${projPath} failed.`);
+                }
             );
+        }
+        if (retVal < 0) {
+            return;
         }
     }
     let promises = [];
     for (let i = 0; i < BOARD_IDS.length; i++) {
         promises[i] = flashBoard(
             targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
-        ).catch((err) => procFail(err, 'Flash', true));
+        ).catch((err) => procFail(err, 'Flash', false));
     }
-    let retCodes = await Promise.all(promises).then(
-        (values) => {
-            for (const val of values) {
-                procSuccess(val, 'Flash');
-            }
-        }
-    );
-    for (const i in retCodes) {
+    // let retCodes = await Promise.all(promises).then(
+    //     (success) => {
+    //         for (const val of values) {
+    //             procSuccess(val, 'Flash');
+    //         },
+    //     (error) => 
+    //     }
+    // );
+    let retCodes = await Promise.all(promises);
+    for (let i = 0; i < retCodes.length; i++) {
         if (retCodes[i] != 0) {
+            procFail(retCodes[i], 'Flash', true);
             await flashBoard(
                 targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
                 (success) => procSuccess(success, 'Flash'),
-                (error) => procFail(error, 'Flash', false)
+                (error) => {
+                    retVal--;
+                    procFail(error, 'Flash', false);
+                    Core.setFailed(`Failed to flash ${targets[i]}.`)
+                }
             );
+        } else {
+            procSuccess(retCodes[i], 'Flash');
+        }
+        if (retVal < 0) {
+            return;
         }
     }
+
+    // if (retVal < 0) {
+    //     Core.setFailed(`Process exited with code ${retVal}`);
+    // }
 }
 
 main();
