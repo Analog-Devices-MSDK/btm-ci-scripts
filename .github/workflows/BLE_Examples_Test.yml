@@ -636,22 +636,22 @@ jobs:
             max32665_board1
             max32690_board_w1
       
-      # - name: Flash OTAS
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
-      #   with:
-      #     board: |
-      #       max32655_board1
-      #       max32655_board2
-      #       max32665_board1
-      #       max32690_board_w1
-      #     project: |
-      #       BLE_otas
-      #       BLE_otac
-      #       BLE_otac
-      #       BLE_otac
+      - name: Flash OTAS
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
+        with:
+          board: |
+            max32655_board1
+            max32655_board2
+            max32665_board1
+            max32690_board_w1
+          project: |
+            BLE_otas
+            BLE_otac
+            BLE_otac
+            BLE_otac
           
-      #     build: true
-      #     distclean: true
+          build: true
+          distclean: true
 
       - name: OTAS MAX32655
         run: | 
@@ -661,22 +661,14 @@ jobs:
           OTAS_PATH=${PWD}/Examples/MAX32655/Bluetooth/BLE_otas
           OTAC_PATH=${PWD}/Examples/MAX32655/Bluetooth/BLE_otac
 
-          make -j -C $OTAS_PATH
-          make -j -C $OTAC_PATH
+          # make -j -C $OTAS_PATH
+          # make -j -C $OTAC_PATH
           
-          OTAS_FILE="${OTAS_PATH}/build/max32655.elf"
-          OTAC_FILE="${OTAC_PATH}/build/max32655.elf"
+          # OTAS_FILE="${OTAS_PATH}/build/max32655.elf"
+          # OTAC_FILE="${OTAC_PATH}/build/max32655.elf"
 
-          owner=$(resource_manager.py -go max32655_board1)
 
-          ocderase max32655_board1 $owner
-          ocderase max32655_board2 $owner
-          
-          ocdflash max32655_board1 $OTAS_FILE $owner
-          ocdflash max32655_board2 $OTAC_FILE $owner
 
-          ocdreset max32655_board1 $owner
-          ocdreset max32655_board2 $owner
           
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD $OTAC_BOARD)

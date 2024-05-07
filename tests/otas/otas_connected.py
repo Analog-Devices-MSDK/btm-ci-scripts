@@ -343,10 +343,8 @@ if __name__ == "__main__":
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
     rm.resource_reset(SERVER_BOARD, OWNER)
+    time.sleep(1)
     rm.resource_reset(CLIENT_BOARD, OWNER)
-    rm.resource_reset(SERVER_BOARD, OWNER)
-    rm.resource_reset(CLIENT_BOARD, OWNER)
-
     # give time for connection
     time.sleep(5)
 
