@@ -48,7 +48,7 @@ datsc_connected.py
 Description: Data server-client connection test
 
 """
-import os
+
 import sys
 import re
 import time
@@ -57,13 +57,7 @@ from typing import Dict
 import serial
 
 
-# RESOURCE_SHARE_DIR = os.environ.get("RESOURCE_SHARE_DIR")
 
-# if RESOURCE_SHARE_DIR is None:
-#     print("Cannot find resource share directory in environment!")
-#     sys.exit(-1)
-
-# sys.path.append(RESOURCE_SHARE_DIR)
 sys.path.append("../..")
 
 # pylint: disable=import-error,wrong-import-position
@@ -347,19 +341,21 @@ if __name__ == "__main__":
         OTAS_FILE != OTAC_FILE
     ), f"OTAC ELF ({OTAC_FILE}) must not  be the same as Server ({OTAS_FILE})"
 
-    # Make sure all bonding information is wiped
-    rm.resource_erase(SERVER_BOARD)
-    rm.resource_erase(CLIENT_BOARD)
+    owner = rm.get_resource_lock_info(SERVER_BOARD).get("owner", "")
 
-    rm.resource_flash(SERVER_BOARD, OTAS_FILE)
-    rm.resource_flash(CLIENT_BOARD, OTAC_FILE)
+    # Make sure all bonding information is wiped
+    rm.resource_erase(SERVER_BOARD, owner)
+    rm.resource_erase(CLIENT_BOARD, owner)
+
+    rm.resource_flash(SERVER_BOARD, OTAS_FILE, owner)
+    rm.resource_flash(CLIENT_BOARD, OTAC_FILE, owner)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    rm.resource_reset(SERVER_BOARD)
-    rm.resource_reset(CLIENT_BOARD)
+    rm.resource_reset(SERVER_BOARD, owner)
+    rm.resource_reset(CLIENT_BOARD, owner)
 
     # give time for connection
     time.sleep(5)
