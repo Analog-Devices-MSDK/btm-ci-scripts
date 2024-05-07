@@ -640,8 +640,8 @@ jobs:
           make --quiet -j -C Examples/MAX32655/Bluetooth/BLE_dats
           make --quiet -j -C Examples/MAX32655/Bluetooth/BLE_datc
           
-          OTAS_FILE="Examples/MAX32655/Bluetooth/BLE_dats/build/max32655.elf"
-          OTAC_FILE="Examples/MAX32655/Bluetooth/BLE_datc/build/max32655.elf"
+          OTAS_FILE="${PWD}/Examples/MAX32655/Bluetooth/BLE_dats/build/max32655.elf"
+          OTAC_FILE="${PWD}/Examples/MAX32655/Bluetooth/BLE_datc/build/max32655.elf"
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD $OTAC_BOARD $OTAS_FILE $OTAC_FILE)
     

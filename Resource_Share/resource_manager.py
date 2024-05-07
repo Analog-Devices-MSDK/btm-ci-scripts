@@ -529,6 +529,8 @@ class ResourceManager:
                 f"""Resource {resource_name} does not contain the info to flash."""
                 """Requires dap_sn and ocdports"""
             )
+        if not os.path.exists(elf_file):
+            raise ValueError(f"ELF FILE DNE {elf_file}")
 
         with subprocess.Popen(
             ["bash", "-c", f"ocdflash {resource_name} {elf_file} {owner}"]
