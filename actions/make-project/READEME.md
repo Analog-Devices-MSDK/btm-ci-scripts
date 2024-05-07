@@ -16,7 +16,6 @@ Flag used to indicated that a distclean should be performed instead of a normal 
 
 Flag used to indicate that console stdout data should be suppressed. Console stderr, error, and exit data will still be printed. Default: `"false"`.
 
-
 ## Example usage
 
 ```yaml

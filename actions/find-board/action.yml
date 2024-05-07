@@ -16,4 +16,4 @@ outputs:
     description: 'Space separated list of board IDs'
 runs:
   using: 'node20'
-  main: 'run.js'
+  main: 'index.js'
