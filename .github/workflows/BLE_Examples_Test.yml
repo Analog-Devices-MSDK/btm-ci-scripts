@@ -668,11 +668,11 @@ jobs:
           OTAS_FILE="${OTAS_PATH}/build/max32655.elf"
           OTAC_FILE="${OTAC_PATH}/build/max32655.elf"
 
-          ocderase $OTAS_BOARD refs/heads/$GITHUB_REF_NAME
-          ocderase $OTAC_BOARD refs/heads/$GITHUB_REF_NAME
+          ocderase $OTAS_BOARD $GITHUB_REF
+          ocderase $OTAC_BOARD $GITHUB_REF
           
-          ocdflash $OTAS_BOARD $OTAS_FILE refs/heads/$GITHUB_REF_NAME
-          ocdflash $OTAC_BOARD $OTAC_FILE refs/heads/$GITHUB_REF_NAME
+          ocdflash $OTAS_BOARD $OTAS_FILE $GITHUB_REF
+          ocdflash $OTAC_BOARD $OTAC_FILE $GITHUB_REF
           
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD $OTAC_BOARD)
