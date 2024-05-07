@@ -667,14 +667,16 @@ jobs:
           OTAS_FILE="${OTAS_PATH}/build/max32655.elf"
           OTAC_FILE="${OTAC_PATH}/build/max32655.elf"
 
-          ocderase max32655_board1 $GITHUB_REF
-          ocderase max32655_board2 $GITHUB_REF
-          
-          ocdflash max32655_board1 $OTAS_FILE $GITHUB_REF
-          ocdflash max32655_board2 $OTAC_FILE $GITHUB_REF
+          owner=$(resource_manager.py -go max32655_board1)
 
-          ocdreset max32655_board1 $GITHUB_REF
-          ocdreset max32655_board2 $GITHUB_REF
+          ocderase max32655_board1 $owner
+          ocderase max32655_board2 $owner
+          
+          ocdflash max32655_board1 $OTAS_FILE $owner
+          ocdflash max32655_board2 $OTAC_FILE $owner
+
+          ocdreset max32655_board1 $owner
+          ocdreset max32655_board2 $owner
           
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD $OTAC_BOARD)
