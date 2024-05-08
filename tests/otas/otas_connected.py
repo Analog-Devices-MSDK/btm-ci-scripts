@@ -168,6 +168,10 @@ def client_test_start_update_xfer(serial_port: serial.Serial) -> bool:
         if (datetime.now() - start).total_seconds() > 10:
             print("TIMEOUT!!")
             return False
+        
+        time.sleep(1)
+        press_btn(serial_port, BTN2, "m")
+
 
     # wait for complete
     while True:
