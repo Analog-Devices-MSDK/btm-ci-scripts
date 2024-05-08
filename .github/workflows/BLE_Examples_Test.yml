@@ -656,8 +656,14 @@ jobs:
       - name: DATS
         run: | 
           DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
-          # echo $DATS_TEST_DIR
-          # ls $DATS_TEST_DIR
+          
+          #replace advertising names
+          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
+          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
+          sed -i 's/S/?/g' Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
+          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
+
+
           
           DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
