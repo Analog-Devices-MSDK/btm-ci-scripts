@@ -313,7 +313,9 @@ test_results_client = {}
 
 
 def _client_thread(portname: str):
+    
     client_console = serial.Serial(portname, baudrate=115200, timeout=2)
+    client_console.flush()
     test_results_client["pairing"] = test_secure_connection(client_console)
     if not test_results_client["pairing"]:
         return test_results_client
@@ -333,6 +335,7 @@ test_results_server = {}
 
 def _server_thread(portname: str):
     server_console = serial.Serial(portname, baudrate=115200, timeout=2)
+    server_console.flush()
     test_results_server["pairing"] = test_secure_connection(server_console)
 
     return test_results_server
