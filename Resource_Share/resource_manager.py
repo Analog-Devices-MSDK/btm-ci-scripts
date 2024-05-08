@@ -115,7 +115,37 @@ class ResourceManager:
             Owner
         """
         return self.get_resource_lock_info(resource).get("owner", "")
-    
+    def get_owned_boards(self, owner:str) -> List[str]:
+        """Get resources owned by specific owner
+
+        Parameters
+        ----------
+        owner : str
+            Owner name
+
+        Returns
+        -------
+        List[str]
+            Resources owned by given owner
+
+        Raises
+        ------
+        ValueError
+            If owner is an empty string
+        """
+        if owner == '':
+            raise ValueError("Owner must not be empty")
+        resources = []
+
+        for resource in self.resources:
+            current_owner = rm.get_owner(resource)
+            
+            if owner == current_owner:
+                resources.append(resource)
+
+        return resources
+
+
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
 
@@ -263,6 +293,34 @@ class ResourceManager:
             if self.unlock_resource(resource, owner):
                 unlock_count += 1
         return unlock_count
+    
+    def unlock_resource_by_owner(self, owner: str) -> List[str]:
+        """Unlock all resources allocated to owner
+
+        Parameters
+        ----------
+        owner : str
+            Owner
+
+        Returns
+        -------
+        List[str]
+            Resources unlocked
+
+        Raises
+        ------
+        ValueError
+            If owner is an empty string
+        """
+        if owner == '':
+            raise ValueError("Owner must not be empty")
+        
+        resources = rm.get_owned_boards(owner)
+
+        self.unlock_resources(resources, owner)
+
+        return resources
+
 
     def unlock_all_resources(self):
         """Delete all lockfiles"""
@@ -551,13 +609,13 @@ class ResourceManager:
 
 
 if __name__ == "__main__":
-    # Setup the command line description text
+    
     DESC_TEXT = """
     Lock/Unlock Hardware resources
     Query resource information
     Monitor resources
     """
-    VERSION = '1.0.0'
+    VERSION = "1.0.0"
 
     # Parse the command line arguments
     parser = argparse.ArgumentParser(
@@ -585,6 +643,14 @@ if __name__ == "__main__":
         help="Unlock all resources in lock directory",
     )
     parser.add_argument(
+        "-uo",
+        "--unlock-owner",
+        default="",
+        help="Unlock all resources allocated to owner",
+    )
+
+    
+    parser.add_argument(
         "-l",
         "--lock",
         default=[],
@@ -598,6 +664,7 @@ if __name__ == "__main__":
         help="Name of user locking or unlocking",
     )
     parser.add_argument(
+        "-lu",
         "--list-usage",
         action="store_true",
         help="""Display basic usage stats of the boards"""
@@ -630,6 +697,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Get application version",
     )
+    parser.add_argument(
+        "-or",
+        "--owner-resources",
+        default="",
+        help="Get resources allocated to owner",
+    )
+
     parser.add_argument(
         "-f",
         "--find-board",
@@ -670,6 +744,12 @@ if __name__ == "__main__":
     if unlock_boards:
         print(f"Unlocking resources {unlock_boards}")
         rm.unlock_resources(unlock_boards, args.owner)
+    
+    if args.unlock_owner:
+        unlocked_resources = rm.unlock_resource_by_owner(args.unlock_owner)
+        print(f'Unlocked {len(unlocked_resources)} resources')
+        for resource in unlocked_resources:
+            print(resource)
 
     if args.get_value:
         print(rm.get_item_value(args.get_value))
@@ -679,5 +759,10 @@ if __name__ == "__main__":
 
     if args.version:
         print(VERSION)
-        
+
+    if args.owner_resources:
+        resources = rm.get_owned_boards(args.owner_resources)
+        for resource in resources:
+            print(resource)
+
     sys.exit(0)

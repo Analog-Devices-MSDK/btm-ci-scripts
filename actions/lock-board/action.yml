@@ -12,6 +12,13 @@ inputs:
     description: 'Lock timeout'
     required: false
     default: '1800'
+  owner:
+    description: "Name of owner of resources"
+    required: false
+  all_owned:
+    description: "Unlock all boards current allocated to workflow"
+    required: false
+    default: 'false'
 runs:
   using: 'node20'
   main: 'index.js'
