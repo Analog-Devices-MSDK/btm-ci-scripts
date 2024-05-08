@@ -657,7 +657,9 @@ jobs:
 
       - name: DATS
         run: | 
-          DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
+          DATS_TEST_DIR=$RESOURCE_SHARE_DIR/../tests/dats
+          $DATS_TEST_DIR
+          ls $DATS_TEST_DIR
           
           DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
