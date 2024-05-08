@@ -625,6 +625,14 @@ jobs:
           # timeout: 3600
       # - name: Make Test Projects
       #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@main
+      - name: Set ADV Names
+        run: |
+          #replace advertising names
+          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
+          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
+          sed -i 's/S/?/g' Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
+          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
+
       - name: Erase Boards DATS
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
         with:
@@ -657,15 +665,9 @@ jobs:
         run: | 
           DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
           
-          #replace advertising names
-          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
-          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
-          sed -i 's/S/?/g' Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
-          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
 
 
-          
-          DATS_BOARD_655=max32655_board1
+                DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
     
           DATS_BOARD_665=max32665_board1
