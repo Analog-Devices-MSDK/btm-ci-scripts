@@ -116,10 +116,10 @@ def test_secure_connection(serial_port: serial.Serial) -> bool:
             serial_port.write("pin 1 1234\n".encode("utf-8"))
             break
 
-        if "Connection encrypted" in text or "Connection opened" in text:
+        if "Connection encrypted" in text:
             return True
 
-        if (datetime.now() - start).total_seconds() > 20:
+        if (datetime.now() - start).total_seconds() > 30:
             print("TIMEOUT!!")
             return False
 
