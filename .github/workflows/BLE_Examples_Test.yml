@@ -721,12 +721,13 @@ jobs:
       #------------------------------| Erase & Unlock all required boards at once |------------------
       #----------------------------------------------------------------------------------------------
       - name: Clean up
-        if: ${{ always() && steps.lock_boards.outcome == 'success'}}
+        if: always()
         run: |
           git clean -ffdx
           git reset --hard
 
       - name: Erase Boards
+        if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
         with:
           board: |
