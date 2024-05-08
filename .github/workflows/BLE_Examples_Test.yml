@@ -628,7 +628,7 @@ jobs:
       - name: Set ADV Names
         run: |
           ls
-          #replace advertising names
+          ls Examples/MAX32655/Bluetooth/BLE_dats
           sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
           sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
           sed -i 's/S/?/g' Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
