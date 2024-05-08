@@ -358,16 +358,6 @@ if __name__ == "__main__":
     assert (
         SERVER_BOARD != CLIENT_BOARD
     ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
-    assert (
-        DATS_FILE != DATC_FILE
-    ), f"OTAC ELF ({DATS_FILE}) must not  be the same as Server ({DATC_FILE})"
-
-    # Make sure all bonding information is wiped
-    rm.resource_erase(SERVER_BOARD)
-    rm.resource_erase(CLIENT_BOARD)
-
-    rm.resource_flash(SERVER_BOARD, DATS_FILE)
-    rm.resource_flash(CLIENT_BOARD, DATC_FILE)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
