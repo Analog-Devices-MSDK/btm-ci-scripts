@@ -627,6 +627,7 @@ jobs:
       #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@main
       - name: Set ADV Names
         run: |
+          ls
           #replace advertising names
           sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
           sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
