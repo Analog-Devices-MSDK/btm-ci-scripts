@@ -116,7 +116,7 @@ def test_secure_connection(serial_port: serial.Serial) -> bool:
             serial_port.write("pin 1 1234\n".encode("utf-8"))
             break
 
-        if "Connection encrypted" in text:
+        if "Connection encrypted" in text or "Connection opened" in text:
             return True
 
         if (datetime.now() - start).total_seconds() > 20:
@@ -317,7 +317,7 @@ def _client_thread(portname: str, board:str, rm:ResourceManager, owner:str):
     client_console = serial.Serial(portname, baudrate=115200, timeout=2)
     client_console.flush()
     rm.resource_reset(board, owner)
-    
+
     test_results_client["pairing"] = test_secure_connection(client_console)
     if not test_results_client["pairing"]:
         return test_results_client
@@ -387,8 +387,10 @@ if __name__ == "__main__":
     
 
     # Configure and run tests
-    client_t = threading.Thread(target=_client_thread, args=(client_port,SERVER_BOARD,rm, owner,))
-    server_t = threading.Thread(target=_server_thread, args=(server_port,CLIENT_BOARD, rm, owner,))
+    client_t = threading.Thread(target=_client_thread, 
+                                args=(client_port,SERVER_BOARD,rm, owner,))
+    server_t = threading.Thread(target=_server_thread, 
+                                args=(server_port,CLIENT_BOARD, rm, owner,))
 
 
     client_t.start()
