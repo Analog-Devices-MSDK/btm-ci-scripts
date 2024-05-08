@@ -381,8 +381,9 @@ if __name__ == "__main__":
     server_t = threading.Thread(target=_server_thread, args=(server_port,))
 
     # Reset to start from scratch
-    rm.resource_reset(SERVER_BOARD)
-    rm.resource_reset(CLIENT_BOARD)
+    owner = rm.get_owner(SERVER_BOARD)
+    rm.resource_reset(SERVER_BOARD,owner)
+    rm.resource_reset(CLIENT_BOARD,owner)
 
     client_t.start()
     server_t.start()
