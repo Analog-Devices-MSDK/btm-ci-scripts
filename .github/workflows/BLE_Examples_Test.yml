@@ -622,16 +622,14 @@ jobs:
             max32665_board1
             max32690_board_w1
           lock: true
-          # timeout: 3600
-      # - name: Make Test Projects
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@main
+      
       - name: Set ADV Names
         run: |
           
           sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
           sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_datc/datc_main.c
-          sed -i 's/S/?/g' Examples/MAX32665/Bluetooth/BLE_datc/dats_main.c
-          sed -i 's/S/?/g' Examples/MAX32655/Bluetooth/BLE_dats/datc_main.c
+          sed -i 's/S/?/g' Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
+          sed -i 's/S/?/g' Examples/MAX32690/Bluetooth/BLE_datc/datc_main.c
 
       - name: Erase Boards DATS
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
@@ -667,7 +665,7 @@ jobs:
           
 
 
-                DATS_BOARD_655=max32655_board1
+          DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
     
           DATS_BOARD_665=max32665_board1
