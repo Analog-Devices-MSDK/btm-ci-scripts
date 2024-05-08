@@ -643,10 +643,12 @@ jobs:
             max32655_board1
             max32655_board2
             max32665_board1
+            max32690_board_w1
   
           project: |
             BLE_dats
             BLE_datc
+            BLE_dats
             BLE_datc
           suppress_output: true
           
