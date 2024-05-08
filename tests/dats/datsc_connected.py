@@ -312,10 +312,12 @@ def speed_test(serial_port: serial.Serial) -> bool:
 test_results_client = {}
 
 
-def _client_thread(portname: str):
+def _client_thread(portname: str, board:str, rm:ResourceManager, owner:str):
     
     client_console = serial.Serial(portname, baudrate=115200, timeout=2)
     client_console.flush()
+    rm.resource_reset(board, owner)
+    
     test_results_client["pairing"] = test_secure_connection(client_console)
     if not test_results_client["pairing"]:
         return test_results_client
@@ -333,9 +335,10 @@ def _client_thread(portname: str):
 test_results_server = {}
 
 
-def _server_thread(portname: str):
+def _server_thread(portname: str, board:str, rm:ResourceManager, owner:str):
     server_console = serial.Serial(portname, baudrate=115200, timeout=2)
     server_console.flush()
+    rm.resource_reset(board,owner)
     test_results_server["pairing"] = test_secure_connection(server_console)
 
     return test_results_server
@@ -379,14 +382,14 @@ if __name__ == "__main__":
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    # Configure and run tests
-    client_t = threading.Thread(target=_client_thread, args=(client_port,))
-    server_t = threading.Thread(target=_server_thread, args=(server_port,))
-
     # Reset to start from scratch
     owner = rm.get_owner(SERVER_BOARD)
-    rm.resource_reset(SERVER_BOARD,owner)
-    rm.resource_reset(CLIENT_BOARD,owner)
+    
+
+    # Configure and run tests
+    client_t = threading.Thread(target=_client_thread, args=(client_port,SERVER_BOARD,rm, owner,))
+    server_t = threading.Thread(target=_server_thread, args=(server_port,CLIENT_BOARD, rm, owner,))
+
 
     client_t.start()
     server_t.start()
