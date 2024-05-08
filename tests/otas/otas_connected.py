@@ -160,7 +160,8 @@ def client_test_start_update_xfer(serial_port: serial.Serial) -> bool:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
 
-        print(new_text)
+        
+        print(new_text, end='')
 
         if "Starting file transfer" in text:
             break

@@ -108,6 +108,8 @@ def test_secure_connection(serial_port: serial.Serial) -> bool:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
 
+        print(new_text, end='')
+
         # wait until you see the term passkey, so we can enter the pin
         if "passkey" in text:
             time.sleep(1)
@@ -126,6 +128,8 @@ def test_secure_connection(serial_port: serial.Serial) -> bool:
     while True:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
+        print(new_text, end='')
+
 
         # wait for pairing process to go through and see if it passed or failed
         if "Pairing failed" in text:
@@ -166,7 +170,10 @@ def write_char_test(serial_port: serial.Serial) -> bool:
     text = ""
 
     while True:
-        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+        print(new_text, end='')
+
         if "No action assigned" in text:
             return False
 
@@ -201,7 +208,9 @@ def write_secure_test(serial_port: serial.Serial) -> bool:
     start = datetime.now()
     text = ""
     while True:
-        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+        print(new_text, end='')
 
         if "No action assigned" in text:
             return False
@@ -239,6 +248,8 @@ def phy_switch_test(serial_port: serial.Serial) -> bool:
     while True:
         new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
         text += new_text
+        print(new_text, end='')
+
 
         if "No action assigned" in text:
             return False
@@ -282,7 +293,10 @@ def speed_test(serial_port: serial.Serial) -> bool:
     start = datetime.now()
 
     while True:
-        text += serial_port.read(serial_port.in_waiting).decode("utf-8")
+        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
+        text += new_text
+        print(new_text, end='')
+
         if "bps" in text:
             print(text)
             return True
