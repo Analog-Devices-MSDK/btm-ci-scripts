@@ -631,10 +631,10 @@ jobs:
           sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
           sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_datc/datc_main.c
 
-          sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_otas/otas_main.c
-          sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_otac/otac_main.c
-          sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_otas/otas_main.c
-          sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_otac/otac_main.c
+          sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
+          sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_otac/datc_main.c
+          sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_otas/dats_main.c
+          sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_otac/datc_main.c
 
       # - name: Erase Boards DATS
       #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
@@ -708,7 +708,6 @@ jobs:
             max32690_board_w1
       
       - name: Flash OTAS
-        if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
         with:
           board: |
