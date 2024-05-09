@@ -641,6 +641,13 @@ jobs:
             max32655_board2
             max32665_board1
             max32690_board_w1
+            
+          has_two_flash_banks: |
+            false
+            false
+            true
+            true
+
       
       - name: Flash DATS
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
