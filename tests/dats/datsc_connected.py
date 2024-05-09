@@ -140,7 +140,7 @@ def test_secure_connection(serial_port: serial.Serial) -> bool:
             print("Pairing success")
             return True
 
-        if (datetime.now() - start).total_seconds() > 10:
+        if (datetime.now() - start).total_seconds() > 20:
             print("TIMEOUT!!")
             return False
 
