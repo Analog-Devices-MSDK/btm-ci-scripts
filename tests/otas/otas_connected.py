@@ -187,7 +187,7 @@ class ClientTester(BasicTester):
                 "utf-8"
             )
             self.text += new_text
-
+            print(new_text)
             if "transfer complete" in self.text:
                 return True
 
@@ -221,8 +221,8 @@ class ClientTester(BasicTester):
                 "utf-8"
             )
             self.text += new_text
-            if new_text.strip() != "":
-                print(new_text, end="")
+            
+            print(new_text, end="")
 
             status_match = re.search(pattern, self.text)
 
@@ -293,6 +293,8 @@ class ServerTester(BasicTester):
                 "utf-8"
             )
             self.text += new_text
+
+            print(new_text, end='')
 
             version_match = re.search(pattern, self.text)
 
