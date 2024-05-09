@@ -64,7 +64,7 @@ import serial
 
 
 # sys.path.append(RESOURCE_SHARE_DIR)
-sys.path.append('../..')
+sys.path.append("../..")
 
 # pylint: disable=import-error,wrong-import-position
 from Resource_Share.resource_manager import ResourceManager
@@ -73,10 +73,9 @@ from Resource_Share.resource_manager import ResourceManager
 
 
 class BasicTester:
-
-    def __init__(self, portname:str) -> None:
+    def __init__(self, portname: str) -> None:
         self.portname = portname
-        self.text = ''
+        self.text = ""
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
         self.serial_port.flush()
 
@@ -93,69 +92,74 @@ class BasicTester:
         for byte in data:
             self.serial_port.write(byte)
             time.sleep(0.1)
+
     def test_secure_connection(self) -> bool:
-            """Generic secure connection test for pairing
+        """Generic secure connection test for pairing
 
-            Parameters
-            ----------
-            serial_port : serial.Serial
-                serial port to write and read from
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            serial port to write and read from
 
-            Returns
-            -------
-            bool
-                True if test success. False otherwise
-            """
+        Returns
+        -------
+        bool
+            True if test success. False otherwise
+        """
 
-            print("STARTING CONNECTION TEST")
-            start = datetime.now()
-            
-            while True:
-                new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
-                self.text += new_text
+        print("STARTING CONNECTION TEST")
+        start = datetime.now()
 
-                print(new_text, end='')
+        while True:
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.text += new_text
 
-                # wait until you see the term passkey, so we can enter the pin
-                if "passkey" in self.text:
-                    time.sleep(1)
-                    self.serial_port.write("pin 1 1234\n".encode("utf-8"))
-                    break
+            print(new_text, end="")
 
-                if "Connection encrypted" in self.text:
-                    return True
+            # wait until you see the term passkey, so we can enter the pin
+            if "passkey" in self.text:
+                time.sleep(1)
+                self.serial_port.write("pin 1 1234\n".encode("utf-8"))
+                break
 
-                if (datetime.now() - start).total_seconds() > 30:
-                    print("TIMEOUT!!")
-                    return False
+            if "Connection encrypted" in self.text:
+                return True
 
-            print("Passkey entered")
-            start = datetime.now()
-            while True:
-                new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
-                self.text += new_text
-                print(new_text, end='')
+            if (datetime.now() - start).total_seconds() > 30:
+                print("TIMEOUT!!")
+                return False
 
+        print("Passkey entered")
+        start = datetime.now()
+        while True:
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.text += new_text
+            print(new_text, end="")
 
-                # wait for pairing process to go through and see if it passed or failed
-                if "Pairing failed" in self.text:
-                    print("Pairing failed")
-                    return False
+            # wait for pairing process to go through and see if it passed or failed
+            if "Pairing failed" in self.text:
+                print("Pairing failed")
+                return False
 
-                if "Pairing completed successfully" in text or "Connection encrypted" in text:
-                    print("Pairing success")
-                    return True
+            if (
+                "Pairing completed successfully" in self.text
+                or "Connection encrypted" in self.text
+            ):
+                print("Pairing success")
+                return True
 
-                if (datetime.now() - start).total_seconds() > 30:
-                    print("TIMEOUT!!")
-                    return False
+            if (datetime.now() - start).total_seconds() > 30:
+                print("TIMEOUT!!")
+                return False
 
 
 class ClientTester(BasicTester):
-
-    def __init__(self, portname:str) -> None:
-        BasicTester.__init__(portname=portname)
-        
+    def __init__(self, portname: str) -> None:
+        BasicTester.__init__(self, portname=portname)
 
     def write_char_test(self) -> bool:
         """Test for unsecure write characteristic
@@ -179,11 +183,12 @@ class ClientTester(BasicTester):
 
         start = datetime.now()
 
-        
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
             self.text += new_text
-            print(new_text, end='')
+            print(new_text, end="")
 
             if "No action assigned" in self.text:
                 return False
@@ -197,7 +202,6 @@ class ClientTester(BasicTester):
 
             time.sleep(0.5)
             self.serial_port.write("btn 2 l\n".encode("utf-8"))
-
 
     def write_secure_test(self) -> bool:
         """Test for secure write
@@ -217,11 +221,13 @@ class ClientTester(BasicTester):
         self.serial_port.write("btn 2 m\n".encode("utf-8"))
 
         start = datetime.now()
-        
+
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
             self.text += new_text
-            print(new_text, end='')
+            print(new_text, end="")
 
             if "No action assigned" in self.text:
                 return False
@@ -234,7 +240,6 @@ class ClientTester(BasicTester):
 
             time.sleep(1)
             self.serial_port.write("btn 2 m\r\n".encode("utf-8"))
-
 
     def phy_switch_test(self) -> bool:
         """Test to update PHY from 1M to 2M
@@ -254,13 +259,13 @@ class ClientTester(BasicTester):
 
         self.serial_port.write("btn 2 s\n".encode("utf-8"))
         start = datetime.now()
-        
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
             self.text += new_text
-            print(new_text, end='')
-
+            print(new_text, end="")
 
             if "No action assigned" in self.text:
                 return False
@@ -277,12 +282,10 @@ class ClientTester(BasicTester):
             time.sleep(1)
             self.serial_port.write("btn 2 s\n".encode("utf-8"))
 
-
     def _run_speed_test(self):
         self.serial_port.write("btn 2 x\n".encode("utf-8"))
         time.sleep(1)
         self.serial_port.write("btn 2 m\n".encode("utf-8"))
-
 
     def speed_test(self) -> bool:
         """Test throughput example
@@ -299,15 +302,16 @@ class ClientTester(BasicTester):
         """
         print("SPEED TEST")
 
-
         self._run_speed_test()
         time.sleep(1)
         start = datetime.now()
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
             self.text += new_text
-            print(new_text, end='')
+            print(new_text, end="")
 
             if "bps" in self.text:
                 print(self.text)
@@ -324,23 +328,19 @@ class ClientTester(BasicTester):
 test_results_client = {}
 
 
-def _client_thread(portname: str, board:str, rm:ResourceManager, owner:str):
-    
-    
-    
-    rm.resource_reset(board, owner)
+def _client_thread(portname: str, board: str, resource_manager: ResourceManager, owner: str):
+    resource_manager.resource_reset(board, owner)
 
     client = ClientTester(portname)
 
     test_results_client["pairing"] = client.test_secure_connection()
     if not test_results_client["pairing"]:
         return test_results_client
-    
+
     test_results_client["write characteristic"] = client.write_char_test()
     test_results_client["write secure"] = client.write_secure_test()
     test_results_client["speed"] = client.speed_test()
     test_results_client["phy switch"] = client.phy_switch_test()
-
 
     return test_results_client
 
@@ -348,9 +348,9 @@ def _client_thread(portname: str, board:str, rm:ResourceManager, owner:str):
 test_results_server = {}
 
 
-def _server_thread(portname: str, board:str, rm:ResourceManager, owner:str):
+def _server_thread(portname: str, board: str, resource_manager: ResourceManager, owner: str):
     server = BasicTester(portname)
-    rm.resource_reset(board,owner)
+    resource_manager.resource_reset(board, owner)
     test_results_server["pairing"] = server.test_secure_connection()
 
     return test_results_server
@@ -373,37 +373,48 @@ def _print_results(name, report):
     return overall
 
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) < 3:
         print("Not enough arguments!")
         sys.exit(-1)
 
-    rm = ResourceManager()
+    resource_manager = ResourceManager()
 
     # Get the boards under test and the file paths
-    SERVER_BOARD = sys.argv[1]
-    CLIENT_BOARD = sys.argv[2]
-    
+    server_board = sys.argv[1]
+    client_board = sys.argv[2]
 
     # sanity check
     assert (
-        SERVER_BOARD != CLIENT_BOARD
-    ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
+        server_board != client_board
+    ), f"Client Board ({client_board}) must not  be the same as Server ({server_board})"
 
     # Get console ports associated with the boards
-    server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
-    client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
+    server_port = resource_manager.get_item_value(f"{server_board}.console_port")
+    client_port = resource_manager.get_item_value(f"{client_board}.console_port")
 
     # Reset to start from scratch
-    owner = rm.get_owner(SERVER_BOARD)
-    
+    owner = resource_manager.get_owner(server_board)
 
     # Configure and run tests
-    client_t = threading.Thread(target=_client_thread, 
-                                args=(client_port,SERVER_BOARD,rm, owner,))
-    server_t = threading.Thread(target=_server_thread, 
-                                args=(server_port,CLIENT_BOARD, rm, owner,))
-
+    client_t = threading.Thread(
+        target=_client_thread,
+        args=(
+            client_port,
+            server_board,
+            resource_manager,
+            owner,
+        ),
+    )
+    server_t = threading.Thread(
+        target=_server_thread,
+        args=(
+            server_port,
+            client_board,
+            resource_manager,
+            owner,
+        ),
+    )
 
     client_t.start()
     server_t.start()
@@ -422,3 +433,7 @@ if __name__ == "__main__":
 
     if not OVERALL_CLIENT or not OVERALL_SERVER:
         sys.exit(-1)
+
+
+if __name__ == "__main__":
+    main()
