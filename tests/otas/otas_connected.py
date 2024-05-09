@@ -187,7 +187,7 @@ class ClientTester(BasicTester):
                 "utf-8"
             )
             self.text += new_text
-            print(new_text)
+            print(new_text, end="")
             if "transfer complete" in self.text:
                 return True
 
