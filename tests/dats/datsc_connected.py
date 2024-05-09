@@ -306,7 +306,7 @@ def speed_test(serial_port: serial.Serial) -> bool:
             return False
 
         _run_speed_test(serial_port)
-        time.sleep(2)
+        time.sleep(1)
 
 
 test_results_client = {}
