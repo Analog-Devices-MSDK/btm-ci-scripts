@@ -628,10 +628,13 @@ jobs:
           
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_datc/datc_main.c
-          
-          # Pick different names. All flashed together, no telling who connects to who.
           sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
           sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_datc/datc_main.c
+
+          sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_otas/otas_main.c
+          sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_otac/otac_main.c
+          sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_otas/otas_main.c
+          sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_otac/otac_main.c
 
       # - name: Erase Boards DATS
       #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
