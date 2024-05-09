@@ -152,6 +152,8 @@ class BasicTester:
                 print("Pairing success")
                 return True
 
+            
+
             if (datetime.now() - start).total_seconds() > 30:
                 print("TIMEOUT!!")
                 return False
