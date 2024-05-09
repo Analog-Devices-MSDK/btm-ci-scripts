@@ -628,8 +628,8 @@ jobs:
           
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_datc/datc_main.c
-          sed -i "s/'S'/'?'/g" Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
-          sed -i "s/'S'/'?'/g" Examples/MAX32690/Bluetooth/BLE_datc/datc_main.c
+          sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
+          sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_datc/datc_main.c
 
       - name: Erase Boards DATS
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main

@@ -302,7 +302,7 @@ def speed_test(serial_port: serial.Serial) -> bool:
             return True
 
         if (datetime.now() - start).total_seconds() > 20:
-            print("TIMEOUT!!")
+            print("\nTIMEOUT!!")
             return False
 
         _run_speed_test(serial_port)
