@@ -324,8 +324,8 @@ def _client_thread(portname: str, board:str, rm:ResourceManager, owner:str):
     test_results_client["write characteristic"] = write_char_test(client_console)
     test_results_client["write secure"] = write_secure_test(client_console)
 
-    test_results_client["phy switch"] = phy_switch_test(client_console)
     test_results_client["speed"] = speed_test(client_console)
+    test_results_client["phy switch"] = phy_switch_test(client_console)
 
     client_console.flush()
 

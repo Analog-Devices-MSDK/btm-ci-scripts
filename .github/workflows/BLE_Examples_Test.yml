@@ -628,6 +628,8 @@ jobs:
           
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_datc/datc_main.c
+          
+          # Pick different names. All flashed together, no telling who connects to who.
           sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
           sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_datc/datc_main.c
 
@@ -662,9 +664,7 @@ jobs:
       - name: DATS
         run: | 
           DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
-          
-
-
+           
           DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
     
@@ -673,7 +673,7 @@ jobs:
 
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
-          # (cd $OTAS_TEST_DIR && python3 datsc_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
+          
 
 
       - name: Erase Boards Init
