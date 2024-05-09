@@ -57,6 +57,7 @@ from typing import Dict
 import serial
 
 
+
 sys.path.append("../..")
 
 # pylint: disable=import-error,wrong-import-position
@@ -106,8 +107,10 @@ class BasicTester:
 
 
 class ClientTester(BasicTester):
+
     def __init__(self, portname: str) -> None:
-        BasicTester.__init__(self, portname)
+        super().__init__(portname)
+
 
     def test_discover_filespace(self) -> bool:
         """Test discovery filespace
@@ -125,15 +128,14 @@ class ClientTester(BasicTester):
         print("DISCOVER FILESPACE TEST")
         self.press_btn(BTN2, "s")
 
+        
         start = datetime.now()
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
             self.text += new_text
-
-            print(new_text, end="")
+            
+            print(new_text, end='')
 
             if "File discovery complete" in self.text:
                 return True
@@ -141,9 +143,11 @@ class ClientTester(BasicTester):
             if (datetime.now() - start).total_seconds() > 10:
                 print("TIMEOUT!!")
                 return False
-
+            
             time.sleep(1)
             self.press_btn(BTN2, "s")
+
+
 
     def test_start_update_xfer(self) -> bool:
         """Test firmware update
@@ -161,39 +165,39 @@ class ClientTester(BasicTester):
         print("UPDATE XFER TEST")
         self.press_btn(BTN2, "m")
 
+
         start = datetime.now()
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
-            self.text += new_text
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
+            text += new_text
 
-            print(new_text, end="")
+            
+            print(new_text, end='')
 
-            if "Starting file transfer" in self.text:
+            if "Starting file transfer" in text:
                 break
 
             if (datetime.now() - start).total_seconds() > 10:
                 print("TIMEOUT!!")
                 return False
-
+            
             time.sleep(1)
-            self.press_btn(BTN2, "m")
+            self.press_btn(self.serial_port, BTN2, "m")
+
 
         # wait for complete
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
             self.text += new_text
 
-            if "transfer complete" in self.text:
+            if "transfer complete" in text:
                 return True
 
             if (datetime.now() - start).total_seconds() > 30:
                 print("TIMEOUT!!")
                 return False
+
 
     def verify_xfer(self) -> bool:
         """Test transfer verification
@@ -212,17 +216,16 @@ class ClientTester(BasicTester):
 
         self.press_btn(BTN2, "l")
 
+        
         start = datetime.now()
 
         pattern = r"Verify complete status:\s*(.+)"
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
             self.text += new_text
-            if new_text.strip() != "":
-                print(new_text, end="")
+            if new_text.strip() != '':
+                print(new_text, end='')
 
             status_match = re.search(pattern, self.text)
 
@@ -253,7 +256,7 @@ def client_tests(portname: str) -> Dict[str, bool]:
     Dict[str, bool]
         Test report
     """
-
+    
     client = ClientTester(portname)
 
     client_results = {}
@@ -261,12 +264,16 @@ def client_tests(portname: str) -> Dict[str, bool]:
     client_results["update"] = client.test_start_update_xfer()
     client_results["verify"] = client.verify_xfer()
 
+
+
     return client_results
 
 
+
 class ServerTester(BasicTester):
+
     def __init__(self, portname: str) -> None:
-        BasicTester.__init__(self, portname)
+        super().__init__(portname)
 
     def test_version(self) -> bool:
         """Test the version of firmware
@@ -282,16 +289,14 @@ class ServerTester(BasicTester):
             True if test passed. False otherwise
         """
         print("SERVER TEST VERSION")
-
+        
         self.press_btn(BTN2, "m")
         start = datetime.now()
 
         pattern = r"FW_VERSION:\s*(.+)"
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
             self.text += new_text
 
             version_match = re.search(pattern, self.text)
@@ -322,7 +327,7 @@ def server_tests(portname: str):
     Dict[str, bool]
         Test report
     """
-
+    
     test_results_server = {}
     server = ServerTester(portname)
     test_results_server["versioning"] = server.test_version()
@@ -362,6 +367,7 @@ if __name__ == "__main__":
     ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
 
     OWNER = rm.get_owner(SERVER_BOARD)
+
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
