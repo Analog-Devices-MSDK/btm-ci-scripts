@@ -370,13 +370,14 @@ if __name__ == "__main__":
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
     rm.resource_reset(SERVER_BOARD, OWNER)
-    time.sleep(1)
     rm.resource_reset(CLIENT_BOARD, OWNER)
     # give time for connection
     time.sleep(5)
 
     # Run the tests
     test_server_results = server_tests(server_port)
+    rm.resource_reset(SERVER_BOARD, OWNER)
+    time.sleep(5)
     test_client_results = client_tests(client_port)
 
     # Print Results
