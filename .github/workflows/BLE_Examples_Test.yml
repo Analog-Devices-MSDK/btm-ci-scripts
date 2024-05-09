@@ -733,7 +733,7 @@ jobs:
           OTAC_BOARD_690=max32690_board_w1
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
-          (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_665 $OTAC_BOARD_655)
+          (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
       
       
