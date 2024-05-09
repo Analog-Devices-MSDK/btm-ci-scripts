@@ -279,7 +279,7 @@ class ClientTester(BasicTester):
                 print("TIMEOUT!!")
                 return False
 
-            time.sleep(1)
+            time.sleep(0.5)
             self.serial_port.write("btn 2 s\n".encode("utf-8"))
 
     def _run_speed_test(self):
