@@ -283,6 +283,7 @@ class ClientTester(BasicTester):
             self.serial_port.write("btn 2 s\n".encode("utf-8"))
 
     def _run_speed_test(self):
+        pass
         self.serial_port.write("btn 2 x\n".encode("utf-8"))
         time.sleep(1)
         self.serial_port.write("btn 2 m\n".encode("utf-8"))
@@ -303,7 +304,11 @@ class ClientTester(BasicTester):
         print("SPEED TEST")
 
         
-        self._run_speed_test()
+        # self._run_speed_test()
+        self.serial_port.write("btn 2 x\n".encode("utf-8"))
+        time.sleep(1)
+        self.serial_port.write("btn 2 m\n".encode("utf-8"))
+
         start = datetime.now()
 
         while True:
@@ -321,8 +326,11 @@ class ClientTester(BasicTester):
                 print("\nTIMEOUT!!")
                 return False
             print('Execute')
-            self._run_speed_test()  
+            # self._run_speed_test()  
+            self.serial_port.write("btn 2 x\n".encode("utf-8"))
             time.sleep(1)
+            self.serial_port.write("btn 2 m\n".encode("utf-8"))
+            
 
 
 test_results_client = {}
