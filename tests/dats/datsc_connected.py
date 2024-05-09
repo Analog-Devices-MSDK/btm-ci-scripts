@@ -320,8 +320,8 @@ class ClientTester(BasicTester):
             if (datetime.now() - start).total_seconds() > 20:
                 print("\nTIMEOUT!!")
                 return False
-
-            self._run_speed_test()
+            print('Execute')
+            self._run_speed_test()  
             time.sleep(1)
 
 
