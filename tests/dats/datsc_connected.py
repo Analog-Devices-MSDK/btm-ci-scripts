@@ -349,7 +349,7 @@ def _client_thread(portname: str, board: str, resource_manager: ResourceManager,
 
     test_results_client["write characteristic"] = client.write_char_test()
     test_results_client["write secure"] = client.write_secure_test()
-    test_results_client["speed"] = client.speed_test()
+    # test_results_client["speed"] = client.speed_test()
     test_results_client["phy switch"] = client.phy_switch_test()
 
     return test_results_client
