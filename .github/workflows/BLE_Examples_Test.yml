@@ -648,7 +648,6 @@ jobs:
             true
             true
 
-      
       - name: Flash DATS 655
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
         with:
@@ -688,12 +687,12 @@ jobs:
           build: true
           distclean: true
 
-    - name: DATS 655/690
-        run: | 
-          DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
-          DATS_BOARD_665=max32665_board1
-          DATC_BOARD_690=max32690_board_w1
-          (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
+      - name: DATS 655/690
+          run: | 
+            DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
+            DATS_BOARD_665=max32665_board1
+            DATC_BOARD_690=max32690_board_w1
+            (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
 
 
       - name: Erase Boards Init
