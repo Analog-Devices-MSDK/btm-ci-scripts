@@ -302,8 +302,8 @@ class ClientTester(BasicTester):
         """
         print("SPEED TEST")
 
+        
         self._run_speed_test()
-        time.sleep(1)
         start = datetime.now()
 
         while True:
