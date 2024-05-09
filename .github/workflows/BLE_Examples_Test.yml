@@ -679,10 +679,6 @@ jobs:
           DATC_BOARD_690=max32690_board_w1
 
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
-          
-          # ocderase $DATS_BOARD_655 $GITHUB_REF
-          # ocderase $DATC_BOARD_655 $GITHUB_REF
-          
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
           
 
@@ -723,7 +719,7 @@ jobs:
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_665 $OTAC_BOARD_655)
-          (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
+          # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
       
       
       
@@ -737,15 +733,15 @@ jobs:
           git clean -ffdx
           git reset --hard
 
-      - name: Erase Boards
-        if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
-        with:
-          board: |
-            max32655_board1
-            max32655_board2
-            max32665_board1
-            max32690_board_w1
+      # - name: Erase Boards
+      #   if: always()
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
+      #   with:
+      #     board: |
+      #       max32655_board1
+      #       max32655_board2
+      #       max32665_board1
+      #       max32690_board_w1
           
       - name: Unlock Boards
         if: always()
