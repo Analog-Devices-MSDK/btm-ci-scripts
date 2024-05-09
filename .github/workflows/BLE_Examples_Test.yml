@@ -680,8 +680,8 @@ jobs:
 
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
           
-          ocderase DATS_BOARD_655 $GITHUB_REF
-          ocderase DATC_BOARD_655 $GITHUB_REF
+          # ocderase $DATS_BOARD_655 $GITHUB_REF
+          # ocderase $DATC_BOARD_655 $GITHUB_REF
           
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
           
