@@ -305,9 +305,9 @@ class ClientTester(BasicTester):
 
         
         # self._run_speed_test()
-        self.serial_port.write("btn 2 x\n".encode("utf-8"))
+        self.slow_write("btn 2 x\n".encode("utf-8"))
         time.sleep(1)
-        self.serial_port.write("btn 2 m\n".encode("utf-8"))
+        self.slow_write("btn 2 m\n".encode("utf-8"))
 
         start = datetime.now()
 
@@ -327,9 +327,9 @@ class ClientTester(BasicTester):
                 return False
             print('Execute')
             # self._run_speed_test()  
-            self.serial_port.write("btn 2 x\n".encode("utf-8"))
+            self.slow_write("btn 2 x\n".encode("utf-8"))
             time.sleep(1)
-            self.serial_port.write("btn 2 m\n".encode("utf-8"))
+            self.slow_write("btn 2 m\n".encode("utf-8"))
             
 
 
