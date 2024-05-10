@@ -109,7 +109,7 @@ class BasicTester:
 
         print("STARTING CONNECTION TEST")
         start = datetime.now()
-
+        time_extended = True
         while True:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
@@ -127,7 +127,8 @@ class BasicTester:
             if "Connection encrypted" in self.conosle_output:
                 return True
             
-            if "Connection opened" in self.conosle_output:
+            if not time_extended and "Connection opened" in self.conosle_output:
+                time_extended = True
                 start = datetime.now()
 
             if (datetime.now() - start).total_seconds() > 30:
