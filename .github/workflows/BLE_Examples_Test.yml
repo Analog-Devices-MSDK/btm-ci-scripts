@@ -795,10 +795,10 @@ jobs:
         
 
 
-    #   #----------------------------------------------------------------------------------------------
-    #   # Save test reports
-    #   - uses: actions/upload-artifact@v3
-    #     if: failure()
-    #     with:
-    #         name: failure-report
-    #         path: $RESULTS_DIR
+      #----------------------------------------------------------------------------------------------
+      # Save test reports
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+            name: failure-report
+            path: $RESULTS_DIR
