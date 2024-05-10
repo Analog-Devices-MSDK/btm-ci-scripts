@@ -738,8 +738,8 @@ jobs:
           #TEMP fix for 690
           ocderase $OTAS_BOARD_655 $GITHUB_REF          
           sed -i "s/'?'/'!'/g" Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
-          make clean Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
-          make -j Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
+          make clean -C Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
+          make -j -C Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
           ocdflash Examples/MAX32655/Bluetooth/BLE_otas/build/max32655.elf
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
