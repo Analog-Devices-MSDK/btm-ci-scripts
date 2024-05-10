@@ -107,13 +107,13 @@ class BasicTester:
     
     def save_console_output(self, path):
         
-        folder = 'dats_out'
+        folder = 'otas_out'
         if not os.path.exists(folder):
             os.mkdir(folder)
         full_path = os.path.join(folder, path)
         
-        with open(full_path, 'w') as console_out_file:
-            console_out_file.write(self.console_output)
+        with open(full_path, 'w', encoding='utf-8') as console_out_file:
+            console_out_file.write(self.console_output.encode('utf-8'))
 
 
 
