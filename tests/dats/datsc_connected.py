@@ -376,9 +376,9 @@ def _server_thread(portname: str, board: str, resource_manager: ResourceManager,
     test_results_server["pairing"] = server.test_secure_connection()
    
 
-    while not kill_server:
-        new_text = server.serial_port.read(server.serial_port.in_waiting).decode('utf-8')
-        server.conosle_output += new_text
+    # while not kill_server:
+    #     new_text = server.serial_port.read(server.serial_port.in_waiting).decode('utf-8')
+    #     server.conosle_output += new_text
         # print(new_text, end='')
 
     server.save_console_output(f'dats_console_out_{board}.txt')
