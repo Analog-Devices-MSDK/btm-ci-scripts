@@ -636,66 +636,66 @@ jobs:
           sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_otas/dats_main.c
           sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_otac/datc_main.c
 
-      # - name: Erase Boards DATS
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
-      #   with:
-      #     board: |
-      #       max32655_board1
-      #       max32655_board2
-      #       max32665_board1
-      #       max32690_board_w1
+      - name: Erase Boards DATS
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
+        with:
+          board: |
+            max32655_board1
+            max32655_board2
+            max32665_board1
+            max32690_board_w1
 
-      #     has_two_flash_banks: |
-      #       true
-      #       true
-      #       true
-      #       true
+          has_two_flash_banks: |
+            true
+            true
+            true
+            true
 
-      # - name: Flash DATS 655
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
-      #   with:
-      #     board: |
-      #       max32655_board1
-      #       max32655_board2
+      - name: Flash DATS 655
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
+        with:
+          board: |
+            max32655_board1
+            max32655_board2
   
-      #     project: |
-      #       BLE_dats
-      #       BLE_datc
+          project: |
+            BLE_dats
+            BLE_datc
             
-      #     suppress_output: true
+          suppress_output: true
           
-      #     build: true
-      #     distclean: true
+          build: true
+          distclean: true
 
-      # - name: DATS 655
-      #   run: | 
-      #     DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats     
-      #     DATS_BOARD_655=max32655_board1
-      #     DATC_BOARD_655=max32655_board2
+      - name: DATS 655
+        run: | 
+          DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats     
+          DATS_BOARD_655=max32655_board1
+          DATC_BOARD_655=max32655_board2
     
       
-      #     (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
+          (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
       
-      # - name: Flash DATS 655/690
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
-      #   with:
-      #     board: |
-      #       max32665_board1
-      #       max32690_board_w1
-      #     project: |
-      #       BLE_dats
-      #       BLE_datc
-      #     suppress_output: true
+      - name: Flash DATS 655/690
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
+        with:
+          board: |
+            max32665_board1
+            max32690_board_w1
+          project: |
+            BLE_dats
+            BLE_datc
+          suppress_output: true
           
-      #     build: true
-      #     distclean: true
+          build: true
+          distclean: true
 
-      # - name: DATS 655/690
-      #   run: | 
-      #     DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
-      #     DATS_BOARD_665=max32665_board1
-      #     DATC_BOARD_690=max32690_board_w1
-      #     (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
+      - name: DATS 655/690
+        run: | 
+          DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
+          DATS_BOARD_665=max32665_board1
+          DATC_BOARD_690=max32690_board_w1
+          (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
 
 
       - name: Erase Boards Init
@@ -733,18 +733,16 @@ jobs:
           OTAC_BOARD_690=max32690_board_w1
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
-          ocderase $OTAS_BOARD_655 $GITHUB_REF
 
-          #TEMP fix for 690
-          ocderase $OTAS_BOARD_655 $GITHUB_REF          
-          sed -i "s/'?'/'!'/g" Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
-          
-          make clean -C Examples/MAX32655/Bluetooth/BLE_otas
-          make -j -C Examples/MAX32655/Bluetooth/BLE_otas
+          # #TEMP fix for 690
+          # ocderase $OTAS_BOARD_655 $GITHUB_REF          
+          # ocderase $OTAS_BOARD_655 $GITHUB_REF
+          # sed -i "s/'?'/'!'/g" Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c          
+          # make clean -C Examples/MAX32655/Bluetooth/BLE_otas
+          # make -j -C Examples/MAX32655/Bluetooth/BLE_otas
+          # ocdflash $OTAS_BOARD_655 Examples/MAX32655/Bluetooth/BLE_otas/build/max32655.elf $GITHUB_REF
 
-          ocdflash $OTAS_BOARD_655 Examples/MAX32655/Bluetooth/BLE_otas/build/max32655.elf $GITHUB_REF
-
-          (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
+          # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
       
       
