@@ -107,9 +107,9 @@ class BasicTester:
             True if test success. False otherwise
         """
 
-        print("STARTING CONNECTION TEST")
+        
         start = datetime.now()
-        time_extended = True
+        time_extended = False
         while True:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
@@ -129,13 +129,14 @@ class BasicTester:
             
             if not time_extended and "Connection opened" in self.conosle_output:
                 time_extended = True
+                print('EXTEDNDING TIME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 start = datetime.now()
 
             if (datetime.now() - start).total_seconds() > 30:
                 print("TIMEOUT!!")
                 return False
 
-        print("Passkey entered")
+        
         start = datetime.now()
         while True:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
@@ -228,7 +229,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise.
         """
-        print("WRITE SECURE TEST")
+        
         time.sleep(3)
         self.serial_port.write("btn 2 m\n".encode("utf-8"))
 
@@ -267,7 +268,6 @@ class ClientTester(BasicTester):
             True if test passed. False otherwise.
         """
         time.sleep(4)
-        print("PHY CHANGE TEST")
 
         self.serial_port.write("btn 2 s\n".encode("utf-8"))
         start = datetime.now()
@@ -313,7 +313,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise.
         """
-        print("SPEED TEST")
+        
 
         
         # self._run_speed_test()
