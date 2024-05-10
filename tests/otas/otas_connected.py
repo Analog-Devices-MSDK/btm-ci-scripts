@@ -106,12 +106,15 @@ class BasicTester:
         self.serial_port.write(command)
     
     def save_console_output(self, path):
+        
         folder = 'dats_out'
+        if not os.path.exists(folder):
+            os.mkdir(folder)
         full_path = os.path.join(folder, path)
-        Path(folder).mkdir(parents=True, exist_ok=True)
         
         with open(full_path, 'w') as console_out_file:
             console_out_file.write(self.console_output)
+
 
 
 class ClientTester(BasicTester):
