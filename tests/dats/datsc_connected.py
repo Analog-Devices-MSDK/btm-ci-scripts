@@ -330,6 +330,7 @@ class ClientTester(BasicTester):
             print('Execute')
             # self._run_speed_test()  
             self.slow_write("btn 2 x\n".encode("utf-8"))
+            time.sleep(1)
             
             # self.slow_write("btn 2 m\n".encode("utf-8"))
             
