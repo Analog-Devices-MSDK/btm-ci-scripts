@@ -72,7 +72,7 @@ BTN2 = 2
 class BasicTester:
     def __init__(self, portname: str) -> None:
         self.portname = portname
-        self.text = ""
+        self.console_output = ""
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
         self.serial_port.flush()
 
@@ -140,11 +140,11 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.console_output += new_text
 
             print(new_text, end="")
 
-            if "File discovery complete" in self.text:
+            if "File discovery complete" in self.console_output:
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
@@ -176,11 +176,11 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.console_output += new_text
 
             print(new_text, end="")
 
-            if "Starting file transfer" in self.text:
+            if "Starting file transfer" in self.console_output:
                 break
 
             if (datetime.now() - start).total_seconds() > 10:
@@ -195,9 +195,9 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.console_output += new_text
             print(new_text, end="")
-            if "transfer complete" in self.text:
+            if "transfer complete" in self.console_output:
                 return True
 
             if (datetime.now() - start).total_seconds() > 30:
@@ -229,11 +229,11 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.console_output += new_text
             
             print(new_text, end="")
 
-            status_match = re.search(pattern, self.text)
+            status_match = re.search(pattern, self.console_output)
 
             # Check for successful completion
             if status_match:
@@ -303,11 +303,11 @@ class ServerTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.console_output += new_text
 
             print(new_text, end='')
 
-            version_match = re.search(pattern, self.text)
+            version_match = re.search(pattern, self.console_output)
 
             if version_match:
                 version = version_match.group(1)
