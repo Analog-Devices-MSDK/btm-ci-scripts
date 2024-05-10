@@ -75,7 +75,7 @@ from Resource_Share.resource_manager import ResourceManager
 class BasicTester:
     def __init__(self, portname: str) -> None:
         self.portname = portname
-        self.text = ""
+        self.conosle_output = ""
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
         self.serial_port.flush()
 
@@ -114,17 +114,17 @@ class BasicTester:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.conosle_output += new_text
 
             print(new_text, end="")
 
             # wait until you see the term passkey, so we can enter the pin
-            if "passkey" in self.text:
+            if "passkey" in self.conosle_output:
                 time.sleep(1)
                 self.serial_port.write("pin 1 1234\n".encode("utf-8"))
                 break
 
-            if "Connection encrypted" in self.text:
+            if "Connection encrypted" in self.conosle_output:
                 return True
 
             if (datetime.now() - start).total_seconds() > 30:
@@ -137,17 +137,17 @@ class BasicTester:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.conosle_output += new_text
             print(new_text, end="")
 
             # wait for pairing process to go through and see if it passed or failed
-            if "Pairing failed" in self.text:
+            if "Pairing failed" in self.conosle_output:
                 print("Pairing failed")
                 return False
 
             if (
-                "Pairing completed successfully" in self.text
-                or "Connection encrypted" in self.text
+                "Pairing completed successfully" in self.conosle_output
+                or "Connection encrypted" in self.conosle_output
             ):
                 print("Pairing success")
                 return True
@@ -157,7 +157,9 @@ class BasicTester:
             if (datetime.now() - start).total_seconds() > 30:
                 print("TIMEOUT!!")
                 return False
-
+    def save_console_output(self, path):
+        with open(path, 'w') as console_out_file:
+            console_out_file.write(self.conosle_output)
 
 class ClientTester(BasicTester):
     def __init__(self, portname: str) -> None:
@@ -189,13 +191,13 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.conosle_output += new_text
             print(new_text, end="")
 
-            if "No action assigned" in self.text:
+            if "No action assigned" in self.conosle_output:
                 return False
 
-            if "hello" in self.text:
+            if "hello" in self.conosle_output:
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
@@ -228,13 +230,13 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.conosle_output += new_text
             print(new_text, end="")
 
-            if "No action assigned" in self.text:
+            if "No action assigned" in self.conosle_output:
                 return False
 
-            if "hello" in self.text or "Secure data received!" in self.text:
+            if "hello" in self.conosle_output or "Secure data received!" in self.conosle_output:
                 return True
             if (datetime.now() - start).total_seconds() > 10:
                 print("TIMEOUT!!")
@@ -266,15 +268,15 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.conosle_output += new_text
             print(new_text, end="")
 
-            if "No action assigned" in self.text:
+            if "No action assigned" in self.conosle_output:
                 return False
 
-            if "PHY Requested" in self.text:
+            if "PHY Requested" in self.conosle_output:
                 return True
-            if "DM_PHY_UPDATE_IND" in self.text:
+            if "DM_PHY_UPDATE_IND" in self.conosle_output:
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
@@ -321,11 +323,11 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.text += new_text
+            self.conosle_output += new_text
             print(new_text, end="")
 
-            if "bps" in self.text:
-                print(self.text)
+            if "bps" in self.conosle_output:
+                print(self.conosle_output)
                 return True
 
             if (datetime.now() - start).total_seconds() > 20:
@@ -360,16 +362,25 @@ def _client_thread(portname: str, board: str, resource_manager: ResourceManager,
     test_results_client["write secure"] = client.write_secure_test()
     test_results_client["phy switch"] = client.phy_switch_test()
 
+    client.save_console_output(f'datc_console_out_{board}.txt')
+
     return test_results_client
 
 
 test_results_server = {}
-
+kill_server = False
 
 def _server_thread(portname: str, board: str, resource_manager: ResourceManager, owner: str):
     server = BasicTester(portname)
     resource_manager.resource_reset(board, owner)
     test_results_server["pairing"] = server.test_secure_connection()
+
+    while not kill_server:
+        new_text = server.serial_port.read(server.serial_port.in_waiting).decode('utf-8')
+        server.conosle_output += new_text
+        print(new_text)
+
+    server.save_console_output(f'dats_console_out_{board}.txt')
 
     return test_results_server
 
@@ -444,6 +455,7 @@ def main():
     server_t.start()
 
     client_t.join()
+    kill_server = True
     server_t.join()
 
     # Print Results
