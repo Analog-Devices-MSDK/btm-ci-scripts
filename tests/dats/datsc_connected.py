@@ -126,6 +126,9 @@ class BasicTester:
 
             if "Connection encrypted" in self.conosle_output:
                 return True
+            
+            if "Connection opened" in self.conosle_output:
+                start = datetime.now()
 
             if (datetime.now() - start).total_seconds() > 30:
                 print("TIMEOUT!!")

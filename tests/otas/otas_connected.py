@@ -49,6 +49,7 @@ Description: Data server-client connection test
 
 """
 
+import os
 import sys
 import re
 import time
