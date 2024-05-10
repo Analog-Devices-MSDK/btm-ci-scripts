@@ -48,12 +48,12 @@ datsc_connected.py
 Description: Data server-client connection test
 
 """
-
+import os
 import sys
 import threading
 import time
 from datetime import datetime
-
+from pathlib import Path
 import serial
 
 # RESOURCE_SHARE_DIR = os.environ.get("RESOURCE_SHARE_DIR")
@@ -158,7 +158,11 @@ class BasicTester:
                 print("TIMEOUT!!")
                 return False
     def save_console_output(self, path):
-        with open(path, 'w') as console_out_file:
+        folder = 'dats_out'
+        full_path = os.path.join(folder, path)
+        Path(folder).mkdir(parents=True, exist_ok=True)
+        
+        with open(full_path, 'w') as console_out_file:
             console_out_file.write(self.conosle_output)
 
 class ClientTester(BasicTester):
