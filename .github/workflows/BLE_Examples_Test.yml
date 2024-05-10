@@ -53,6 +53,7 @@ env:
   LOCK_MAX32655_B2: false
   LOCK_MAX32655_B1: false
   LOCK_MAX32665_B1: false
+  RESULTS_DIR: "ble_test_results"
 
 
 # defaults:
@@ -779,10 +780,25 @@ jobs:
           lock: false
 
 
+    - name: Consolidate Results
+      if: failure()
+      run: |
+        test_dir=$RESOURCE_SHARE_DIR/../tests
+        RESULTS_DIR=ble_test_results
+        set +e
+        rm -rf $RESULTS_DIR
+        set -e
+
+        mkdir $RESULTS_DIR
+        mv $test_dir/dats/dats_out $RESULTS_DIR
+
+        
+
+
       #----------------------------------------------------------------------------------------------
       # Save test reports
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
             name: failure-report
-            path: $RESOURCE_SHARE_DIR/../tests/dats/dats_out
+            path: $RESULTS_DIR
