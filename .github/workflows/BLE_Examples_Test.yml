@@ -742,7 +742,7 @@ jobs:
           make clean -C Examples/MAX32655/Bluetooth/BLE_otas
           make -j -C Examples/MAX32655/Bluetooth/BLE_otas
 
-          ocdflash Examples/MAX32655/Bluetooth/BLE_otas/build/max32655.elf
+          ocdflash $OTAS_BOARD_655 Examples/MAX32655/Bluetooth/BLE_otas/build/max32655.elf $GITHUB_REF
 
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)

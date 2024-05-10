@@ -23,7 +23,7 @@ function ocdflash() {
     fi
     # Need at least the name of thre resource 
     if [[ $# -lt 2 ]]; then
-        echo "Improper use! Expected: 2 arguments, Received: $#" 
+        echo "OCDFLASH Improper use! Expected: 2 arguments, Received: $#" 
         return -1
     fi
     name=$1
@@ -69,7 +69,7 @@ function ocderase() {
         return 0
     fi
     if [[ $# -lt 1 ]]; then
-        echo "Improper use! Expected: 1 argument, Received: $#"
+        echo "OCDERASE Improper use! Expected: 1 argument, Received: $#"
         return -1
     fi
 
@@ -117,7 +117,7 @@ function ocdreset() {
         return 0
     fi
     if [[ $# -lt 1 ]]; then
-        echo "Improper use! Expected: 1 argument, Received: $#"
+        echo "OCDRESET: Improper use! Expected: 1 argument, Received: $#"
         return -1
     fi
 
@@ -156,7 +156,7 @@ function ocdopen() {
         return 0
     fi
     if [[ $# -lt 1 ]]; then
-        echo "Improper use! Expected: at least 1 argument, Received: $#"
+        echo "OCDOPEN: Improper use! Expected: at least 1 argument, Received: $#"
         return -1
     fi
 
