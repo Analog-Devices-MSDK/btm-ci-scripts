@@ -56,7 +56,7 @@ import time
 from datetime import datetime
 from typing import Dict
 import serial
-
+from pathlib import Path
 
 sys.path.append("../..")
 
@@ -104,6 +104,14 @@ class BasicTester:
         """
         command = f"btn {btn_num} {method}\r\n".encode("utf-8")
         self.serial_port.write(command)
+    
+    def save_console_output(self, path):
+        folder = 'dats_out'
+        full_path = os.path.join(folder, path)
+        Path(folder).mkdir(parents=True, exist_ok=True)
+        
+        with open(full_path, 'w') as console_out_file:
+            console_out_file.write(self.conosle_output)
 
 
 class ClientTester(BasicTester):
@@ -241,7 +249,7 @@ class ClientTester(BasicTester):
                 return False
 
 
-def client_tests(portname: str) -> Dict[str, bool]:
+def client_tests(portname: str, boardname:str) -> Dict[str, bool]:
     """All client tests
 
     Parameters
@@ -261,6 +269,8 @@ def client_tests(portname: str) -> Dict[str, bool]:
     client_results["filespace"] = client.test_discover_filespace()
     client_results["update"] = client.test_start_update_xfer()
     client_results["verify"] = client.verify_xfer()
+
+    client.save_console_output(f'otac_out_{boardname}.txt')
 
     return client_results
 
@@ -312,7 +322,7 @@ class ServerTester(BasicTester):
             self.press_btn(BTN2, "m")
 
 
-def server_tests(portname: str):
+def server_tests(portname: str, boardname):
     """All server tests
 
     Parameters
@@ -329,6 +339,8 @@ def server_tests(portname: str):
     test_results_server = {}
     server = ServerTester(portname)
     test_results_server["versioning"] = server.test_version()
+
+    server.save_console_output(f'otas_out_{boardname}.txt')
 
     return test_results_server
 
@@ -383,10 +395,10 @@ def main():
     time.sleep(5)
 
     # Run the tests
-    test_server_results = server_tests(server_port)
+    test_server_results = server_tests(server_port, SERVER_BOARD)
     rm.resource_reset(SERVER_BOARD, OWNER)
     time.sleep(5)
-    test_client_results = client_tests(client_port)
+    test_client_results = client_tests(client_port, CLIENT_BOARD)
 
     # Print Results
     print("\n\n")
