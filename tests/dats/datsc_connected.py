@@ -385,8 +385,14 @@ def _print_results(name, report):
 
 def main():
     if len(sys.argv) < 3:
-        print("Not enough arguments!")
-        sys.exit(-1)
+        print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
+        
+        for arg in sys.argv[1:]:
+            print(arg)
+
+        print("USAGE: <dats-board> <datc-board> as shown in resource manager")
+        for arg in sys.argv:
+            print(arg)
 
     resource_manager = ResourceManager()
 

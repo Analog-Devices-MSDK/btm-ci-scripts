@@ -348,12 +348,17 @@ def _print_results(name, report):
 
     return overall
 
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) < 3:
-        print(f"Not enough arguments! Expected 2 got {len(sys.argv)}")
+        print(f"OTAS TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
+        
+        for arg in sys.argv[1:]:
+            print(arg)
+
+        print("USAGE: <otas-board> <otac-board> as shown in resource manager")
         for arg in sys.argv:
             print(arg)
+
         sys.exit(-1)
 
     rm = ResourceManager()
@@ -393,3 +398,9 @@ if __name__ == "__main__":
 
     if not OVERALL_CLIENT or not OVERALL_SERVER:
         sys.exit(-1)
+
+    pass
+
+
+if __name__ == "__main__":
+    main()
