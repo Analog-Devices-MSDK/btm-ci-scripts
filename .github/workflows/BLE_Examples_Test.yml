@@ -650,7 +650,7 @@ jobs:
           distclean: true
 
       - name: DATS 655
-        if: ${{env.MAX32655_DATS_CONNECTED_TEST == "true"}}
+        if: ${{env.MAX32655_DATS_CONNECTED_TEST == 'true'}}
         run: | 
           DATS_TEST_DIR=$TEST_DIR/dats     
           DATS_BOARD_655=max32655_board1
