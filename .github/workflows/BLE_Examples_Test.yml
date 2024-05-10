@@ -55,13 +55,6 @@ env:
   LOCK_MAX32665_B1: false
   RESULTS_DIR: "ble_test_results"
   
-
-
-# defaults:
-#   run:
-#     shell: bash -leo pipefail {0}
-#----------------------------------------------------------------------------------------------
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   BLE_Tests:
     # The type of runner that the job will run on
@@ -657,6 +650,7 @@ jobs:
           distclean: true
 
       - name: DATS 655
+        if: ${{env.MAX32655_DATS_CONNECTED_TEST == "true"}}
         run: | 
           DATS_TEST_DIR=$TEST_DIR/dats     
           DATS_BOARD_655=max32655_board1
@@ -714,6 +708,7 @@ jobs:
           distclean: true
 
       - name: OTAS
+        # if: ${{env.MAX32655_OTAS_CONNECTED_TEST == "true"}}
         run: | 
           OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
