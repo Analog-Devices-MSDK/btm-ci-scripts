@@ -780,25 +780,25 @@ jobs:
           lock: false
 
 
-    - name: Consolidate Results
-      if: failure()
-      run: |
-        test_dir=$RESOURCE_SHARE_DIR/../tests
-        RESULTS_DIR=ble_test_results
-        set +e
-        rm -rf $RESULTS_DIR
-        set -e
+    # - name: Consolidate Results
+    #   if: failure()
+    #   run: |
+    #     test_dir=$RESOURCE_SHARE_DIR/../tests
+    #     RESULTS_DIR=ble_test_results
+    #     set +e
+    #     rm -rf $RESULTS_DIR
+    #     set -e
 
-        mkdir $RESULTS_DIR
-        mv $test_dir/dats/dats_out $RESULTS_DIR
+    #     mkdir $RESULTS_DIR
+    #     mv $test_dir/dats/dats_out $RESULTS_DIR
 
         
 
 
-      #----------------------------------------------------------------------------------------------
-      # Save test reports
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-            name: failure-report
-            path: $RESULTS_DIR
+    #   #----------------------------------------------------------------------------------------------
+    #   # Save test reports
+    #   - uses: actions/upload-artifact@v3
+    #     if: failure()
+    #     with:
+    #         name: failure-report
+    #         path: $RESULTS_DIR
