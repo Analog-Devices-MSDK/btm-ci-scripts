@@ -294,7 +294,6 @@ class ServerTester(BasicTester):
         bool
             True if test passed. False otherwise
         """
-        print("SERVER TEST VERSION")
 
         self.press_btn(BTN2, "m")
         start = datetime.now()
