@@ -129,7 +129,6 @@ class BasicTester:
             
             if not time_extended and "Connection opened" in self.conosle_output:
                 time_extended = True
-                print('EXTEDNDING TIME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 start = datetime.now()
 
             if (datetime.now() - start).total_seconds() > 30:
