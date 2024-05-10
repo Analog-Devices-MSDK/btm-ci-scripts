@@ -733,6 +733,15 @@ jobs:
           OTAC_BOARD_690=max32690_board_w1
 
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
+          ocderase $OTAS_BOARD_655 $GITHUB_REF
+
+          #TEMP fix for 690
+          ocderase $OTAS_BOARD_655 $GITHUB_REF          
+          sed -i "s/'?'/'!'/g" Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
+          make clean Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
+          make -j Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c
+          ocdflash Examples/MAX32655/Bluetooth/BLE_otas/build/max32655.elf
+
           (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
       
