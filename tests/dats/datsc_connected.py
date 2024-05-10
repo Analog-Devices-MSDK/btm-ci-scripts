@@ -130,7 +130,7 @@ class BasicTester:
             if not time_extended and "Connection opened" in self.conosle_output:
                 time_extended = True
                 start = datetime.now()
-
+                    
             if (datetime.now() - start).total_seconds() > 30:
                 print("TIMEOUT!!")
                 return False
@@ -386,7 +386,7 @@ def _server_thread(portname: str, board: str, resource_manager: ResourceManager,
     while not kill_server:
         new_text = server.serial_port.read(server.serial_port.in_waiting).decode('utf-8')
         server.conosle_output += new_text
-        # print(new_text, end='')
+        
 
     server.save_console_output(f'dats_console_out_{board}.txt')
 

@@ -111,7 +111,7 @@ class BasicTester:
         Path(folder).mkdir(parents=True, exist_ok=True)
         
         with open(full_path, 'w') as console_out_file:
-            console_out_file.write(self.conosle_output)
+            console_out_file.write(self.console_output)
 
 
 class ClientTester(BasicTester):
@@ -131,7 +131,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise
         """
-        print("DISCOVER FILESPACE TEST")
+        
         self.press_btn(BTN2, "s")
 
         start = datetime.now()
@@ -167,7 +167,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise
         """
-        print("UPDATE XFER TEST")
+        
         self.press_btn(BTN2, "m")
 
         start = datetime.now()
@@ -217,8 +217,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise
         """
-        print("VERIFY XFER TEST")
-
+        
         self.press_btn(BTN2, "l")
 
         start = datetime.now()
