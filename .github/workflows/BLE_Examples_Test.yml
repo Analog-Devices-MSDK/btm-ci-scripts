@@ -54,7 +54,7 @@ env:
   LOCK_MAX32655_B1: false
   LOCK_MAX32665_B1: false
   RESULTS_DIR: "ble_test_results"
-  TEST_DIR: "${{env.RESULTS_DIR}}/../tests"
+  
 
 
 # defaults:
@@ -630,7 +630,7 @@ jobs:
       
       - name: Init Tests
         run: |
-          TEST_DIR=$RESOURCE_SHARE_DIR/../tests
+          
 
           #set advertising names
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
@@ -676,7 +676,7 @@ jobs:
 
       - name: DATS 655
         run: | 
-          DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats     
+          DATS_TEST_DIR=$TEST_DIR/dats     
           DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
     
@@ -733,7 +733,7 @@ jobs:
 
       - name: OTAS
         run: | 
-          OTAS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/otas
+          OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
           OTAC_BOARD_655=max32655_board2
           OTAC_BOARD_665=max32665_board1
@@ -789,4 +789,4 @@ jobs:
         if: failure()
         with:
             name: failure-report
-            path:  ${{ env.RESULTS_DIR}}
+            path:  ${{ env.TEST_DIR}}
