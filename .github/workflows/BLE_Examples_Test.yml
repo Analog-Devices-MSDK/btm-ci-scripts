@@ -54,6 +54,7 @@ env:
   LOCK_MAX32655_B1: false
   LOCK_MAX32665_B1: false
   RESULTS_DIR: "ble_test_results"
+  TEST_DIR: "${{env.RESULTS_DIR}}/../tests"
 
 
 # defaults:
@@ -67,6 +68,8 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     
+    - name:
+      run: printenv
 
     steps:
       #----------------------------------------------------------------------------------------------
@@ -624,9 +627,11 @@ jobs:
             max32690_board_w1
           lock: true
       
-      - name: Set ADV Names
+      - name: Init Tests
         run: |
-          
+          TEST_DIR=$RESOURCE_SHARE_DIR/../tests
+
+          #set advertising names
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_dats/dats_main.c
           sed -i "s/'S'/'?'/g" Examples/MAX32655/Bluetooth/BLE_datc/datc_main.c
           sed -i "s/'S'/'!'/g" Examples/MAX32665/Bluetooth/BLE_dats/dats_main.c
@@ -757,17 +762,14 @@ jobs:
         run: |
           git clean -ffdx
           git reset --hard
-
-      # - name: Erase Boards
-      #   if: always()
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
-      #   with:
-      #     board: |
-      #       max32655_board1
-      #       max32655_board2
-      #       max32665_board1
-      #       max32690_board_w1
           
+          
+          set +e
+          rm -rf $RESULTS_DIR
+          set -e
+          mkdir $RESULTS_DIR
+          mv $TEST_DIR/dats/dats_out $RESULTS_DIR
+
       - name: Unlock Boards
         if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
@@ -779,22 +781,7 @@ jobs:
             max32690_board_w1
           lock: false
 
-
-      - name: Consolidate Results
-        if: failure()
-        run: |
-          TEST_DIR=$RESOURCE_SHARE_DIR/../tests
-          
-          set +e
-          rm -rf $RESULTS_DIR
-          set -e
-
-          mkdir $RESULTS_DIR
-          mv $TEST_DIR/dats/dats_out $RESULTS_DIR
-
-        
-
-
+      
       #----------------------------------------------------------------------------------------------
       # Save test reports
       - uses: actions/upload-artifact@v3
