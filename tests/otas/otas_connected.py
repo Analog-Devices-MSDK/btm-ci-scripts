@@ -113,7 +113,7 @@ class BasicTester:
         full_path = os.path.join(folder, path)
         
         with open(full_path, 'w', encoding='utf-8') as console_out_file:
-            console_out_file.write(self.console_output.encode('utf-8'))
+            console_out_file.write(self.console_output)
 
 
 
