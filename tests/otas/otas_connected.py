@@ -352,6 +352,8 @@ def _print_results(name, report):
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(f"Not enough arguments! Expected 3 got {len(sys.argv)}")
+        for arg in sys.argv:
+            print(arg)
         sys.exit(-1)
 
     rm = ResourceManager()
