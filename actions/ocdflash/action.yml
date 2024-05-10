@@ -19,6 +19,10 @@ inputs:
     description: 'Perform distclean before building? (ignored if build=false)'
     required: false
     default: 'false'
+  suppress_output:
+    description: 'Used to suppress console unless an error is encountered.'
+    required: false
+    default: 'false'
 runs:
   using: 'node20'
   main: 'index.js'

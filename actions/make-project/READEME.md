@@ -12,6 +12,10 @@ Path to the project that should be built. Default: `'.'`.
 
 Flag used to indicated that a distclean should be performed instead of a normal clean. Default: `'false'`.
 
+### suppress_output
+
+Flag used to indicate that console stdout data should be suppressed. Console stderr, error, and exit data will still be printed. Default: `"false"`.
+
 ## Example usage
 
 ```yaml
@@ -19,4 +23,5 @@ uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@main
 with:
   path: msdk/Examples/MAX32655/Bluetooth/BLE5_ctr
   distclean: true
+  suppress_output: true
 ```

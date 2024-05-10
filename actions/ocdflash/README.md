@@ -22,7 +22,11 @@ Flag used to indicate that the project should be built before it is flashed. Def
 
 ### distclean
 
-Flag used to indicate that a distclean should be performed prior to building the project. If `build` is false, this input is ignored. Default: `"False"`.
+Flag used to indicate that a distclean should be performed prior to building the project. If `build` is false, this input is ignored. Default: `"false"`.
+
+### suppress_output
+
+Flag used to indicate that console stdout data should be suppressed. Console stderr, error, and exit data will still be printed. Default: `"false"`.
 
 ## Example usage
 
@@ -38,4 +42,5 @@ with:
   msdk_path: msdk
   build: true
   distclean: true
+  suppress_output: true
 ```

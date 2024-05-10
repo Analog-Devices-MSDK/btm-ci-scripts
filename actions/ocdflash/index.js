@@ -10,10 +10,11 @@ const BOARD_IDS = Core.getMultilineInput('board');
 const PROJECT_DIRS = Core.getMultilineInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
-const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required : false });
+const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
+const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
 
-const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
+const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
     const args = [
         '-s', `${env.OPENOCD_PATH}`, '-f', 'interface/cmsis-dap.cfg',
         '-f', `target/${target.toLowerCase()}.cfg`, '-c', `adapter serial ${dap}`,
@@ -21,9 +22,14 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
         '-c', `program ${elf} verify; reset; exit`
     ];
     let logOut = '';
+    let dumpOut = '';
     return new Promise((resolve, reject) => {
         const flashCmd = spawn('openocd', args);
-        flashCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+        if (suppress) {
+            flashCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+        } else {
+            flashCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+        }
         flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         flashCmd.on('error', error => {
             console.error(`ERROR: ${error.message}`);
@@ -31,10 +37,11 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet) {
         flashCmd.on('close', code => {
             console.log(logOut);
             console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
-                resolve(code);
-            }
+            // if (code != 0) reject(code);
+            // else {
+            //     resolve(code);
+            // }
+            resolve(code);
         });
     });
 }
@@ -56,7 +63,7 @@ const main = async function () {
     const tclPorts = [];
     const telnetPorts = [];
     const elfPaths = [];
-
+    retVal = 0;
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -74,32 +81,58 @@ const main = async function () {
         let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
-            await makeProject(projPath, DISTCLEAN_FLAG);
+            await makeProject(projPath, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
+                (success) => procSuccess(success, 'Build'),
+                (error) => {
+                    retVal--;
+                    procFail(error, 'Build', false);
+                    Core.setFailed(`Build ${projPath} failed.`);
+                }
+            );
+        }
+        if (retVal < 0) {
+            return;
         }
     }
     let promises = [];
     for (let i = 0; i < BOARD_IDS.length; i++) {
         promises[i] = flashBoard(
-            targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
-        ).catch((err) => procFail(err, 'Flash', true));
+            targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+        ).catch((err) => procFail(err, 'Flash', false));
     }
-    let retCodes = await Promise.all(promises).then(
-        (values) => {
-            for (const val of values) {
-                procSuccess(val, 'Flash');
-            }
-        }
-    );
-    for (const i in retCodes) {
+    // let retCodes = await Promise.all(promises).then(
+    //     (success) => {
+    //         for (const val of values) {
+    //             procSuccess(val, 'Flash');
+    //         },
+    //     (error) => 
+    //     }
+    // );
+    let retCodes = await Promise.all(promises);
+    for (let i = 0; i < retCodes.length; i++) {
         if (retCodes[i] != 0) {
+            procFail(retCodes[i], 'Flash', true);
             await flashBoard(
-                targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]
+                targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
                 (success) => procSuccess(success, 'Flash'),
-                (error) => procFail(error, 'Flash', false)
+                (error) => {
+                    retVal--;
+                    procFail(error, 'Flash', false);
+                    Core.setFailed(`Failed to flash ${targets[i]}.`)
+                }
             );
+        } else {
+            procSuccess(retCodes[i], 'Flash');
+        }
+        if (retVal < 0) {
+            return;
         }
     }
+
+    // if (retVal < 0) {
+    //     Core.setFailed(`Process exited with code ${retVal}`);
+    // }
 }
 
 main();
