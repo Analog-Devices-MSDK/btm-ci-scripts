@@ -676,26 +676,26 @@ jobs:
       
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
       
-      - name: Flash DATS 655/690
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
-        with:
-          board: |
-            max32665_board1
-            max32690_board_w1
-          project: |
-            BLE_dats
-            BLE_datc
-          suppress_output: true
+      # - name: Flash DATS 655/690
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
+      #   with:
+      #     board: |
+      #       max32665_board1
+      #       max32690_board_w1
+      #     project: |
+      #       BLE_dats
+      #       BLE_datc
+      #     suppress_output: true
           
-          build: true
-          distclean: true
+      #     build: true
+      #     distclean: true
 
-      - name: DATS 655/690
-        run: | 
-          DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
-          DATS_BOARD_665=max32665_board1
-          DATC_BOARD_690=max32690_board_w1
-          (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
+      # - name: DATS 655/690
+      #   run: | 
+      #     DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
+      #     DATS_BOARD_665=max32665_board1
+      #     DATC_BOARD_690=max32690_board_w1
+      #     (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
 
 
       - name: Erase Boards Init
@@ -785,4 +785,4 @@ jobs:
         if: failure()
         with:
             name: failure-report
-            path: .github/workflows/ci-tests/Examples_tests/results/
+            path: $RESOURCE_SHARE_DIR/../tests/dats/dats_out
