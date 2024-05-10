@@ -2,5 +2,5 @@
 **/__pycache__
 Resource_Share/__pycache__
 Resource_Share/__pycache__/*
-
+tests/**/*.txt
 envsetup/.env

@@ -48,7 +48,7 @@ datsc_connected.py
 Description: Data server-client connection test
 
 """
-import os
+
 import sys
 import threading
 import time
@@ -374,6 +374,7 @@ def _server_thread(portname: str, board: str, resource_manager: ResourceManager,
     server = BasicTester(portname)
     resource_manager.resource_reset(board, owner)
     test_results_server["pairing"] = server.test_secure_connection()
+   
 
     while not kill_server:
         new_text = server.serial_port.read(server.serial_port.in_waiting).decode('utf-8')
@@ -403,6 +404,7 @@ def _print_results(name, report):
 
 
 def main():
+    global kill_server
     if len(sys.argv) < 3:
         print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
         
