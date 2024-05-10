@@ -272,8 +272,8 @@ class ClientTester(BasicTester):
             if "No action assigned" in self.text:
                 return False
 
-            # if "2 MBit TX and RX PHY Requested" in text:
-            #     return True
+            if "PHY Requested" in self.text:
+                return True
             if "DM_PHY_UPDATE_IND" in self.text:
                 return True
 
