@@ -8,10 +8,6 @@ This action erases the flash on a board using openOCD. Both a single board or mu
 
 **Required** The ID of the board or boards to erase. ID must match one present in either the `boards_config.json` file or in a custom board configuration JSON.
 
-### has_two_flash_banks
-
-Flag used to indicate that at least one of the boards to erase uses two flash banks which should both be erased. Default: `"false"`.
-
 ### suppress_output
 
 Flag used to indicate that console stdout data should be suppressed. Console stderr, error, and exit data will still be printed. Default: `"false"`.

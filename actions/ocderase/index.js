@@ -5,7 +5,6 @@ const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
 
 const BOARD_IDS = Core.getMultilineInput('board');
-const HAS_TWO_FLASH_BANKS = Core.getMultilineInput('has_two_flash_banks', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
 
@@ -30,10 +29,26 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
             console.error(`ERROR: ${error.message}`);
         });
         eraseCmd.on('close', (code) => {
-            console.log(logOut);
-            console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
+            if (code != 0) {
+                let logLines = logOut.split(/\r?\n/)
+                let idx = logLines.length - 1;
+                while (!logLines[idx]) {
+                    idx--;
+                }
+                if (logLines[idx].trim() === 'Error: flash bank 1 does not exist') {
+                    if (!suppress) {
+                        console.log(logOut);
+                    }
+                    console.log(`Process exited with code ${code} -- OK`);
+                    resolve(0);
+                } else {
+                    console.log(logOut);
+                    console.log(`Process exited with code ${code}`);
+                    reject(code);
+                }
+            } else {
+                console.log(logOut);
+                console.log(`Process exited with code ${code}`);
                 resolve(code);
             }
         });
@@ -41,16 +56,6 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
 }
 
 const main = async function () {
-    if (HAS_TWO_FLASH_BANKS.length === 1 && BOARD_IDS.length > 1) {
-        for (let i = 0; i < BOARD_IDS.length; i++) {
-            HAS_TWO_FLASH_BANKS[i] = HAS_TWO_FLASH_BANKS[0];
-        }
-    } else if (HAS_TWO_FLASH_BANKS.length !== BOARD_IDS.length) {
-        console.log("Length of projects list must be 1 or the same as length of boards list.");
-        throw new Error(
-            '!! ERROR: Mismatched parameter lengths. Board could not be flashed. !!'
-        );
-    }
     const targets = [];
     const dapSNs = [];
     const gdbPorts = [];
@@ -86,7 +91,7 @@ const main = async function () {
         }
     );
     for (const i in retCodes) {
-        if (retCodes[i] === 0 && HAS_TWO_FLASH_BANKS[i]) {
+        if (retCodes[i] === 0) {
             await eraseFlash(
                 targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(

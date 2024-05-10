@@ -10,6 +10,7 @@ const BOARD_IDS = Core.getMultilineInput('board');
 const PROJECT_DIRS = Core.getMultilineInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
+const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
@@ -47,6 +48,10 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
 }
 
 const main = async function () {
+    let build_flags = [];
+    for (var i=0; i<BUILD_FLAGS.length; i++) {
+        build_flags.push(...BUILD_FLAGS[i].split(" "))
+    }
     if (PROJECT_DIRS.length === 1 && BOARD_IDS.length > 1) {
         for (let i = 0; i < BOARD_IDS.length; i++) {
             PROJECT_DIRS[i] = PROJECT_DIRS[0];
@@ -100,14 +105,6 @@ const main = async function () {
             targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch((err) => procFail(err, 'Flash', false));
     }
-    // let retCodes = await Promise.all(promises).then(
-    //     (success) => {
-    //         for (const val of values) {
-    //             procSuccess(val, 'Flash');
-    //         },
-    //     (error) => 
-    //     }
-    // );
     let retCodes = await Promise.all(promises);
     for (let i = 0; i < retCodes.length; i++) {
         if (retCodes[i] != 0) {
