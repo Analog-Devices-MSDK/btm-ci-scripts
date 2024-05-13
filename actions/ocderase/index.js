@@ -1,5 +1,6 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
+const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
