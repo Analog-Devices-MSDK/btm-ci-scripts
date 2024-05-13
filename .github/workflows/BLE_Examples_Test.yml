@@ -686,7 +686,7 @@ jobs:
           distclean: true
 
       - name: OTAS
-        # if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
+        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
         run: | 
           OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
@@ -702,7 +702,7 @@ jobs:
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
       
       - name: Result Consolidation
-        if: always()
+        if: failure()
         run: |
 
           set +e
@@ -712,8 +712,7 @@ jobs:
           mv $TEST_DIR/otas/otas_out $RESULTS_DIR
           set -e
           
- 
-          
+         
       - name: Unlock Boards
         if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
@@ -728,7 +727,7 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Save test reports
       - uses: actions/upload-artifact@v3
-        if: always()
+        if: failure()
         with:
             name: failure-report
             path: ${{ env.RESULTS_DIR }}
