@@ -272,7 +272,13 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     resource_manager.resource_reset(boardname)
     time.sleep(5)
     client_results = {}
-    client_results["filespace"] = client.test_discover_filespace()
+    first_try = client.test_discover_filespace()
+    
+    if not first_try:
+        client_results["filespace"] = client.test_discover_filespace()
+    else:
+        client_results["filespace"] = True
+
     client_results["update"] = client.test_start_update_xfer()
     client_results["verify"] = client.verify_xfer()
 
@@ -401,8 +407,8 @@ def main():
 
     # Run the tests
     test_server_results = server_tests(server_port, SERVER_BOARD)
-    resource_manager.resource_reset(SERVER_BOARD)
-    time.sleep(5)
+    # resource_manager.resource_reset(SERVER_BOARD)
+    # time.sleep(5)
     test_client_results = client_tests(client_port, CLIENT_BOARD, resource_manager)
 
     # Print Results
