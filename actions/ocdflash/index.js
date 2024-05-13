@@ -28,18 +28,20 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
         const flashCmd = spawn('openocd', args);
         if (suppress) {
             flashCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+            flashCmd.stderr.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
             flashCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+            flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         }
-        flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         flashCmd.on('error', error => {
-            // console.error(`ERROR: ${error.message}`);
+            if (suppress) {
+                logOut = `${logOut}${dumpOut}`
+            }
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         flashCmd.on('close', code => {
             logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            // console.log(`Process exited with code ${code}`);
             resolve(code);
         });
     });
@@ -67,7 +69,6 @@ const main = async function () {
     const telnetPorts = [];
     const elfPaths = [];
     retVal = 0;
-    // let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {

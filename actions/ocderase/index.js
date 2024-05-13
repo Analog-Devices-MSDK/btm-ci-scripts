@@ -22,12 +22,15 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
         const eraseCmd = spawn('openocd', args);
         if (suppress) {
             eraseCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+            eraseCmd.stderr.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
             eraseCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+            eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         }
-        eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         eraseCmd.on('error', (error) => {
-            // console.error(`ERROR: ${error.message}`);
+            if (suppress) {
+                logOut = `${logOut}${dumpOut}`
+            }
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         eraseCmd.on('close', (code) => {
@@ -47,14 +50,11 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
                 } else {
                     logOut = `${logOut}Process exited with code ${code}`
                     console.log(logOut);
-                    // console.log(`Process exited with code ${code}`);
-                    // reject(code);
                     resolve(code);
                 }
             } else {
                 logOut = `${logOut}Process exited with code ${code}`
                 console.log(logOut);
-                // console.log(`Process exited with code ${code}`);
                 resolve(code);
             }
         });

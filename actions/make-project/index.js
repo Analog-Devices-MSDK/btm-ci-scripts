@@ -15,23 +15,24 @@ const cleanProject = function (projectPath, distclean, suppress) {
         const cleanCmd = spawn('make', ['-C', projectPath, cleanOpt]);
         if (suppress) {
             cleanCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+            cleanCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
             cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+            cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         }
-        cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         cleanCmd.on('error', error => {
-            // console.error(`ERROR: ${error.message}`);
+            if (suppress) {
+                logOut = `${logOut}${dumpOut}`
+            }
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         cleanCmd.on('close', code => {
             logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            // console.log(`Process exited with code ${code}`);
             if (code != 0) reject(code);
             else {
                 resolve(code);
             }
-            // resolve(code);
         });
     });
 
@@ -67,18 +68,15 @@ const makeProject = async function (projectPath, distclean, build_flags, suppres
             if (suppress) {
                 logOut = `${logOut}${dumpOut}`
             }
-            // console.error(`ERROR: ${error.message}`);
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         makeCmd.on('close', code => {
             logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            // console.log(`Process exited with code ${code}`);
             if (code != 0) reject(code);
             else {
                 resolve(code);
             }
-            // resolve(code);
         });
     });
 }
