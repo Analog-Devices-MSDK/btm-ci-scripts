@@ -46,6 +46,6 @@ const procFail = function(exitCode, procName, retry) {
     }
 }
 
-const fileExists = async path => !!(await fstat.promises.stat(path).catch(e => false));
+const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
 
 module.exports = { getBoardData, getBoardOwner, procSuccess, procFail, fileExists };
