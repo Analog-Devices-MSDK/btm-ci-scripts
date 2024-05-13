@@ -267,7 +267,7 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     
     client = ClientTester(portname)
     client.serial_port.flush()
-    resource_manager.resource_reset(boardname)z
+    resource_manager.resource_reset(boardname)
     client_results = {}
     client_results["filespace"] = client.test_discover_filespace()
     client_results["update"] = client.test_start_update_xfer()
