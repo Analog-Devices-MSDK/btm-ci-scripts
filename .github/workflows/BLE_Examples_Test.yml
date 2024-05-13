@@ -726,11 +726,6 @@ jobs:
             max32690_board_w1
           lock: false
 
-      - name: Clean up
-        if: always()
-        run: |
-          git clean -ffdx
-          git reset --hard      
       #----------------------------------------------------------------------------------------------
       # Save test reports
       - uses: actions/upload-artifact@v3
@@ -738,4 +733,9 @@ jobs:
         with:
             name: failure-report
 
+      - name: Clean up
+        if: always()
+        run: |
+          git clean -ffdx
+          git reset --hard      
             path:  ${{ env.RESULTS_DIR}}
