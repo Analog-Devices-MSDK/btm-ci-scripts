@@ -27,7 +27,8 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
         }
         eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         eraseCmd.on('error', (error) => {
-            console.error(`ERROR: ${error.message}`);
+            // console.error(`ERROR: ${error.message}`);
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         eraseCmd.on('close', (code) => {
             if (code != 0) {
@@ -38,18 +39,22 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
                 }
                 if (logLines[idx].trim() === 'Error: flash bank 1 does not exist') {
                     if (!suppress) {
+                        logOut = `${logOut}Process exited with code ${code} -- OK`
                         console.log(logOut);
                     }
                     console.log(`Process exited with code ${code} -- OK`);
                     resolve(0);
                 } else {
+                    logOut = `${logOut}Process exited with code ${code}`
                     console.log(logOut);
-                    console.log(`Process exited with code ${code}`);
-                    reject(code);
+                    // console.log(`Process exited with code ${code}`);
+                    // reject(code);
+                    resolve(code);
                 }
             } else {
+                logOut = `${logOut}Process exited with code ${code}`
                 console.log(logOut);
-                console.log(`Process exited with code ${code}`);
+                // console.log(`Process exited with code ${code}`);
                 resolve(code);
             }
         });
@@ -62,7 +67,6 @@ const main = async function () {
     const gdbPorts = [];
     const tclPorts = [];
     const telnetPorts = [];
-    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -96,7 +100,11 @@ const main = async function () {
     let retCodes = await Promise.all(promises).then(
         (values) => {
             for (const val of values) {
-                procSuccess(val, 'Erase');
+                if (val === 0) {
+                    procSuccess(val, 'Erase');
+                } else {
+                    procFail(val, 'Erase', true);
+                }
             }
         }
     );
@@ -112,8 +120,20 @@ const main = async function () {
             await eraseFlash(
                 targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
-                (success) => procSuccess(success, 'Erase'),
-                (error) => procFail(error, 'Erase', false)
+                (value) => {
+                    if (value === 0) {
+                        procSuccess(success, 'Erase');
+                    } else {
+                        retVal--;
+                        procFail(error, 'Erase', false);
+                        Core.setFailed(`Failed to erase ${targets[i]}.`);
+                    }
+                },
+                (error) => {
+                    retVal--;
+                    procFail(error, 'Erase', false);
+                    Core.setFailed(`Failed to erase ${targets[i]}.`);
+                }
             );
         }
     }

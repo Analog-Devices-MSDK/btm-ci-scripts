@@ -33,11 +33,13 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
         }
         flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         flashCmd.on('error', error => {
-            console.error(`ERROR: ${error.message}`);
+            // console.error(`ERROR: ${error.message}`);
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         flashCmd.on('close', code => {
+            logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            console.log(`Process exited with code ${code}`);
+            // console.log(`Process exited with code ${code}`);
             resolve(code);
         });
     });
@@ -126,11 +128,19 @@ const main = async function () {
             await flashBoard(
                 target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
-                (success) => procSuccess(success, 'Flash'),
+                (value) => {
+                    if (value === 0) {
+                        procSuccess(success, 'Flash');
+                    } else {
+                        retVal--;
+                        procFail(value, 'Flash', false);
+                        Core.setFailed(`Failed to flash ${targets[i]}`);
+                    }
+                },
                 (error) => {
                     retVal--;
                     procFail(error, 'Flash', false);
-                    Core.setFailed(`Failed to flash ${targets[i]}.`)
+                    Core.setFailed(`Failed to flash ${targets[i]}.`);
                 }
             );
         } else {

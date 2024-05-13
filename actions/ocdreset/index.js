@@ -27,15 +27,18 @@ const resetBoard = function(target, dap, gdb, tcl, telnet, suppress) {
         }
         resetCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         resetCmd.on('error', error => {
-            console.error(`ERROR: ${error.message}`);
+            // console.error(`ERROR: ${error.message}`);
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         resetCmd.on('close', code => {
+            logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
-                resolve(code);
-            }
+            // console.log(`Process exited with code ${code}`);
+            // if (code != 0) reject(code);
+            // else {
+            //     resolve(code);
+            // }
+            resolve(code);
         });
     });
 }
