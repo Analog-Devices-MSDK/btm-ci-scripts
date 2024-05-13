@@ -87,6 +87,7 @@ class BasicTester:
             Data to write out
         """
         for byte in data:
+            print(f'slow {byte}')
             self.serial_port.write(byte)
             time.sleep(0.1)
 
@@ -106,6 +107,7 @@ class BasicTester:
         # self.serial_port.writelines([command])
         # self.serial_port.write(command)
         self.slow_write(command)
+        time.sleep(0.5)
 
     
     def save_console_output(self, path):
