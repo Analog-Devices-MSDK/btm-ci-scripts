@@ -10,11 +10,12 @@ function upper() {
     echo ${val^^}
 }
 function get_ocdcfg(){
-    $target_path=target/$1.cfg
+
+    target_path=target/$(lower $1).cfg
     if [ ! -f $OPENOCD_PATH/tcl/scripts/$target_path ] && [ ! -f $OPENOCD_PATH/scripts/$target_path ] && [ ! -f $OPENOCD_PATH/$target_path ]; then
-        return max32xxx
+        echo max32xxx
     else
-        return $1
+        echo $1
     fi
 }
 function ocdflash() {
@@ -45,7 +46,7 @@ function ocdflash() {
     fi
 
     target=$(resource_manager.py -g $name.target)
-    target_path=target/$(lower $target).cfg
+    target=$(get_ocdcfg $target)
     
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)
@@ -94,7 +95,8 @@ function ocderase() {
 
 
     target=$(resource_manager.py -g $name.target)
-    target_path=target/$(lower $target).cfg
+    target=$(get_ocdcfg $target)
+    
 
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)
@@ -143,7 +145,8 @@ function ocdreset() {
     fi
 
     target=$(resource_manager.py -g $name.target)
-    target_path=target/$(lower $target).cfg
+    target=$(get_ocdcfg $target)
+    
 
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)

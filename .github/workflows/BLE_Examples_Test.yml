@@ -711,7 +711,7 @@ jobs:
           mv $TEST_DIR/dats/dats_out $RESULTS_DIR
           mv $TEST_DIR/otas/otas_out $RESULTS_DIR
           set -e
-          ls $RESULTS_DIR
+          
  
           
       - name: Unlock Boards
@@ -738,4 +738,4 @@ jobs:
         run: |
           git clean -ffdx
           git reset --hard      
-            path:  ${{ env.RESULTS_DIR}}
+            
