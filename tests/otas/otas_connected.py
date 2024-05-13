@@ -102,8 +102,10 @@ class BasicTester:
         method : str
             Button method (s/m/l/x)
         """
-        command = f"btn {btn_num} {method}".encode("utf-8")
-        self.serial_port.writelines([command])
+        command = f"btn {btn_num} {method}\n".encode("utf-8")
+        # self.serial_port.writelines([command])
+        self.serial_port.writelines(command)
+
     
     def save_console_output(self, path):
         
@@ -151,7 +153,7 @@ class ClientTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                # print("TIMEOUT!!")
                 return False
 
             time.sleep(1)
@@ -187,7 +189,7 @@ class ClientTester(BasicTester):
                 break
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                # print("TIMEOUT!!")
                 return False
 
             time.sleep(1)
@@ -204,7 +206,7 @@ class ClientTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 30:
-                print("TIMEOUT!!")
+                # print("TIMEOUT!!")
                 return False
 
     def verify_xfer(self) -> bool:
@@ -247,7 +249,7 @@ class ClientTester(BasicTester):
                 return False
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                # print("TIMEOUT!!")
                 return False
 
 
@@ -317,7 +319,7 @@ class ServerTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                # print("TIMEOUT!!")
                 return False
 
             time.sleep(1)
