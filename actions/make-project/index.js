@@ -36,7 +36,7 @@ const cleanProject = function (projectPath, distclean, suppress) {
 
 const makeProject = async function (projectPath, distclean, build_flags, suppress) {
     let makeArgs = ['-j', '-C', projectPath];
-    makeArgs.push(...build_flags);
+    makeArgs = [...makeArgs, ...build_flags];
 
     await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),

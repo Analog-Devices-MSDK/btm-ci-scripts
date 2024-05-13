@@ -83,7 +83,7 @@ const main = async function () {
         let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
-            await makeProject(projPath, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
+            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, SUPPRESS_FLAG).then(
                 (success) => procSuccess(success, 'Build'),
                 (error) => {
                     retVal--;
