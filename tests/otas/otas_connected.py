@@ -273,8 +273,8 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     time.sleep(5)
     client_results = {}
     first_try = client.test_discover_filespace()
-    
     if not first_try:
+        time.sleep(10)
         client_results["filespace"] = client.test_discover_filespace()
     else:
         client_results["filespace"] = True
