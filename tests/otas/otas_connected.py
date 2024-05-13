@@ -270,10 +270,11 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     client = ClientTester(portname)
     client.serial_port.flush()
     resource_manager.resource_reset(boardname)
+    time.sleep(5)
     client_results = {}
-    # client_results["filespace"] = client.test_discover_filespace()
-    # client_results["update"] = client.test_start_update_xfer()
-    # client_results["verify"] = client.verify_xfer()
+    client_results["filespace"] = client.test_discover_filespace()
+    client_results["update"] = client.test_start_update_xfer()
+    client_results["verify"] = client.verify_xfer()
 
     client.save_console_output(f'otac_out_{boardname}.txt')
 
