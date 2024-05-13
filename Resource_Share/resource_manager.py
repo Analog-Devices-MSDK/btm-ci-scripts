@@ -63,6 +63,9 @@ from tabulate import tabulate
 # pylint: enable=import-error
 
 
+VERSION = "1.0.0"
+
+
 class ResourceManager:
     """BTM-CI Resource Manager"""
 
@@ -70,10 +73,11 @@ class ResourceManager:
     ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
     ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
 
-    def __init__(self, timeout=60) -> None:
+    def __init__(self, timeout=60, owner="") -> None:
         # Initialize the resource file
         self.timeout = timeout
         self.resources = self._add_base_config()
+        self.owner = owner
         self._add_custom_config()
         self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
         self._add_lockdir()
@@ -100,6 +104,51 @@ class ResourceManager:
             with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
                 custom_resources = json.load(resource_file)
                 self.resources.update(custom_resources)
+
+    def get_owner(self, resource: str) -> str:
+        """Get the current owner of a resource
+
+        Parameters
+        ----------
+        resource : str
+            Name of resource
+
+        Returns
+        -------
+        str
+            Owner
+        """
+        return self.get_resource_lock_info(resource).get("owner", "")
+
+    def get_owned_boards(self, owner: str) -> List[str]:
+        """Get resources owned by specific owner
+
+        Parameters
+        ----------
+        owner : str
+            Owner name
+
+        Returns
+        -------
+        List[str]
+            Resources owned by given owner
+
+        Raises
+        ------
+        ValueError
+            If owner is an empty string
+        """
+        if owner == "":
+            raise ValueError("Owner must not be empty")
+        resources = []
+
+        for resource in self.resources:
+            current_owner = self.get_owner(resource)
+
+            if owner == current_owner:
+                resources.append(resource)
+
+        return resources
 
     def resource_in_use(self, resource: str) -> bool:
         """Checks if a lockfile has been place on a resource
@@ -137,26 +186,6 @@ class ResourceManager:
         with open(lock_path, "r", encoding="utf-8") as lockfile:
             lf_info = json.load(lockfile)
         return lf_info
-
-    def get_resource_start_time(self, resource: str) -> str:
-        """Get the start time a resource was locked
-
-        Parameters
-        ----------
-        resource : str
-            resource name
-
-        Returns
-        -------
-        str
-            Date and time resource was locked
-        """
-        lockfile_path = self.get_lock_path(resource)
-        if not os.path.exists(lockfile_path):
-            return "N/A"
-
-        with open(lockfile_path, "r", encoding="utf-8") as lockfile:
-            return lockfile.readline()
 
     def get_resource_usage(self):
         """Get a dictionary of resources and their usage
@@ -249,6 +278,33 @@ class ResourceManager:
                 unlock_count += 1
         return unlock_count
 
+    def unlock_resource_by_owner(self, owner: str) -> List[str]:
+        """Unlock all resources allocated to owner
+
+        Parameters
+        ----------
+        owner : str
+            Owner
+
+        Returns
+        -------
+        List[str]
+            Resources unlocked
+
+        Raises
+        ------
+        ValueError
+            If owner is an empty string
+        """
+        if owner == "":
+            raise ValueError("Owner must not be empty")
+
+        resources = self.get_owned_boards(owner)
+
+        self.unlock_resources(resources, owner)
+
+        return resources
+
     def unlock_all_resources(self):
         """Delete all lockfiles"""
         locks = glob.glob(f"{self.resource_lock_dir}/*")
@@ -328,7 +384,7 @@ class ResourceManager:
         # if we failed to lock all the boards, release the ones we locked
         if boards_locked and lockcount != len(resources):
             for resource, resource_owner in locked_boards:
-                rm.unlock_resource(resource, resource_owner)
+                self.unlock_resource(resource, resource_owner)
                 boards_locked = False
 
         return boards_locked
@@ -393,8 +449,10 @@ class ResourceManager:
             applicable_items.append(rname)
 
         return applicable_items
-    
-    def print_applicable_items(self, target: str = None, group: str = None) -> List[str]:
+
+    def print_applicable_items(
+        self, target: str = None, group: str = None
+    ) -> List[str]:
         """Print an item that matches criteria of group and target
 
         Parameters
@@ -428,7 +486,7 @@ class ResourceManager:
         if applicable_items:
             print(" ".join(applicable_items))
             return
-        print('')
+        print("")
 
     def print_usage(self):
         """Pretty print the resource usage"""
@@ -461,7 +519,7 @@ class ResourceManager:
 
         return True
 
-    def resource_reset(self, resource_name: str) -> bool:
+    def resource_reset(self, resource_name: str, owner: str = "") -> bool:
         """Reset resource found in board_config.json or custom config
 
         Parameters
@@ -475,13 +533,17 @@ class ResourceManager:
                 ""
                 """Requires dap_sn and ocdports"""
             )
+        
+        owner = owner if owner != "" else self.owner
 
-        with subprocess.Popen(["bash", "-c", f"ocdreset {resource_name}"]) as process:
+        with subprocess.Popen(
+            ["bash", "-c", f"ocdreset {resource_name} {owner}"]
+        ) as process:
             process.wait()
 
         return process.returncode == 0
 
-    def resource_erase(self, resource_name: str):
+    def resource_erase(self, resource_name: str, owner: str = ""):
         """Erase resource found in board_config.json or custom config
 
         Parameters
@@ -494,13 +556,16 @@ class ResourceManager:
                 f"""Resource {resource_name} does not contain the info to erase."""
                 """Requires dap_sn and ocdports"""
             )
+        owner = owner if owner != "" else self.owner
 
-        with subprocess.Popen(["bash", "-c", f"ocderase {resource_name}"]) as process:
+        with subprocess.Popen(
+            ["bash", "-c", f"ocderase {resource_name} {owner}"]
+        ) as process:
             process.wait()
 
         return process.returncode == 0
 
-    def resource_flash(self, resource_name: str, elf_file: str):
+    def resource_flash(self, resource_name: str, elf_file: str, owner: str = ""):
         """Flash a resource in board_config.json or custom config with given elf
         Parameters
         ----------
@@ -514,9 +579,13 @@ class ResourceManager:
                 f"""Resource {resource_name} does not contain the info to flash."""
                 """Requires dap_sn and ocdports"""
             )
+        if not os.path.exists(elf_file):
+            raise ValueError(f"ELF FILE DNE {elf_file}")
+
+        owner = owner if owner != "" else self.owner
 
         with subprocess.Popen(
-            ["bash", "-c", f"ocdflash {resource_name} {elf_file}"]
+            ["bash", "-c", f"ocdflash {resource_name} {elf_file} {owner}"]
         ) as process:
             process.wait()
 
@@ -526,33 +595,34 @@ class ResourceManager:
         """Erase all boards and delete all locks"""
         for resource in self.resources:
             try:
-                self.resource_erase(resource)
+                self.resource_erase(resource, self.get_owner(resource))
             except AttributeError:
                 pass
 
         self.unlock_all_resources()
 
 
-if __name__ == "__main__":
-    # Setup the command line description text
-    DESC_TEXT = """
+def config_cli() -> argparse.Namespace:
+    """
+    Configure CLI
+    """
+    desc_text = """
     Lock/Unlock Hardware resources
     Query resource information
     Monitor resources
     """
-    VERSION = '1.0.0'
 
     # Parse the command line arguments
     parser = argparse.ArgumentParser(
-        description=DESC_TEXT, formatter_class=argparse.RawTextHelpFormatter
+        description=desc_text, formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_true",
+        help="Get application version",
     )
 
-    parser.add_argument(
-        "--timeout",
-        "-t",
-        default=60,
-        help="Timeout before returning in seconds",
-    )
     parser.add_argument(
         "-u",
         "--unlock",
@@ -568,6 +638,13 @@ if __name__ == "__main__":
         help="Unlock all resources in lock directory",
     )
     parser.add_argument(
+        "-uo",
+        "--unlock-owner",
+        default="",
+        help="Unlock all resources allocated to owner",
+    )
+
+    parser.add_argument(
         "-l",
         "--lock",
         default=[],
@@ -575,12 +652,9 @@ if __name__ == "__main__":
         nargs="*",
         help="Name of board to lock per boards_config.json",
     )
+
     parser.add_argument(
-        "--owner",
-        default="",
-        help="Name of user locking or unlocking",
-    )
-    parser.add_argument(
+        "-lu",
         "--list-usage",
         action="store_true",
         help="""Display basic usage stats of the boards"""
@@ -600,57 +674,68 @@ if __name__ == "__main__":
         default="",
         help="Get owner of resource if locked",
     )
-
+    parser.add_argument(
+        "-or",
+        "--owner-resources",
+        default="",
+        help="Get resources allocated to owner",
+    )
+    parser.add_argument(
+        "-f",
+        "--find-board",
+        nargs=2,
+        default=["", ""],
+        help="Find a board which matches the criteria TARGET GROUP",
+    )
+    parser.add_argument(
+        "--timeout",
+        "-t",
+        default=60,
+        help="Timeout before returning in seconds",
+    )
+    parser.add_argument(
+        "--owner",
+        default="",
+        help="Name of user locking or unlocking",
+    )
     parser.add_argument(
         "--clean-env",
         action="store_true",
         help="Delete all locks and erase all boards with a programmable feature",
     )
 
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="store_true",
-        help="Get application version",
-    )
-    parser.add_argument(
-        "-f",
-        "--find-board",
-        nargs=2,
-        default=["", ""],
-        help="Find a board which matches the criteria TARGET GROUP",
-    )
-    parser.add_argument(
-        "-f",
-        "--find-board",
-        nargs=2,
-        default=["", ""],
-        help="Find a board which matches the criteria TARGET GROUP",
-    )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    """
+    MAIN
+    """
+    # pylint: disable=too-many-branches
+
+    args = config_cli()
 
     lock_boards = set(args.lock)
     unlock_boards = set(args.unlock)
-
-    rm = ResourceManager(timeout=int(args.timeout))
+    resource_manager = ResourceManager(timeout=int(args.timeout))
 
     if args.clean_env:
-        rm.clean_environment()
+        resource_manager.clean_environment()
 
     if args.list_usage:
-        rm.print_usage()
+        resource_manager.print_usage()
 
     if args.unlock_all:
         print("Unlocking all boards!")
-        rm.unlock_all_resources()
+        resource_manager.unlock_all_resources()
         sys.exit(0)
 
     if lock_boards:
         print(f"Attempting to lock all boards {lock_boards}")
 
-        COULD_LOCK = rm.lock_resources(lock_boards, args.owner)
+        could_lock = resource_manager.lock_resources(lock_boards, args.owner)
 
-        if COULD_LOCK:
+        if could_lock:
             print("Successfully locked boards")
             sys.exit(0)
         else:
@@ -659,15 +744,32 @@ if __name__ == "__main__":
 
     if unlock_boards:
         print(f"Unlocking resources {unlock_boards}")
-        rm.unlock_resources(unlock_boards, args.owner)
+        resource_manager.unlock_resources(unlock_boards, args.owner)
+
+    if args.unlock_owner:
+        unlocked_resources = resource_manager.unlock_resource_by_owner(
+            args.unlock_owner
+        )
+        print(f"Unlocked {len(unlocked_resources)} resources")
+        for resource in unlocked_resources:
+            print(resource)
 
     if args.get_value:
-        print(rm.get_item_value(args.get_value))
+        print(resource_manager.get_item_value(args.get_value))
 
     if args.get_owner:
-        print(rm.get_resource_lock_info(args.get_owner).get("owner", ""))
+        print(resource_manager.get_owner(args.get_owner))
 
     if args.version:
         print(VERSION)
-        
+
+    if args.owner_resources:
+        resources = resource_manager.get_owned_boards(args.owner_resources)
+        for resource in resources:
+            print(resource)
+
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

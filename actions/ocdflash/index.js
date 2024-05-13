@@ -126,10 +126,6 @@ const main = async function () {
             return;
         }
     }
-
-    // if (retVal < 0) {
-    //     Core.setFailed(`Process exited with code ${retVal}`);
-    // }
 }
 
 main();

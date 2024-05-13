@@ -31,6 +31,7 @@ const cleanProject = function (projectPath, distclean, suppress) {
             }
         });
     });
+
 }
 
 const makeProject = async function (projectPath, distclean, build_flags, suppress) {

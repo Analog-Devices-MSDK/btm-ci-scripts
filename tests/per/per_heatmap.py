@@ -55,13 +55,20 @@ per_heatmap.py
 Description: CI Oriented PER Heatmap Test
 
 """
+
 import argparse
 import json
 import os
 import subprocess
 import sys
 
-sys.path.append("..")
+RESOURCE_SHARE_DIR = os.environ.get("RESOURCE_SHARE_DIR")
+if RESOURCE_SHARE_DIR is None:
+    print("Cannot find resource share directory in environment!")
+    sys.exit(-1)
+
+sys.path.append(RESOURCE_SHARE_DIR)
+
 sys.path.append("/home/btm-ci/Tools/msdk-ble-test-suite/src")
 
 #pylint: disable=import-error,wrong-import-position
