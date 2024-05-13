@@ -73,10 +73,11 @@ class ResourceManager:
     ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
     ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
 
-    def __init__(self, timeout=60) -> None:
+    def __init__(self, timeout=60, owner="") -> None:
         # Initialize the resource file
         self.timeout = timeout
         self.resources = self._add_base_config()
+        self.owner = owner
         self._add_custom_config()
         self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
         self._add_lockdir()
@@ -532,6 +533,8 @@ class ResourceManager:
                 ""
                 """Requires dap_sn and ocdports"""
             )
+        
+        owner = owner if owner != "" else self.owner
 
         with subprocess.Popen(
             ["bash", "-c", f"ocdreset {resource_name} {owner}"]
@@ -553,6 +556,7 @@ class ResourceManager:
                 f"""Resource {resource_name} does not contain the info to erase."""
                 """Requires dap_sn and ocdports"""
             )
+        owner = owner if owner != "" else self.owner
 
         with subprocess.Popen(
             ["bash", "-c", f"ocderase {resource_name} {owner}"]
@@ -577,6 +581,8 @@ class ResourceManager:
             )
         if not os.path.exists(elf_file):
             raise ValueError(f"ELF FILE DNE {elf_file}")
+
+        owner = owner if owner != "" else self.owner
 
         with subprocess.Popen(
             ["bash", "-c", f"ocdflash {resource_name} {elf_file} {owner}"]

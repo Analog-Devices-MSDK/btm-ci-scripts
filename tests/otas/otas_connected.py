@@ -251,7 +251,7 @@ class ClientTester(BasicTester):
                 return False
 
 
-def client_tests(portname: str, boardname:str) -> Dict[str, bool]:
+def client_tests(portname: str, boardname:str, resource_manager: ResourceManager) -> Dict[str, bool]:
     """All client tests
 
     Parameters
@@ -264,9 +264,10 @@ def client_tests(portname: str, boardname:str) -> Dict[str, bool]:
     Dict[str, bool]
         Test report
     """
-
+    
     client = ClientTester(portname)
-
+    client.serial_port.flush()
+    resource_manager.resource_reset(boardname)z
     client_results = {}
     client_results["filespace"] = client.test_discover_filespace()
     client_results["update"] = client.test_start_update_xfer()
@@ -384,20 +385,20 @@ def main():
         SERVER_BOARD != CLIENT_BOARD
     ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
 
-    OWNER = rm.get_owner(SERVER_BOARD)
+    rm.owner = rm.get_owner(SERVER_BOARD)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
     client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    rm.resource_reset(SERVER_BOARD, OWNER)
-    rm.resource_reset(CLIENT_BOARD, OWNER)
+    rm.resource_reset(SERVER_BOARD)
+    rm.resource_reset(CLIENT_BOARD)
     # give time for connection
     time.sleep(5)
 
     # Run the tests
     test_server_results = server_tests(server_port, SERVER_BOARD)
-    rm.resource_reset(SERVER_BOARD, OWNER)
+    rm.resource_reset(SERVER_BOARD)
     time.sleep(5)
     test_client_results = client_tests(client_port, CLIENT_BOARD)
 
