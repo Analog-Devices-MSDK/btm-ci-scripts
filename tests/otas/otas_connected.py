@@ -104,7 +104,8 @@ class BasicTester:
         """
         command = f"btn {btn_num} {method}\n".encode("utf-8")
         # self.serial_port.writelines([command])
-        self.serial_port.write(command)
+        # self.serial_port.write(command)
+        self.slow_write(command)
 
     
     def save_console_output(self, path):
