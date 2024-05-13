@@ -27,11 +27,11 @@ const cleanProject = function (projectPath, distclean, suppress) {
             logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
             // console.log(`Process exited with code ${code}`);
-            // if (code != 0) reject(code);
-            // else {
-            //     resolve(code);
-            // }
-            resolve(code);
+            if (code != 0) reject(code);
+            else {
+                resolve(code);
+            }
+            // resolve(code);
         });
     });
 
@@ -40,19 +40,21 @@ const cleanProject = function (projectPath, distclean, suppress) {
 const makeProject = async function (projectPath, distclean, build_flags, suppress) {
     let makeArgs = ['-j', '-C', projectPath];
     makeArgs.push(...build_flags);
-
-    retVal = await cleanProject(projectPath, distclean, suppress).then(
+    let retVal = 0;
+    await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
-        (error) => procFail(error, 'Clean', false)
+        (error) => {
+            retVal--;
+            procFail(error, 'Clean', false);
+        }
     );
-
-    if (retVal !== 0) {
-        return new Promise((resolve, reject) => resolve(1));
-    }
 
     let logOut = '';
     let dumpOut = '';
     return new Promise((resolve, reject) => {
+        if (retVal < 0) {
+            reject(retVal);
+        }
         const makeCmd = spawn('make', makeArgs);
         if (suppress) {
             makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
@@ -72,11 +74,11 @@ const makeProject = async function (projectPath, distclean, build_flags, suppres
             logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
             // console.log(`Process exited with code ${code}`);
-            // if (code != 0) reject(code);
-            // else {
-            //     resolve(code);
-            // }
-            resolve(code);
+            if (code != 0) reject(code);
+            else {
+                resolve(code);
+            }
+            // resolve(code);
         });
     });
 }
@@ -88,21 +90,16 @@ const main = async function () {
         build_flags.push(...BUILD_FLAGS[i].split(" "))
     }
     await makeProject(BUILD_PATH, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
-        (value) => {
-            if (value === 0) {
-                procSuccess(success, 'Build');
-            } else {
-                retVal --;
-                procFail(value, 'Build', false);
-                Core.setFailed(`Build ${projPath} failed.`)
-            }
-        },
+        (success) => procSuccess(success, "Build"),
         (error) => {
             retVal --;
             procFail(error, 'Build', false);
             Core.setFailed(`Build ${projPath} failed.`)
         }
     );
+    if (retVal < 0) {
+        return;
+    }
 }
 
 if (require.main === module) {
