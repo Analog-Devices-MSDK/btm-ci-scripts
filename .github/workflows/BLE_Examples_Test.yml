@@ -701,7 +701,7 @@ jobs:
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
       
-      - name: Clean up
+      - name: Result Consolidation
         if: always()
         run: |
 
@@ -713,8 +713,7 @@ jobs:
           set -e
           ls $RESULTS_DIR
 
-          git clean -ffdx
-          git reset --hard
+          
           
       - name: Unlock Boards
         if: always()
@@ -727,11 +726,16 @@ jobs:
             max32690_board_w1
           lock: false
 
-      
+      - name: Clean up
+        if: always()
+        run: |
+          git clean -ffdx
+          git reset --hard      
       #----------------------------------------------------------------------------------------------
       # Save test reports
       - uses: actions/upload-artifact@v3
         if: always()
         with:
             name: failure-report
+
             path:  ${{ env.RESULTS_DIR}}
