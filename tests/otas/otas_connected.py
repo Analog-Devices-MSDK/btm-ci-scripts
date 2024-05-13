@@ -376,7 +376,7 @@ def main():
 
         sys.exit(-1)
 
-    rm = ResourceManager()
+    resource_manager = ResourceManager()
 
     # Get the boards under test and the file paths
     SERVER_BOARD = sys.argv[1]
@@ -385,22 +385,22 @@ def main():
         SERVER_BOARD != CLIENT_BOARD
     ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
 
-    rm.owner = rm.get_owner(SERVER_BOARD)
+    resource_manager.owner = resource_manager.get_owner(SERVER_BOARD)
 
     # Get console ports associated with the boards
-    server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
-    client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
+    server_port = resource_manager.get_item_value(f"{SERVER_BOARD}.console_port")
+    client_port = resource_manager.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    rm.resource_reset(SERVER_BOARD)
-    rm.resource_reset(CLIENT_BOARD)
+    resource_manager.resource_reset(SERVER_BOARD)
+    resource_manager.resource_reset(CLIENT_BOARD)
     # give time for connection
     time.sleep(5)
 
     # Run the tests
     test_server_results = server_tests(server_port, SERVER_BOARD)
-    rm.resource_reset(SERVER_BOARD)
+    resource_manager.resource_reset(SERVER_BOARD)
     time.sleep(5)
-    test_client_results = client_tests(client_port, CLIENT_BOARD, resouce_manager)
+    test_client_results = client_tests(client_port, CLIENT_BOARD, resource_manager)
 
     # Print Results
     print("\n\n")
