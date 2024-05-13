@@ -46,7 +46,6 @@ const main = async function () {
     const gdbPorts = [];
     const tclPorts = [];
     const telnetPorts = [];
-    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -64,11 +63,14 @@ const main = async function () {
     }
     let promises = [];
     var target;
+    var cfgBoardSpec;
     for (let i = 0; i < BOARD_IDS.length; i++) {
-        if (cfgMax32xxx) {
-            target = 'MAX32xxx';
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
         } else {
-            target = targets[i]
+            target = 'MAX32XXX'
         }
         promises[i] = resetBoard(
             target, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG

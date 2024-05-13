@@ -65,7 +65,7 @@ const main = async function () {
     const telnetPorts = [];
     const elfPaths = [];
     retVal = 0;
-    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
+    // let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -99,11 +99,14 @@ const main = async function () {
 
     let promises = [];
     var target;
+    var cfgBoardSpec;
     for (let i = 0; i < BOARD_IDS.length; i++) {
-        if (cfgMax32xxx) {
-            target = 'MAX32xxx';
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
         } else {
-            target = targets[i]
+            target = 'MAX32XXX'
         }
         promises[i] = flashBoard(
             target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
@@ -112,10 +115,12 @@ const main = async function () {
     let retCodes = await Promise.all(promises);
     for (let i = 0; i < retCodes.length; i++) {
         if (retCodes[i] != 0) {
-            if (cfgMax32xxx) {
-                target = 'MAX32xxx';
+            cfgBoardSpec = await fileExists(
+                path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+            if (cfgBoardSpec) {
+                target = targets[i];
             } else {
-                target = targets[i]
+                target = 'MAX32XXX'
             }
             procFail(retCodes[i], 'Flash', true);
             await flashBoard(

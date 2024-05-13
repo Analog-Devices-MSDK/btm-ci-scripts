@@ -80,11 +80,14 @@ const main = async function () {
     }
     let promises = [];
     var target;
+    var cfgBoardSpec;
     for (let i = 0; i < BOARD_IDS.length; i++) {
-        if (cfgMax32xxx) {
-            target = 'MAX32xxx';
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
         } else {
-            target = targets[i]
+            target = 'MAX32XXX'
         }
         promises[i] = eraseFlash(
             target, 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
@@ -99,10 +102,12 @@ const main = async function () {
     );
     for (const i in retCodes) {
         if (retCodes[i] === 0) {
-            if (cfgMax32xxx) {
-                target = 'MAX32xxx';
+            cfgBoardSpec = await fileExists(
+                path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+            if (cfgBoardSpec) {
+                target = targets[i];
             } else {
-                target = targets[i]
+                target = 'MAX32XXX'
             }
             await eraseFlash(
                 targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG

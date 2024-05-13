@@ -36,7 +36,7 @@ const cleanProject = function (projectPath, distclean, suppress) {
 
 const makeProject = async function (projectPath, distclean, build_flags, suppress) {
     let makeArgs = ['-j', '-C', projectPath];
-    makeArgs = [...makeArgs, ...build_flags];
+    makeArgs.push(...build_flags);
 
     await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
@@ -49,11 +49,15 @@ const makeProject = async function (projectPath, distclean, build_flags, suppres
         const makeCmd = spawn('make', makeArgs);
         if (suppress) {
             makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+            makeCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
             makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+            makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         }
-        makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         makeCmd.on('error', error => {
+            if (suppress) {
+                logOut = `${logOut}${dumpOut}`
+            }
             console.error(`ERROR: ${error.message}`);
         });
         makeCmd.on('close', code => {
