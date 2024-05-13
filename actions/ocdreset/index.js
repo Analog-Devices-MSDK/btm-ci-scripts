@@ -2,7 +2,7 @@ const Core = require('@actions/core');
 const Github = require('@actions/github');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
+const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
 
 const BOARD_IDS = Core.getMultilineInput('board');
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
@@ -45,7 +45,7 @@ const main = async function () {
     const gdbPorts = [];
     const tclPorts = [];
     const telnetPorts = [];
-    let promises = [];
+    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -60,8 +60,17 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
+    }
+    let promises = [];
+    var target;
+    for (let i = 0; i < BOARD_IDS.length; i++) {
+        if (cfgMax32xxx) {
+            target = 'MAX32xxx';
+        } else {
+            target = targets[i]
+        }
         promises[i] = resetBoard(
-            targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+            target, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch(
             (error) => procFail(error, 'Reset', false)
         )

@@ -3,7 +3,7 @@ const Github = require('@actions/github');
 const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
+const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
 const { makeProject } = require('../make-project');
 
 const BOARD_IDS = Core.getMultilineInput('board');
@@ -38,10 +38,6 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
         flashCmd.on('close', code => {
             console.log(logOut);
             console.log(`Process exited with code ${code}`);
-            // if (code != 0) reject(code);
-            // else {
-            //     resolve(code);
-            // }
             resolve(code);
         });
     });
@@ -69,6 +65,7 @@ const main = async function () {
     const telnetPorts = [];
     const elfPaths = [];
     retVal = 0;
+    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -99,18 +96,30 @@ const main = async function () {
             return;
         }
     }
+
     let promises = [];
+    var target;
     for (let i = 0; i < BOARD_IDS.length; i++) {
+        if (cfgMax32xxx) {
+            target = 'MAX32xxx';
+        } else {
+            target = targets[i]
+        }
         promises[i] = flashBoard(
-            targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+            target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch((err) => procFail(err, 'Flash', false));
     }
     let retCodes = await Promise.all(promises);
     for (let i = 0; i < retCodes.length; i++) {
         if (retCodes[i] != 0) {
+            if (cfgMax32xxx) {
+                target = 'MAX32xxx';
+            } else {
+                target = targets[i]
+            }
             procFail(retCodes[i], 'Flash', true);
             await flashBoard(
-                targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+                target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
                 (success) => procSuccess(success, 'Flash'),
                 (error) => {
