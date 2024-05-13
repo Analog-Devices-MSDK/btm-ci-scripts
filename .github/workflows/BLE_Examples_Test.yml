@@ -712,8 +712,7 @@ jobs:
           mv $TEST_DIR/otas/otas_out $RESULTS_DIR
           set -e
           ls $RESULTS_DIR
-
-          
+ 
           
       - name: Unlock Boards
         if: always()
@@ -732,6 +731,7 @@ jobs:
         if: always()
         with:
             name: failure-report
+            path: ${{ env.RESULTS_DIR }}
 
       - name: Clean up
         if: always()
