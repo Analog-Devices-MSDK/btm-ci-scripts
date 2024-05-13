@@ -734,11 +734,12 @@ jobs:
         if: always()
         run: |
 
-          # set +e
-          # rm -rf $RESULTS_DIR
-          # set -e
-          # mkdir $RESULTS_DIR
-          # mv $TEST_DIR/dats/dats_out $RESULTS_DIR
+          set +e
+          rm -rf $RESULTS_DIR
+          set -e
+          mkdir $RESULTS_DIR
+          mv $TEST_DIR/dats/dats_out $RESULTS_DIR
+          mv $TEST_DIR/otas/otas_out $RESULTS_DIR
 
           git clean -ffdx
           git reset --hard
