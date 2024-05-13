@@ -600,8 +600,8 @@ jobs:
             max32665_board1
             max32690_board_w1
           lock: true
-          timeout: 3600
-          
+          timeout: 3600 # Attempt to lock for an hour
+
       - name: Init Tests
         run: |
           

@@ -102,8 +102,8 @@ class BasicTester:
         method : str
             Button method (s/m/l/x)
         """
-        command = f"btn {btn_num} {method}\r\n".encode("utf-8")
-        self.serial_port.write(command)
+        command = f"btn {btn_num} {method}".encode("utf-8")
+        self.serial_port.writelines([command])
     
     def save_console_output(self, path):
         
