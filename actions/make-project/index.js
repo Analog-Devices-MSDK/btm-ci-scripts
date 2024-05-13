@@ -4,6 +4,7 @@ const { procSuccess, procFail } = require('../common');
 
 const BUILD_PATH = Core.getInput('path');
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
+const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 
 const cleanProject = function (projectPath, distclean, suppress) {
@@ -30,17 +31,22 @@ const cleanProject = function (projectPath, distclean, suppress) {
             }
         });
     });
+
 }
 
-const makeProject = async function (projectPath, distclean, suppress) {
+const makeProject = async function (projectPath, distclean, build_flags, suppress) {
+    let makeArgs = ['-j', '-C', projectPath];
+    makeArgs.push(...build_flags);
+
     await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
         (error) => procFail(error, 'Clean', false)
     );
+
     let logOut = '';
     let dumpOut = '';
     return new Promise((resolve, reject) => {
-        const makeCmd = spawn('make', ['-j', '-C', projectPath]);
+        const makeCmd = spawn('make', makeArgs);
         if (suppress) {
             makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
@@ -62,6 +68,10 @@ const makeProject = async function (projectPath, distclean, suppress) {
 }
 
 const main = async function () {
+    let build_flags = [];
+    for (var i=0; i<BUILD_FLAGS.length; i++) {
+        build_flags.push(...BUILD_FLAGS[i].split(" "))
+    }
     await makeProject(BUILD_PATH, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
         (success) => procSuccess(success, 'Build'),
         (error) => procFail(error, 'Build', false)

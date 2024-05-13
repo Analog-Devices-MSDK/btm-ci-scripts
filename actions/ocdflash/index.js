@@ -3,13 +3,14 @@ const Github = require('@actions/github');
 const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
+const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
 const { makeProject } = require('../make-project');
 
 const BOARD_IDS = Core.getMultilineInput('board');
 const PROJECT_DIRS = Core.getMultilineInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
+const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
@@ -37,16 +38,16 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
         flashCmd.on('close', code => {
             console.log(logOut);
             console.log(`Process exited with code ${code}`);
-            // if (code != 0) reject(code);
-            // else {
-            //     resolve(code);
-            // }
             resolve(code);
         });
     });
 }
 
 const main = async function () {
+    let build_flags = [];
+    for (var i=0; i<BUILD_FLAGS.length; i++) {
+        build_flags.push(...BUILD_FLAGS[i].split(" "))
+    }
     if (PROJECT_DIRS.length === 1 && BOARD_IDS.length > 1) {
         for (let i = 0; i < BOARD_IDS.length; i++) {
             PROJECT_DIRS[i] = PROJECT_DIRS[0];
@@ -64,6 +65,7 @@ const main = async function () {
     const telnetPorts = [];
     const elfPaths = [];
     retVal = 0;
+    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -94,26 +96,30 @@ const main = async function () {
             return;
         }
     }
+
     let promises = [];
+    var target;
     for (let i = 0; i < BOARD_IDS.length; i++) {
+        if (cfgMax32xxx) {
+            target = 'MAX32xxx';
+        } else {
+            target = targets[i]
+        }
         promises[i] = flashBoard(
-            targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+            target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch((err) => procFail(err, 'Flash', false));
     }
-    // let retCodes = await Promise.all(promises).then(
-    //     (success) => {
-    //         for (const val of values) {
-    //             procSuccess(val, 'Flash');
-    //         },
-    //     (error) => 
-    //     }
-    // );
     let retCodes = await Promise.all(promises);
     for (let i = 0; i < retCodes.length; i++) {
         if (retCodes[i] != 0) {
+            if (cfgMax32xxx) {
+                target = 'MAX32xxx';
+            } else {
+                target = targets[i]
+            }
             procFail(retCodes[i], 'Flash', true);
             await flashBoard(
-                targets[i], elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+                target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
                 (success) => procSuccess(success, 'Flash'),
                 (error) => {
@@ -129,10 +135,6 @@ const main = async function () {
             return;
         }
     }
-
-    // if (retVal < 0) {
-    //     Core.setFailed(`Process exited with code ${retVal}`);
-    // }
 }
 
 main();

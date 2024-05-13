@@ -49,14 +49,17 @@ Description: Data server-client connection test
 
 """
 
+import os
 import sys
 import re
 import time
 from datetime import datetime
 from typing import Dict
 import serial
+from pathlib import Path
 
-sys.path.append("..")
+sys.path.append("../..")
+
 # pylint: disable=import-error,wrong-import-position
 from Resource_Share.resource_manager import ResourceManager
 
@@ -66,158 +69,189 @@ BTN1 = 1
 BTN2 = 2
 
 
-def press_btn(serial_port: serial.Serial, btn_num: int, method: str):
-    """Press button via console
+class BasicTester:
+    def __init__(self, portname: str) -> None:
+        self.portname = portname
+        self.console_output = ""
+        self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
+        self.serial_port.flush()
 
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Serial port to write to
-    btn_num : int
-        Button number (1/2)
-    method : str
-        Button method (s/m/l/x)
-    """
-    command = f"btn {btn_num} {method}\r\n".encode("utf-8")
-    serial_port.write(command)
+    def slow_write(self, data: bytes):
+        """Write UART data at human typing speeds
 
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            Port to write data to
+        data : bytes
+            Data to write out
+        """
+        for byte in data:
+            self.serial_port.write(byte)
+            time.sleep(0.1)
 
-def _slow_write(serial_port: serial.Serial, data: bytes):
-    """Write UART data at human typing speeds
+    def press_btn(self, btn_num: int, method: str):
+        """Press button via console
 
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Port to write data to
-    data : bytes
-        Data to write out
-    """
-    for byte in data:
-        serial_port.write(byte)
-        time.sleep(0.1)
-
-
-def client_test_discover_filespace(serial_port: serial.Serial) -> bool:
-    """Test discovery filespace
-
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Seiral port to write to
-
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise
-    """
-    print("DISCOVER FILESPACE TEST")
-    press_btn(serial_port, BTN2, "s")
-
-    text = ""
-    start = datetime.now()
-
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
-        if new_text.isalnum():
-            print(new_text)
-
-        if "File discovery complete" in text:
-            return True
-
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            Serial port to write to
+        btn_num : int
+            Button number (1/2)
+        method : str
+            Button method (s/m/l/x)
+        """
+        command = f"btn {btn_num} {method}\r\n".encode("utf-8")
+        self.serial_port.write(command)
+    
+    def save_console_output(self, path):
+        
+        folder = 'otas_out'
+        if not os.path.exists(folder):
+            os.mkdir(folder)
+        full_path = os.path.join(folder, path)
+        
+        with open(full_path, 'w', encoding='utf-8') as console_out_file:
+            console_out_file.write(self.console_output)
 
 
-def client_test_start_update_xfer(serial_port: serial.Serial) -> bool:
-    """Test firmware update
 
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Serial port to write to
+class ClientTester(BasicTester):
+    def __init__(self, portname: str) -> None:
+        BasicTester.__init__(self, portname)
 
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise
-    """
-    print("UPDATE XFER TEST")
-    press_btn(serial_port, BTN2, "m")
+    def test_discover_filespace(self) -> bool:
+        """Test discovery filespace
 
-    text = ""
-    start = datetime.now()
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            Seiral port to write to
 
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
-        if new_text.isalnum():
-            print(new_text)
+        Returns
+        -------
+        bool
+            True if test passed. False otherwise
+        """
+        
+        self.press_btn(BTN2, "s")
 
-        if "Starting file transfer" in text:
-            break
+        start = datetime.now()
 
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
+        while True:
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.console_output += new_text
 
-    # wait for complete
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
+            print(new_text, end="")
 
-        if "transfer complete" in text:
-            return True
-
-        if (datetime.now() - start).total_seconds() > 30:
-            print("TIMEOUT!!")
-            return False
-
-
-def client_verify_xfer(serial_port: serial.Serial) -> bool:
-    """Test transfer verification
-
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Serial port to write to
-
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise
-    """
-    print("VERIFY XFER TEST")
-
-    press_btn(serial_port, BTN2, "l")
-
-    text = ""
-    start = datetime.now()
-
-    pattern = r"Verify complete status:\s*(.+)"
-
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
-
-        status_match = re.search(pattern, text)
-
-        # Check for successful completion
-        if status_match:
-            status = status_match.group(1) == 0
-            if status == 0:
+            if "File discovery complete" in self.console_output:
                 return True
-            print(f"status mismatch {status}")
-            print(status)
-            return False
 
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
+            if (datetime.now() - start).total_seconds() > 10:
+                print("TIMEOUT!!")
+                return False
+
+            time.sleep(1)
+            self.press_btn(BTN2, "s")
+
+    def test_start_update_xfer(self) -> bool:
+        """Test firmware update
+
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            Serial port to write to
+
+        Returns
+        -------
+        bool
+            True if test passed. False otherwise
+        """
+        
+        self.press_btn(BTN2, "m")
+
+        start = datetime.now()
+
+        while True:
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.console_output += new_text
+
+            print(new_text, end="")
+
+            if "Starting file transfer" in self.console_output:
+                break
+
+            if (datetime.now() - start).total_seconds() > 10:
+                print("TIMEOUT!!")
+                return False
+
+            time.sleep(1)
+            self.press_btn(BTN2, "m")
+
+        # wait for complete
+        while True:
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.console_output += new_text
+            print(new_text, end="")
+            if "transfer complete" in self.console_output:
+                return True
+
+            if (datetime.now() - start).total_seconds() > 30:
+                print("TIMEOUT!!")
+                return False
+
+    def verify_xfer(self) -> bool:
+        """Test transfer verification
+
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            Serial port to write to
+
+        Returns
+        -------
+        bool
+            True if test passed. False otherwise
+        """
+        
+        self.press_btn(BTN2, "l")
+
+        start = datetime.now()
+
+        pattern = r"Verify complete status:\s*(.+)"
+
+        while True:
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.console_output += new_text
+            
+            print(new_text, end="")
+
+            status_match = re.search(pattern, self.console_output)
+
+            # Check for successful completion
+            if status_match:
+                status = status_match.group(1) == 0
+                if status == 0:
+                    return True
+                print(f"status mismatch {status}")
+                print(status)
+                return False
+
+            if (datetime.now() - start).total_seconds() > 10:
+                print("TIMEOUT!!")
+                return False
 
 
-def client_tests(portname: str) -> Dict[str, bool]:
+def client_tests(portname: str, boardname:str, resource_manager: ResourceManager) -> Dict[str, bool]:
     """All client tests
 
     Parameters
@@ -230,58 +264,67 @@ def client_tests(portname: str) -> Dict[str, bool]:
     Dict[str, bool]
         Test report
     """
-    client_console = serial.Serial(portname, baudrate=115200, timeout=2)
-
+    
+    client = ClientTester(portname)
+    client.serial_port.flush()
+    resource_manager.resource_reset(boardname)z
     client_results = {}
-    client_results["filespace"] = client_test_discover_filespace(client_console)
-    client_results["update"] = client_test_start_update_xfer(client_console)
-    client_results["verify"] = client_verify_xfer(client_console)
+    client_results["filespace"] = client.test_discover_filespace()
+    client_results["update"] = client.test_start_update_xfer()
+    client_results["verify"] = client.verify_xfer()
 
-    client_console.flush()
+    client.save_console_output(f'otac_out_{boardname}.txt')
 
     return client_results
 
 
-def server_test_version(serial_port: serial.Serial) -> bool:
-    """Test the version of firmware
+class ServerTester(BasicTester):
+    def __init__(self, portname: str) -> None:
+        BasicTester.__init__(self, portname)
 
-    Parameters
-    ----------
-    serial_port : serial.Serial
-        Serial port to write to
+    def test_version(self) -> bool:
+        """Test the version of firmware
 
-    Returns
-    -------
-    bool
-        True if test passed. False otherwise
-    """
-    print("SERVER TEST VERSION")
-    text = ""
-    press_btn(serial_port, BTN2, "m")
-    start = datetime.now()
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            Serial port to write to
 
-    pattern = r"FW_VERSION:\s*(.+)"
+        Returns
+        -------
+        bool
+            True if test passed. False otherwise
+        """
 
-    while True:
-        new_text = serial_port.read(serial_port.in_waiting).decode("utf-8")
-        text += new_text
+        self.press_btn(BTN2, "m")
+        start = datetime.now()
 
-        version_match = re.search(pattern, text)
+        pattern = r"FW_VERSION:\s*(.+)"
 
-        if version_match:
-            version = version_match.group(1)
-            print(f"GOT VERSION {version}")
-            return True
+        while True:
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.console_output += new_text
 
-        if (datetime.now() - start).total_seconds() > 10:
-            print("TIMEOUT!!")
-            return False
+            print(new_text, end='')
 
-        time.sleep(1)
-        press_btn(serial_port, BTN2, "m")
+            version_match = re.search(pattern, self.console_output)
+
+            if version_match:
+                version = version_match.group(1)
+                print(f"GOT VERSION {version}")
+                return True
+
+            if (datetime.now() - start).total_seconds() > 10:
+                print("TIMEOUT!!")
+                return False
+
+            time.sleep(1)
+            self.press_btn(BTN2, "m")
 
 
-def server_tests(portname: str):
+def server_tests(portname: str, boardname):
     """All server tests
 
     Parameters
@@ -294,9 +337,12 @@ def server_tests(portname: str):
     Dict[str, bool]
         Test report
     """
-    server_console = serial.Serial(portname, baudrate=115200, timeout=2)
+
     test_results_server = {}
-    test_results_server["versioning"] = server_test_version(server_console)
+    server = ServerTester(portname)
+    test_results_server["versioning"] = server.test_version()
+
+    server.save_console_output(f'otas_out_{boardname}.txt')
 
     return test_results_server
 
@@ -317,10 +363,17 @@ def _print_results(name, report):
 
     return overall
 
+def main():
+    if len(sys.argv) < 3:
+        print(f"OTAS TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
+        
+        for arg in sys.argv[1:]:
+            print(arg)
 
-if __name__ == "__main__":
-    if len(sys.argv) < 5:
-        print("Not enough arguments!")
+        print("USAGE: <otas-board> <otac-board> as shown in resource manager")
+        for arg in sys.argv:
+            print(arg)
+
         sys.exit(-1)
 
     rm = ResourceManager()
@@ -328,22 +381,11 @@ if __name__ == "__main__":
     # Get the boards under test and the file paths
     SERVER_BOARD = sys.argv[1]
     CLIENT_BOARD = sys.argv[2]
-    OTAS_FILE = sys.argv[3]
-    OTAC_FILE = sys.argv[4]
-
     assert (
         SERVER_BOARD != CLIENT_BOARD
     ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
-    assert (
-        OTAS_FILE != OTAC_FILE
-    ), f"OTAC ELF ({OTAC_FILE}) must not  be the same as Server ({OTAS_FILE})"
 
-    # Make sure all bonding information is wiped
-    rm.resource_erase(SERVER_BOARD)
-    rm.resource_erase(CLIENT_BOARD)
-
-    rm.resource_flash(SERVER_BOARD, OTAS_FILE)
-    rm.resource_flash(CLIENT_BOARD, OTAC_FILE)
+    rm.owner = rm.get_owner(SERVER_BOARD)
 
     # Get console ports associated with the boards
     server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
@@ -351,13 +393,14 @@ if __name__ == "__main__":
 
     rm.resource_reset(SERVER_BOARD)
     rm.resource_reset(CLIENT_BOARD)
-
     # give time for connection
     time.sleep(5)
 
     # Run the tests
-    test_server_results = server_tests(server_port)
-    test_client_results = client_tests(client_port)
+    test_server_results = server_tests(server_port, SERVER_BOARD)
+    rm.resource_reset(SERVER_BOARD)
+    time.sleep(5)
+    test_client_results = client_tests(client_port, CLIENT_BOARD)
 
     # Print Results
     print("\n\n")
@@ -370,3 +413,9 @@ if __name__ == "__main__":
 
     if not OVERALL_CLIENT or not OVERALL_SERVER:
         sys.exit(-1)
+
+    pass
+
+
+if __name__ == "__main__":
+    main()
