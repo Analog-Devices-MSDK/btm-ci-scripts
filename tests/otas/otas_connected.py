@@ -400,7 +400,7 @@ def main():
     test_server_results = server_tests(server_port, SERVER_BOARD)
     rm.resource_reset(SERVER_BOARD)
     time.sleep(5)
-    test_client_results = client_tests(client_port, CLIENT_BOARD)
+    test_client_results = client_tests(client_port, CLIENT_BOARD, resouce_manager)
 
     # Print Results
     print("\n\n")
