@@ -655,30 +655,8 @@ jobs:
           DATS_TEST_DIR=$TEST_DIR/dats     
           DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
-    
-      
-          (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
-      
-      # - name: Flash DATS 655/690
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
-      #   with:
-      #     board: |
-      #       max32665_board1
-      #       max32690_board_w1
-      #     project: |
-      #       BLE_dats
-      #       BLE_datc
-      #     suppress_output: true
           
-      #     build: true
-      #     distclean: true
-
-      # - name: DATS 655/690
-      #   run: | 
-      #     DATS_TEST_DIR=$RESOURCE_SHARE_DIR../tests/dats
-      #     DATS_BOARD_665=max32665_board1
-      #     DATC_BOARD_690=max32690_board_w1
-      #     (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_665 $DATC_BOARD_690)
+          (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
 
 
       - name: Erase Boards OTAS
@@ -708,7 +686,7 @@ jobs:
           distclean: true
 
       - name: OTAS
-        # if: ${{env.MAX32655_OTAS_CONNECTED_TEST == "true"}}
+        # if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
         run: | 
           OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
@@ -716,15 +694,9 @@ jobs:
           OTAC_BOARD_665=max32665_board1
           OTAC_BOARD_690=max32690_board_w1
 
-          (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
-
-          # #TEMP fix for 690
-          # ocderase $OTAS_BOARD_655 $GITHUB_REF          
-          # ocderase $OTAS_BOARD_655 $GITHUB_REF
-          # sed -i "s/'?'/'!'/g" Examples/MAX32655/Bluetooth/BLE_otas/dats_main.c          
-          # make clean -C Examples/MAX32655/Bluetooth/BLE_otas
-          # make -j -C Examples/MAX32655/Bluetooth/BLE_otas
-          # ocdflash $OTAS_BOARD_655 Examples/MAX32655/Bluetooth/BLE_otas/build/max32655.elf $GITHUB_REF
+          if [[$MAX32655_OTAS_CONNECTED_TEST == 'true']]
+            (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
+          fi
 
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
@@ -739,6 +711,7 @@ jobs:
           mv $TEST_DIR/dats/dats_out $RESULTS_DIR
           mv $TEST_DIR/otas/otas_out $RESULTS_DIR
           set -e
+          ls $RESULTS_DIR
 
           git clean -ffdx
           git reset --hard
