@@ -1,8 +1,9 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
+const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
+const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
 
 const BOARD_IDS = Core.getMultilineInput('board');
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
@@ -26,15 +27,18 @@ const resetBoard = function(target, dap, gdb, tcl, telnet, suppress) {
         }
         resetCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         resetCmd.on('error', error => {
-            console.error(`ERROR: ${error.message}`);
+            // console.error(`ERROR: ${error.message}`);
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         resetCmd.on('close', code => {
+            logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
-                resolve(code);
-            }
+            // console.log(`Process exited with code ${code}`);
+            // if (code != 0) reject(code);
+            // else {
+            //     resolve(code);
+            // }
+            resolve(code);
         });
     });
 }
@@ -45,7 +49,6 @@ const main = async function () {
     const gdbPorts = [];
     const tclPorts = [];
     const telnetPorts = [];
-    let promises = [];
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -60,8 +63,20 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
+    }
+    let promises = [];
+    var target;
+    var cfgBoardSpec;
+    for (let i = 0; i < BOARD_IDS.length; i++) {
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
+        } else {
+            target = 'MAX32XXX'
+        }
         promises[i] = resetBoard(
-            targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+            target, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch(
             (error) => procFail(error, 'Reset', false)
         )

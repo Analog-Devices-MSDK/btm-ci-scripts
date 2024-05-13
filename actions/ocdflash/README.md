@@ -20,6 +20,10 @@ Path to the root directory of the local MSDK. Default: `'.'`.
 
 Flag used to indicate that the project should be built before it is flashed. Default: `"false"`.
 
+### build_flags
+
+Additional flags to use if building. Default: `""`.
+
 ### distclean
 
 Flag used to indicate that a distclean should be performed prior to building the project. If `build` is false, this input is ignored. Default: `"false"`.

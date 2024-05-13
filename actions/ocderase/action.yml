@@ -4,10 +4,6 @@ inputs:
   board:
     description: 'ID of the board to erase'
     required: true
-  has_two_flash_banks:
-    description: 'Used to indicated if the board has 2 flash banks'
-    required: false
-    default: 'false'
   suppress_output:
     description: 'Used to suppress console unless an error is encountered.'
     required: false

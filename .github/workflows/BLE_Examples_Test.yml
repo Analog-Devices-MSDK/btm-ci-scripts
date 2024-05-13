@@ -657,6 +657,7 @@ jobs:
           DATS_BOARD_655=max32655_board1
           DATC_BOARD_655=max32655_board2
     
+      
           (cd $DATS_TEST_DIR && ls && python3 datsc_connected.py $DATS_BOARD_655 $DATC_BOARD_655)
       
       # - name: Flash DATS 655/690

@@ -25,7 +25,7 @@ const main = async function() {
         let mode = LOCK_FLAG ? '-l' : '-u'
         pyArgs = [
             `${mode}`,
-            `${BOARD_IDS.join(" ")}`,
+            ...BOARD_IDS,
             '--owner', `${OWNER_REF}`,
             '--timeout', `${TIMEOUT}`
         ]
@@ -41,7 +41,14 @@ const main = async function() {
     
     await PythonShell.run('resource_manager.py', options).then(
         (results) => console.log(results.join("\n")),
-        (error) => console.error(error)
+        (error) => {
+            console.error(error);
+            if (LOCK_FLAG) {
+                Core.setFailed("Lock failed.");
+            } else {
+                Core.setFailed("Unlock failed.");
+            }
+        }
     );
    
 }

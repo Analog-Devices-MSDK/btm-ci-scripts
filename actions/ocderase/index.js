@@ -1,11 +1,11 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
+const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const { getBoardData, getBoardOwner, procSuccess, procFail } = require('../common');
+const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
 
 const BOARD_IDS = Core.getMultilineInput('board');
-const HAS_TWO_FLASH_BANKS = Core.getMultilineInput('has_two_flash_banks', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 const OWNER_REF = Github.context.ref;
 
@@ -22,18 +22,39 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
         const eraseCmd = spawn('openocd', args);
         if (suppress) {
             eraseCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+            eraseCmd.stderr.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
             eraseCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+            eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         }
-        eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         eraseCmd.on('error', (error) => {
-            console.error(`ERROR: ${error.message}`);
+            if (suppress) {
+                logOut = `${logOut}${dumpOut}`
+            }
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         eraseCmd.on('close', (code) => {
-            console.log(logOut);
-            console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
+            if (code != 0) {
+                let logLines = logOut.split(/\r?\n/)
+                let idx = logLines.length - 1;
+                while (!logLines[idx]) {
+                    idx--;
+                }
+                if (logLines[idx].trim() === 'Error: flash bank 1 does not exist') {
+                    if (!suppress) {
+                        logOut = `${logOut}Process exited with code ${code} -- OK`
+                        console.log(logOut);
+                    }
+                    console.log(`Process exited with code ${code} -- OK`);
+                    resolve(0);
+                } else {
+                    logOut = `${logOut}Process exited with code ${code}`
+                    console.log(logOut);
+                    resolve(code);
+                }
+            } else {
+                logOut = `${logOut}Process exited with code ${code}`
+                console.log(logOut);
                 resolve(code);
             }
         });
@@ -41,22 +62,11 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
 }
 
 const main = async function () {
-    if (HAS_TWO_FLASH_BANKS.length === 1 && BOARD_IDS.length > 1) {
-        for (let i = 0; i < BOARD_IDS.length; i++) {
-            HAS_TWO_FLASH_BANKS[i] = HAS_TWO_FLASH_BANKS[0];
-        }
-    } else if (HAS_TWO_FLASH_BANKS.length !== BOARD_IDS.length) {
-        console.log("Length of projects list must be 1 or the same as length of boards list.");
-        throw new Error(
-            '!! ERROR: Mismatched parameter lengths. Board could not be flashed. !!'
-        );
-    }
     const targets = [];
     const dapSNs = [];
     const gdbPorts = [];
     const tclPorts = [];
     const telnetPorts = [];
-
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -73,25 +83,57 @@ const main = async function () {
         ]).catch((err) => console.error(err));
     }
     let promises = [];
+    var target;
+    var cfgBoardSpec;
     for (let i = 0; i < BOARD_IDS.length; i++) {
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
+        } else {
+            target = 'MAX32XXX'
+        }
         promises[i] = eraseFlash(
-            targets[i], 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
+            target, 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
         ).catch((error) => procFail(error, 'Erase', false));
     }
     let retCodes = await Promise.all(promises).then(
         (values) => {
             for (const val of values) {
-                procSuccess(val, 'Erase');
+                if (val === 0) {
+                    procSuccess(val, 'Erase');
+                } else {
+                    procFail(val, 'Erase', true);
+                }
             }
         }
     );
     for (const i in retCodes) {
-        if (retCodes[i] === 0 && HAS_TWO_FLASH_BANKS[i]) {
+        if (retCodes[i] === 0) {
+            cfgBoardSpec = await fileExists(
+                path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+            if (cfgBoardSpec) {
+                target = targets[i];
+            } else {
+                target = 'MAX32XXX'
+            }
             await eraseFlash(
                 targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
-                (success) => procSuccess(success, 'Erase'),
-                (error) => procFail(error, 'Erase', false)
+                (value) => {
+                    if (value === 0) {
+                        procSuccess(success, 'Erase');
+                    } else {
+                        retVal--;
+                        procFail(error, 'Erase', false);
+                        Core.setFailed(`Failed to erase ${targets[i]}.`);
+                    }
+                },
+                (error) => {
+                    retVal--;
+                    procFail(error, 'Erase', false);
+                    Core.setFailed(`Failed to erase ${targets[i]}.`);
+                }
             );
         }
     }

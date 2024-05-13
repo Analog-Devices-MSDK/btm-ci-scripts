@@ -1,5 +1,6 @@
 const { PythonShell } = require('python-shell');
 const { env } = require('node:process');
+const fs = require('fs')
 
 const getBoardData = function (boardId, itemName) {
     let options = {
@@ -45,4 +46,6 @@ const procFail = function(exitCode, procName, retry) {
     }
 }
 
-module.exports = { getBoardData, getBoardOwner, procSuccess, procFail };
+const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
+
+module.exports = { getBoardData, getBoardOwner, procSuccess, procFail, fileExists };

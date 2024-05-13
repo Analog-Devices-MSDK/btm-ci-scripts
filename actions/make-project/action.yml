@@ -9,6 +9,10 @@ inputs:
     description: 'Perform distclean before building?'
     required: false
     default: 'false'
+  build_flags:
+    description: 'Additional build flags.'
+    required: false
+    default: ''
   suppress_output:
     description: 'Used to suppress console unless an error is encountered.'
     required: false
