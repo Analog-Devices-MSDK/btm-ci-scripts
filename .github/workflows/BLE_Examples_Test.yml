@@ -619,7 +619,7 @@ jobs:
           sed -i "s/'S'/'!'/g" Examples/MAX32690/Bluetooth/BLE_otac/datc_main.c
 
       - name: Erase Boards DATS
-        if: ${{env.MAX32655_DATS_CONNECTED_TEST == 'true'}}
+        if: ${{env.MAX32655_DATS_CONNECTED_TEST == 'true' || env.MAX32665_DATS_CONNECTED_TEST == 'true' || env.MAX32690_DATS_CONNECTED_TEST == 'true'}}
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
         with:
           board: |
@@ -662,7 +662,7 @@ jobs:
 
 
       - name: Erase Boards OTAS
-        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
+        if: ${{env.MAX32655_DATS_CONNECTED_TEST == 'true' || env.MAX32665_DATS_CONNECTED_TEST == 'true' || env.MAX32690_DATS_CONNECTED_TEST == 'true'}}
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
         with:
           board: |
@@ -672,7 +672,7 @@ jobs:
             max32690_board_w1
       
       - name: Flash OTAS
-        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
+        if: ${{env.MAX32655_DATS_CONNECTED_TEST == 'true' || env.MAX32665_DATS_CONNECTED_TEST == 'true' || env.MAX32690_DATS_CONNECTED_TEST == 'true'}}
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
         with:
           board: |
@@ -690,7 +690,7 @@ jobs:
           distclean: true
 
       - name: OTAS
-        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
+        if: ${{env.MAX32655_DATS_CONNECTED_TEST == 'true' || env.MAX32665_DATS_CONNECTED_TEST == 'true' || env.MAX32690_DATS_CONNECTED_TEST == 'true'}}
         run: | 
           OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
