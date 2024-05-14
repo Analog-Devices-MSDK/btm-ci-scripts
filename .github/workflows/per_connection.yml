@@ -71,7 +71,6 @@ jobs:
           board: |
             ${{ env.SLAVE_655 }}
             ${{ env.SLAVE_690 }}
-            # ${{ env.MASTER }}
 
           project: BLE5_ctr
           build: true
