@@ -87,6 +87,7 @@ class BasicTester:
             Data to write out
         """
         for byte in data:
+            print(f'slow {byte}')
             self.serial_port.write(byte)
             time.sleep(0.1)
 
@@ -102,8 +103,12 @@ class BasicTester:
         method : str
             Button method (s/m/l/x)
         """
-        command = f"btn {btn_num} {method}\r\n".encode("utf-8")
+        command = f"btn {btn_num} {method}\n".encode("utf-8")
+        # self.serial_port.writelines([command])
         self.serial_port.write(command)
+        # self.slow_write(command)
+        # time.sleep(0.5)
+
     
     def save_console_output(self, path):
         
@@ -121,7 +126,7 @@ class ClientTester(BasicTester):
     def __init__(self, portname: str) -> None:
         BasicTester.__init__(self, portname)
 
-    def test_discover_filespace(self) -> bool:
+    def test_discover_filespace(self, retry=True) -> bool:
         """Test discovery filespace
 
         Parameters
@@ -151,13 +156,16 @@ class ClientTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                if retry:
+                    time.sleep(5)
+                    return self.test_discover_filespace(retry=False)
+                
                 return False
 
             time.sleep(1)
             self.press_btn(BTN2, "s")
 
-    def test_start_update_xfer(self) -> bool:
+    def test_start_update_xfer(self, retry=True) -> bool:
         """Test firmware update
 
         Parameters
@@ -187,11 +195,16 @@ class ClientTester(BasicTester):
                 break
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                if retry:
+                    time.sleep(5)
+                    return self.test_discover_filespace(retry=False)
+                
                 return False
-
+            
             time.sleep(1)
             self.press_btn(BTN2, "m")
+
+        start = datetime.now()
 
         # wait for complete
         while True:
@@ -204,10 +217,9 @@ class ClientTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 30:
-                print("TIMEOUT!!")
                 return False
 
-    def verify_xfer(self) -> bool:
+    def verify_xfer(self, retry=True) -> bool:
         """Test transfer verification
 
         Parameters
@@ -247,7 +259,10 @@ class ClientTester(BasicTester):
                 return False
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                if retry:
+                    time.sleep(5)
+                    return self.test_discover_filespace(retry=False)
+                
                 return False
 
 
@@ -267,7 +282,8 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     
     client = ClientTester(portname)
     client.serial_port.flush()
-    resource_manager.resource_reset(boardname)z
+    resource_manager.resource_reset(boardname)
+    time.sleep(5)
     client_results = {}
     client_results["filespace"] = client.test_discover_filespace()
     client_results["update"] = client.test_start_update_xfer()
@@ -317,7 +333,7 @@ class ServerTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                # print("TIMEOUT!!")
                 return False
 
             time.sleep(1)
@@ -376,7 +392,7 @@ def main():
 
         sys.exit(-1)
 
-    rm = ResourceManager()
+    resource_manager = ResourceManager()
 
     # Get the boards under test and the file paths
     SERVER_BOARD = sys.argv[1]
@@ -385,22 +401,22 @@ def main():
         SERVER_BOARD != CLIENT_BOARD
     ), f"Client Board ({CLIENT_BOARD}) must not  be the same as Server ({SERVER_BOARD})"
 
-    rm.owner = rm.get_owner(SERVER_BOARD)
+    resource_manager.owner = resource_manager.get_owner(SERVER_BOARD)
 
     # Get console ports associated with the boards
-    server_port = rm.get_item_value(f"{SERVER_BOARD}.console_port")
-    client_port = rm.get_item_value(f"{CLIENT_BOARD}.console_port")
+    server_port = resource_manager.get_item_value(f"{SERVER_BOARD}.console_port")
+    client_port = resource_manager.get_item_value(f"{CLIENT_BOARD}.console_port")
 
-    rm.resource_reset(SERVER_BOARD)
-    rm.resource_reset(CLIENT_BOARD)
+    resource_manager.resource_reset(SERVER_BOARD)
+    resource_manager.resource_reset(CLIENT_BOARD)
     # give time for connection
     time.sleep(5)
 
     # Run the tests
     test_server_results = server_tests(server_port, SERVER_BOARD)
-    rm.resource_reset(SERVER_BOARD)
-    time.sleep(5)
-    test_client_results = client_tests(client_port, CLIENT_BOARD)
+    # resource_manager.resource_reset(SERVER_BOARD)
+    # time.sleep(5)
+    test_client_results = client_tests(client_port, CLIENT_BOARD, resource_manager)
 
     # Print Results
     print("\n\n")

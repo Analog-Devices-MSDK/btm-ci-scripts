@@ -9,7 +9,15 @@ function upper() {
     val=$1
     echo ${val^^}
 }
+function get_ocdcfg(){
 
+    target_path=target/$(lower $1).cfg
+    if [ ! -f $OPENOCD_PATH/tcl/scripts/$target_path ] && [ ! -f $OPENOCD_PATH/scripts/$target_path ] && [ ! -f $OPENOCD_PATH/$target_path ]; then
+        echo max32xxx
+    else
+        echo $1
+    fi
+}
 function ocdflash() {
     if [[ "$1" == "--help" || $1 == "-h" ]]; then
         printf "flash --> flash a board\n"
@@ -38,6 +46,8 @@ function ocdflash() {
     fi
 
     target=$(resource_manager.py -g $name.target)
+    target=$(get_ocdcfg $target)
+    
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)
     telnetport=$(resource_manager.py -g $name.ocdports.telnet)
@@ -85,6 +95,9 @@ function ocderase() {
 
 
     target=$(resource_manager.py -g $name.target)
+    target=$(get_ocdcfg $target)
+    
+
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)
     telnetport=$(resource_manager.py -g $name.ocdports.telnet)
@@ -132,6 +145,9 @@ function ocdreset() {
     fi
 
     target=$(resource_manager.py -g $name.target)
+    target=$(get_ocdcfg $target)
+    
+
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)
     telnetport=$(resource_manager.py -g $name.ocdports.telnet)
@@ -172,6 +188,8 @@ function ocdopen() {
 
 
     target=$(resource_manager.py -g $name.target)
+    target=$(get_ocdcfg $target)
+
     dapsn=$(resource_manager.py -g $name.dap_sn)
     gdbport=$(resource_manager.py -g $name.ocdports.gdb)
     telnetport=$(resource_manager.py -g $name.ocdports.telnet)
