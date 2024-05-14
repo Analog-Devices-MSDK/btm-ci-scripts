@@ -702,7 +702,7 @@ jobs:
             test_ran=1
           fi
 
-          if [[ $test_ran -eq 0]]; then
+          if [[ $test_ran -eq 0 ]]; then
             echo OTAS not ran. No changes detected!
           fi        
 
