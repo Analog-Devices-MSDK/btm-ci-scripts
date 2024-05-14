@@ -201,3 +201,7 @@ def main():
     slave.reset()
 
     save_results(slave_board, master_board, results)
+
+
+if __name__ == "__main__":
+    main()
