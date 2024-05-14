@@ -1,0 +1,96 @@
+###############################################################################
+#
+# Copyright (C) 2022-2023 Maxim Integrated Products, Inc. (now owned by
+# Analog Devices, Inc.),
+# Copyright (C) 2023-2024 Analog Devices, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+##############################################################################
+name: PER Connection 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+env:
+  SLAVE_655: max32655_board1
+  SLAVE_690: max32690_board_A1
+  MASTER: nRF52840_1
+  RESULTS_DIR: "ble_test_results"
+  
+
+jobs:
+  run_per_tests:
+    runs-on: [self-hosted, btm-ci]
+    if: github.event.pull_request.draft == false
+    steps:
+      # Checks out repository
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          repository: analogdevicesinc/msdk
+          ref: main
+          fetch-depth: 0
+
+      - name: clean
+        run: |
+          git scorch
+          rm -f *.zip
+    
+      - name: Lock Resources
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        with:
+          boards: |
+            ${{ env.SLAVE_655 }}
+            ${{ env.SLAVE_690 }}
+            ${{ env.MASTER }}
+
+          lock: true
+
+      - name: Flash Controller
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
+        with:
+          board: |
+            ${{ env.SLAVE_655 }}
+            ${{ env.SLAVE_690 }}
+            ${{ env.MASTER }}
+
+          project: BLE5_ctr
+          build: true
+
+      - name: test_max32665
+        run: |
+          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_655)
+
+      - name: test_max32690
+        run: |
+          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_690)    
+          
+      - name: Consolidate Results
+        run: | 
+          set -e
+          mv $TEST_DIR/per/*.csv $RESULTS_DIR
+          set +e
+
+      - name: upload_results
+        uses: actions/upload-artifact@v4
+        with:
+          name: per_results
+          path: ${{ RESULTS_DIR }}
