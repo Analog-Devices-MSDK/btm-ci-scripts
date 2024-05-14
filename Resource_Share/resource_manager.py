@@ -55,7 +55,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 # pylint: disable=import-error
 from tabulate import tabulate
@@ -506,6 +506,12 @@ class ResourceManager:
             table.append(row)
 
         print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
+    def get_switch_config(self, resource) -> Tuple[str, str]:
+        
+        model = self.get_item_value(f'{resource}.sw_model')
+        port =  self.get_item_value(f'{resource}.sw_state')
+
+        return model, port
 
     def _is_ocd_capable(self, resource):
         if resource not in self.resources:
