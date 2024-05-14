@@ -78,13 +78,12 @@ jobs:
 
       - name: test_max32665
         run: |
-          cd $TEST_DIR/per
-          ls
-          python3 per_connected.py $MASTER $SLAVE_655 > log_655.txt
+          
+          (cd $TEST_DIR/per && python3 per_connection.py $MASTER $SLAVE_655 > log_655.txt)
 
       - name: test_max32690
         run: |
-          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_690 log_690.txt)    
+          (cd $TEST_DIR/per &&python3 per_connection.py $MASTER $SLAVE_690 log_690.txt)    
           
       - name: Consolidate Results
         run: | 
@@ -99,9 +98,10 @@ jobs:
         with:
           name: per_results
           path: ${{ env.RESULTS_DIR }}
-      - name: Lock Resources
+      
+      - name: Unlock Resources
         if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
         with:
           all_owned: true
-          lock: false
+          
