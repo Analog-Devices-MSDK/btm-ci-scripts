@@ -67,11 +67,13 @@ jobs:
     runs-on: [self-hosted, btm-ci]
     if: github.event.pull_request.draft == false
     steps:
-      - uses: actions/checkout@v3
-          with:
-            submodules: false
-            repository: analogdevicesinc/msdk
-            ref: main
+      # Checks out repository
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          repository: analogdevicesinc/msdk
+          ref: main
+          fetch-depth: 0
 
       - name: clean
         run: |
