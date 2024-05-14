@@ -86,19 +86,19 @@ jobs:
         run: |
           (cd $TEST_DIR/per &&python3 per_connection.py $MASTER $SLAVE_690 log_690.txt)    
           
-      - name: Consolidate Results
-        run: | 
-          set -e
-          mv $TEST_DIR/per/*.csv $RESULTS_DIR
-          mv $TEST_DIR/per/*.txt $RESULTS_DIR
+      # - name: Consolidate Results
+      #   run: | 
+      #     set -e
+      #     mv $TEST_DIR/per/*.csv $RESULTS_DIR
+      #     mv $TEST_DIR/per/*.txt $RESULTS_DIR
 
-          set +e
+      #     set +e
 
-      - name: upload_results
-        uses: actions/upload-artifact@v4
-        with:
-          name: per_results
-          path: ${{ env.RESULTS_DIR }}
+      # - name: upload_results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: per_results
+      #     path: ${{ env.RESULTS_DIR }}
       
       - name: Unlock Resources
         if: always()

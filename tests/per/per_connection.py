@@ -126,7 +126,7 @@ def main():
     # pylint: disable=too-many-locals
     """MAIN"""
 
-    if len(sys.argv) < 4:
+    if len(sys.argv) < 3:
         print(f"Expected 2 inputs. Got {len(sys.argv)}")
         print("usage: <MASTER_BAORD> <SLAVE_BOARD>")
         sys.exit(-1)
