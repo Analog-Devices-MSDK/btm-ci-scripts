@@ -104,7 +104,7 @@ def config_switches(resource_manager: ResourceManager, slave: str, master: str):
     rf_sw_master.set_sw_state(master_sw_port)
 
 
-def save_results(results: Dict[str, list]):
+def save_results(slave, master, results: Dict[str, list]):
     """Store PER Results
 
     Parameters
@@ -113,7 +113,9 @@ def save_results(results: Dict[str, list]):
         Results from per sweep
     """
     data = pd.DataFrame(results)
-    data.to_csv("connection_per.csv", index=False)
+    data.to_csv(f"connection_per_{slave}_{master}.csv", index=False)
+
+
 
 
 def main():
@@ -175,7 +177,7 @@ def main():
             results["master"].append(master_per)
 
             if (slave_per >= 30 or master_per >= 30) and i < 70:
-                save_results(results)
+                save_results(slave_board, master_board, results)
                 print(f"Connection Failed PER TEST at {i}")
                 print(f"Master: {master_per}, Slave: {slave_per}")
                 sys.exit(-1)
@@ -189,4 +191,4 @@ def main():
     master.reset()
     slave.reset()
 
-    save_results(results)
+    save_results(slave_board, master_board, results)
