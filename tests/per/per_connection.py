@@ -56,22 +56,47 @@ Description: Simple example showing creation of a connection and getting packet 
 
 """
 
-import time
 import sys
+import time
+from typing import Dict
+
+import pandas as pd
+
+# pylint: disable=import-error,wrong-import-position
 from ble_hci import BleHci
-from ble_test_suite.equipment import mc_rf_sw , mc_rcdat_6000
+from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
 
 sys.path.append("../..")
 
-# pylint: disable=import-error,wrong-import-position
 from Resource_Share.resource_manager import ResourceManager
 
 # pylint: enable=import-error,wrong-import-position
-def config_switches(resource_manager:ResourceManager, slave, master):
+
+
+def config_switches(resource_manager: ResourceManager, slave: str, master: str):
+    """Configure RF switches to connect DUTS
+
+    Parameters
+    ----------
+    resource_manager : ResourceManager
+        resource manager to access switch information
+    slave : str
+        slave resource
+    master : str
+        slave_resource
+    """
     slave_sw_model, slave_sw_port = resource_manager.get_switch_config(slave)
     master_sw_model, master_sw_port = resource_manager.get_switch_config(master)
 
-    assert slave_sw_model != master_sw_model, f'Boards must be on opposite switches to connect!'
+    assert (
+        slave_sw_model and slave_sw_port
+    ), "Slave must have the sw_model and sw_state attribute"
+    assert (
+        master_sw_model and master_sw_port
+    ), "Master must have the sw_model and sw_state attribute"
+    assert (
+        slave_sw_model != master_sw_model
+    ), "Boards must be on opposite switches to connect!"
 
     rf_sw_slave = mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model)
     rf_sw_master = mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model)
@@ -79,7 +104,20 @@ def config_switches(resource_manager:ResourceManager, slave, master):
     rf_sw_master.set_sw_state(master_sw_port)
 
 
+def save_results(results: Dict[str, list]):
+    """Store PER Results
+
+    Parameters
+    ----------
+    results : Dict[str,list]
+        Results from per sweep
+    """
+    data = pd.DataFrame(results)
+    data.to_csv("connection_per.csv", index=False)
+
+
 def main():
+    # pylint: disable=too-many-locals
     """MAIN"""
 
     if len(sys.argv) < 4:
@@ -87,55 +125,68 @@ def main():
         print("usage: <MASTER_BAORD> <SLAVE_BOARD>")
         sys.exit(-1)
 
-    MASTER_BOARD = sys.argv[1]
-    SLAVE_BOARD = sys.argv[2]
-    
-    assert MASTER_BOARD != SLAVE_BOARD, f'Master must not be the same as slave, {MASTER_BOARD} = {SLAVE_BOARD}'
-    
+    master_board = sys.argv[1]
+    slave_board = sys.argv[2]
+
+    assert (
+        master_board != slave_board
+    ), f"Master must not be the same as slave, {master_board} = {slave_board}"
+
     resource_manager = ResourceManager()
-    
-    MASTER_HCI_PORT = resource_manager.get_item_value(f'{MASTER_BOARD}.hci_port')
-    SLAVE_HCI_PORT = resource_manager.get_item_value(f'{SLAVE_BOARD}.hci_port')
-    
 
-    config_switches(resource_manager, SLAVE_BOARD, MASTER_BOARD)
+    config_switches(resource_manager, slave_board, master_board)
 
+    master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
+    slave_hci_port = resource_manager.get_item_value(f"{slave_board}.hci_port")
 
-    master = BleHci(MASTER_HCI_PORT)
-    slave = BleHci(SLAVE_HCI_PORT)
-
-
-
-
-
-    master.reset()
-    slave.reset()
+    master = BleHci(master_hci_port)
+    slave = BleHci(slave_hci_port)
+    atten = mc_rcdat_6000.RCDAT6000()
 
     master_addr = 0x001234887733
     slave_addr = 0x111234887733
 
-    master.set_adv_tx_power(-10)
-    slave.set_adv_tx_power(-10)
-
+    master.reset()
+    slave.reset()
+    master.set_adv_tx_power(0)
+    slave.set_adv_tx_power(0)
     slave.set_address(slave_addr)
     master.set_address(master_addr)
 
     slave.start_advertising(connect=True)
     master.init_connection(addr=slave_addr)
 
-    while True:
+    attens = list(range(20, 100, 5))
+
+    results = {"attens": attens, "slave": [], "master": []}
+
+    for i in attens:
+        atten.set_attenuation(i)
+        time.sleep(10)
+
         slave_stats, _ = slave.get_conn_stats()
         master_stats, _ = master.get_conn_stats()
 
         if slave_stats.rx_data and master_stats.rx_data:
-            print(f"Slave PER {slave_stats.per()}")
-            print(f"Master PER {master_stats.per()}")
-            break
+            slave_per = slave_stats.per()
+            master_per = master_stats.per()
 
-        time.sleep(0.5)
+            results["slave"].append(slave_per)
+            results["master"].append(master_per)
+
+            if (slave_per >= 30 or master_per >= 30) and i < 70:
+                save_results(results)
+                print(f"Connection Failed PER TEST at {i}")
+                print(f"Master: {master_per}, Slave: {slave_per}")
+                sys.exit(-1)
+
+        slave.reset_connection_stats()
+        master.reset_connection_stats()
 
     master.disconnect()
     slave.disconnect()
 
     master.reset()
     slave.reset()
+
+    save_results(results)
