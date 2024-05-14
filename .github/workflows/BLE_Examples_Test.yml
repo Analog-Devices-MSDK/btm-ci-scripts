@@ -660,6 +660,7 @@ jobs:
 
 
       - name: Erase Boards OTAS
+        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}} || ${{env.MAX32665_OTAS_CONNECTED_TEST == 'true'}}
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
         with:
           board: |
@@ -669,6 +670,7 @@ jobs:
             max32690_board_w1
       
       - name: Flash OTAS
+        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}} || ${{env.MAX32665_OTAS_CONNECTED_TEST == 'true'}}
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
         with:
           board: |
@@ -686,7 +688,6 @@ jobs:
           distclean: true
 
       - name: OTAS
-        # if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
         run: | 
           OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
@@ -694,9 +695,9 @@ jobs:
           OTAC_BOARD_665=max32665_board1
           OTAC_BOARD_690=max32690_board_w1
 
-          # if [[ $MAX32655_OTAS_CONNECTED_TEST == 'true' ]]; then
+          if [[ $MAX32655_OTAS_CONNECTED_TEST == 'true' ]]; then
             (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
-          # fi
+          fi
 
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_690 $OTAC_BOARD_655)
