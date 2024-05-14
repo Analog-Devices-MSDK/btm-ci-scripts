@@ -686,7 +686,7 @@ jobs:
           distclean: true
 
       - name: OTAS
-        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
+        # if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
         run: | 
           OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
@@ -694,7 +694,7 @@ jobs:
           OTAC_BOARD_665=max32665_board1
           OTAC_BOARD_690=max32690_board_w1
 
-          # if [[$MAX32655_OTAS_CONNECTED_TEST == 'true']]
+          # if [[ $MAX32655_OTAS_CONNECTED_TEST == 'true' ]]; then
             (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
           # fi
 
