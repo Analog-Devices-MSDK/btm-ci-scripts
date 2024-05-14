@@ -696,16 +696,11 @@ jobs:
           OTAC_BOARD_665=max32665_board1
           OTAC_BOARD_690=max32690_board_w1
 
-          test_ran=0
 
           if [[ $MAX32655_OTAS_CONNECTED_TEST == 'true' ]]; then
             (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_655)
-            test_ran=1
           fi
 
-          if [[ $test_ran -eq 0 ]]; then
-            echo OTAS not ran. No changes detected!
-          fi        
 
 
           # (cd $OTAS_TEST_DIR && python3 otas_connected.py $OTAS_BOARD_655 $OTAC_BOARD_665)
