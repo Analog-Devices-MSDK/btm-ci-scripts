@@ -126,7 +126,7 @@ class ClientTester(BasicTester):
     def __init__(self, portname: str) -> None:
         BasicTester.__init__(self, portname)
 
-    def test_discover_filespace(self) -> bool:
+    def test_discover_filespace(self, retry=True) -> bool:
         """Test discovery filespace
 
         Parameters
@@ -156,13 +156,16 @@ class ClientTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                # print("TIMEOUT!!")
+                if retry:
+                    time.sleep(5)
+                    return self.test_discover_filespace(retry=False)
+                
                 return False
 
             time.sleep(1)
             self.press_btn(BTN2, "s")
 
-    def test_start_update_xfer(self) -> bool:
+    def test_start_update_xfer(self, retry=True) -> bool:
         """Test firmware update
 
         Parameters
@@ -192,11 +195,16 @@ class ClientTester(BasicTester):
                 break
 
             if (datetime.now() - start).total_seconds() > 10:
-                # print("TIMEOUT!!")
+                if retry:
+                    time.sleep(5)
+                    return self.test_discover_filespace(retry=False)
+                
                 return False
-
+            
             time.sleep(1)
             self.press_btn(BTN2, "m")
+
+        start = datetime.now()
 
         # wait for complete
         while True:
@@ -209,10 +217,9 @@ class ClientTester(BasicTester):
                 return True
 
             if (datetime.now() - start).total_seconds() > 30:
-                # print("TIMEOUT!!")
                 return False
 
-    def verify_xfer(self) -> bool:
+    def verify_xfer(self, retry=True) -> bool:
         """Test transfer verification
 
         Parameters
@@ -252,7 +259,10 @@ class ClientTester(BasicTester):
                 return False
 
             if (datetime.now() - start).total_seconds() > 10:
-                # print("TIMEOUT!!")
+                if retry:
+                    time.sleep(5)
+                    return self.test_discover_filespace(retry=False)
+                
                 return False
 
 
@@ -275,13 +285,7 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     resource_manager.resource_reset(boardname)
     time.sleep(5)
     client_results = {}
-    first_try = client.test_discover_filespace()
-    if not first_try:
-        time.sleep(10)
-        client_results["filespace"] = client.test_discover_filespace()
-    else:
-        client_results["filespace"] = True
-
+    client_results["filespace"] = client.test_discover_filespace()
     client_results["update"] = client.test_start_update_xfer()
     client_results["verify"] = client.verify_xfer()
 
