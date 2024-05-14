@@ -97,3 +97,9 @@ jobs:
         with:
           name: per_results
           path: ${{ env.RESULTS_DIR }}
+      - name: Lock Resources
+        if: always()
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        with:
+          all_owned: true
+          lock: false
