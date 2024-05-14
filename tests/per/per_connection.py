@@ -63,7 +63,7 @@ from typing import Dict
 import pandas as pd
 
 # pylint: disable=import-error,wrong-import-position
-from ble_hci import BleHci
+from max_ble_hci import BleHci
 from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
 
 sys.path.append("../..")
