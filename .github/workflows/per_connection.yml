@@ -74,6 +74,7 @@ jobs:
 
           project: BLE5_ctr
           build: true
+          suppress_output:treu
 
       - name: test_max32665
         run: |
