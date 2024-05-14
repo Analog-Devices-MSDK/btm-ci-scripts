@@ -33,7 +33,7 @@ env:
   SLAVE_655: max32655_board1
   SLAVE_690: max32690_board_A1
   MASTER: nRF52840_1
-  RESULTS_DIR: "ble_test_results"
+  RESULTS_DIR: "connection_per_results"
   
 
 jobs:
@@ -77,20 +77,22 @@ jobs:
 
       - name: test_max32665
         run: |
-          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_655)
+          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_655 > log_655.txt)
 
       - name: test_max32690
         run: |
-          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_690)    
+          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_690 log_690.txt)    
           
       - name: Consolidate Results
         run: | 
           set -e
           mv $TEST_DIR/per/*.csv $RESULTS_DIR
+          mv $TEST_DIR/per/*.txt $RESULTS_DIR
+
           set +e
 
       - name: upload_results
         uses: actions/upload-artifact@v4
         with:
           name: per_results
-          path: ${{ RESULTS_DIR }}
+          path: ${{ env.RESULTS_DIR }}
