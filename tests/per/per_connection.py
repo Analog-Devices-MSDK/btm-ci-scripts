@@ -115,7 +115,11 @@ def save_results(slave, master, results: Dict[str, list]):
     data = pd.DataFrame(results)
     data.to_csv(f"connection_per_{slave}_{master}.csv", index=False)
 
-
+def print_test_config(slave, master):
+    print("Using:")
+    print(f"\tSlave - {slave}")
+    print(f"\tMaster - {master}")
+    
 
 
 def main():
@@ -127,9 +131,14 @@ def main():
         print("usage: <MASTER_BAORD> <SLAVE_BOARD>")
         sys.exit(-1)
 
+    
+
     master_board = sys.argv[1]
     slave_board = sys.argv[2]
 
+    print_test_config(slave_board, master_board)
+    
+    
     assert (
         master_board != slave_board
     ), f"Master must not be the same as slave, {master_board} = {slave_board}"
