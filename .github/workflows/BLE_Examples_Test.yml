@@ -688,6 +688,7 @@ jobs:
           distclean: true
 
       - name: OTAS
+        if: ${{env.MAX32655_OTAS_CONNECTED_TEST == 'true'}}
         run: | 
           OTAS_TEST_DIR=$TEST_DIR/otas
           OTAS_BOARD_655=max32655_board1
