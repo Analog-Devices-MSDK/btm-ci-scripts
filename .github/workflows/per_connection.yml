@@ -78,7 +78,9 @@ jobs:
 
       - name: test_max32665
         run: |
-          (cd $TEST_DIR/per &&python3 per_connected.py $MASTER $SLAVE_655 > log_655.txt)
+          cd $TEST_DIR/per
+          ls
+          python3 per_connected.py $MASTER $SLAVE_655 > log_655.txt
 
       - name: test_max32690
         run: |
