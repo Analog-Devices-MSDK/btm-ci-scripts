@@ -92,9 +92,9 @@ jobs:
           MSDK=${GITHUB_WORKSPACE}
           GROUP=${{ inputs.testGroup }}
           if [["${{ inputs.testType }}" -eq "FULL" ]]; then
-            python3 per_heatmap.py $MSDK MAX32665 NRF52840 $GROUP $RESULTS_DIR --long
+            (cd $TEST_DIR/per &&python3 per_heatmap.py $MSDK MAX32665 NRF52840 $GROUP $RESULTS_DIR --long)
           else
-            python3 per_heatmap.py $MSDK MAX32665 NRF52840 $GROUP $RESULTS_DIR
+            (cd $TEST_DIR/per && python3 per_heatmap.py $MSDK MAX32665 NRF52840 $GROUP $RESULTS_DIR)
           fi
 
           if [[ #? -ne 0 ]]; then
@@ -109,9 +109,9 @@ jobs:
           MSDK=${GITHUB_WORKSPACE}
           GROUP=${{ inputs.testGroup }}
           if [["${{ inputs.testType }}" -eq "FULL" ]]; then
-            python3 per_heatmap.py $MSDK MAX32655 NRF52840 $GROUP $RESULTS_DIR --long
+            (cd $TEST_DIR/per && python3 per_heatmap.py $MSDK MAX32655 NRF52840 $GROUP $RESULTS_DIR --long)
           else
-            python3 per_heatmap.py $MSDK MAX32655 NRF52840 $GROUP $RESULTS_DIR
+            (cd $TEST_DIR/per && python3 per_heatmap.py $MSDK MAX32655 NRF52840 $GROUP $RESULTS_DIR)
           fi
 
           if [[ #? -ne 0 ]]; then
@@ -126,9 +126,9 @@ jobs:
           MSDK=${GITHUB_WORKSPACE}
           GROUP=${{ inputs.testGroup }}
           if [["${{ inputs.testType }}" -eq "FULL" ]]; then
-            python3 per_heatmap.py $MSDK MAX32690 NRF52840 $GROUP $RESULTS_DIR --long
+            (cd $TEST_DIR/per && python3 per_heatmap.py $MSDK MAX32690 NRF52840 $GROUP $RESULTS_DIR --long)
           else
-            python3 per_heatmap.py $MSDK MAX32690 NRF52840 $GROUP $RESULTS_DIR
+            (cd $TEST_DIR/per && python3 per_heatmap.py $MSDK MAX32690 NRF52840 $GROUP $RESULTS_DIR)
           fi
 
           if [[ #? -ne 0 ]]; then

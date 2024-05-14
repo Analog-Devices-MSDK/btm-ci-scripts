@@ -161,9 +161,8 @@ def main():
     master_target = args.master_target.upper()
     resource_manager = ResourceManager()
     dut = resource_manager.get_applicable_items(target=dut_target, group=group)[0]
-    resource_manager.lock_resource(dut)
     master = resource_manager.get_applicable_items(target=master_target, group=group)[0]
-    resource_manager.lock_resource(master)
+    resource_manager.lock_resources([dut, master])
     print(dut)
     print(master)
 
