@@ -51,6 +51,7 @@ jobs:
 
       - name: clean
         run: |
+          echo $PATH
           git scorch
           rm -f *.zip
     
@@ -85,10 +86,8 @@ jobs:
           slave_port=$(resource_manager.py -g $SLAVE_655.sw_state)
 
           mc_rf_sw.py $master_sw  -s $master_state
-          mc_rf_sw.py $master_sw  -s $master_state
+          mc_rf_sw.py $slave_sw  -s $slave_state
           
-
-
           (cd $TEST_DIR/per && python3 per_connection.py $MASTER $SLAVE_655 )
           
           # (cd $TEST_DIR/per && python3 per_connection.py $MASTER $SLAVE_655 > log_655.txt)
