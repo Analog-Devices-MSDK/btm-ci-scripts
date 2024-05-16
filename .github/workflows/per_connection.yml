@@ -78,6 +78,17 @@ jobs:
 
       - name: test_max32655
         run: |
+          master_sw=$(resource_manager.py -g $MASTER.sw_model)
+          master_port=$(resource_manager.py -g $MASTER.sw_state)
+
+          slave_sw=$(resource_manager.py -g $SLAVE_655.sw_model)
+          slave_port=$(resource_manager.py -g $SLAVE_655.sw_state)
+
+          mc_rf_sw.py $master_sw  -s $master_state
+          mc_rf_sw.py $master_sw  -s $master_state
+          
+
+
           (cd $TEST_DIR/per && python3 per_connection.py $MASTER $SLAVE_655 )
           
           # (cd $TEST_DIR/per && python3 per_connection.py $MASTER $SLAVE_655 > log_655.txt)

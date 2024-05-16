@@ -59,7 +59,7 @@
         "dbbfile"      : "max32655_board2.json"
     },
 
-    "max32655_board_2" : {
+    "max32655_board_3" : {
         "desc"         : "marked sn #2, for per test,",
         "target"       : "MAX32655",
         "board"        : "EvKit_V1",
