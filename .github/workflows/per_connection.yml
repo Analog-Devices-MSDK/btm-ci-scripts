@@ -30,7 +30,7 @@ on:
     branches: ["main"]
   workflow_dispatch:
 env:
-  SLAVE_655: max32655_board1
+  SLAVE_655: max32655_board_3
   SLAVE_690: max32690_board_A1
   MASTER: nRF52840_1
   RESULTS_DIR: "connection_per_results"
