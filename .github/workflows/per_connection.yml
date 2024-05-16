@@ -79,14 +79,14 @@ jobs:
 
       - name: test_max32655
         run: |
-          master_sw=$(resource_manager.py -g $MASTER.sw_model)
-          master_state=$(resource_manager.py -g $MASTER.sw_state)
+          # master_sw=$(resource_manager.py -g $MASTER.sw_model)
+          # master_state=$(resource_manager.py -g $MASTER.sw_state)
 
-          slave_sw=$(resource_manager.py -g $SLAVE_655.sw_model)
-          slave_state=$(resource_manager.py -g $SLAVE_655.sw_state)
+          # slave_sw=$(resource_manager.py -g $SLAVE_655.sw_model)
+          # slave_state=$(resource_manager.py -g $SLAVE_655.sw_state)
 
-          mc_rf_sw.py $master_sw  -s $master_state
-          mc_rf_sw.py $slave_sw  -s $slave_state
+          # mc_rf_sw.py $master_sw  -s $master_state
+          # mc_rf_sw.py $slave_sw  -s $slave_state
           
           (cd $TEST_DIR/per && python3 per_connection.py $MASTER $SLAVE_655 )
           

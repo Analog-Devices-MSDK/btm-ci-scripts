@@ -145,7 +145,7 @@ def main():
 
     resource_manager = ResourceManager()
 
-    # config_switches(resource_manager, slave_board, master_board)
+    config_switches(resource_manager, slave_board, master_board)
 
     master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
     slave_hci_port = resource_manager.get_item_value(f"{slave_board}.hci_port")
