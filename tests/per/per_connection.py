@@ -98,10 +98,16 @@ def config_switches(resource_manager: ResourceManager, slave: str, master: str):
         slave_sw_model != master_sw_model
     ), "Boards must be on opposite switches to connect!"
 
-    rf_sw_slave = mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model)
-    rf_sw_master = mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model)
-    rf_sw_slave.set_sw_state(slave_sw_port)
-    rf_sw_master.set_sw_state(master_sw_port)
+
+    
+    with mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model) as sw_slave:
+        print('Configuring Slave Switch')
+        sw_slave.set_sw_state(slave_sw_port)
+        
+    with mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model) as sw_master:
+        print('Configuring Master Switch')
+        sw_master.set_sw_state(master_sw_port)
+    
 
 
 def save_results(slave, master, results: Dict[str, list]):
@@ -157,8 +163,8 @@ def main():
     master_addr = 0x001234887733
     slave_addr = 0x111234887733
 
-    master.reset()
     slave.reset()
+    master.reset()
     master.set_adv_tx_power(0)
     slave.set_adv_tx_power(0)
     slave.set_address(slave_addr)
