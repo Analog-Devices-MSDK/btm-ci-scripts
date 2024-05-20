@@ -451,7 +451,7 @@ class ResourceManager:
         return applicable_items
 
     def print_applicable_items(
-        self, target: str = None, group: str = None
+        self, target: str = "", group: str = ""
     ) -> List[str]:
         """Print an item that matches criteria of group and target
 
@@ -470,12 +470,13 @@ class ResourceManager:
         applicable_items_open = []
         applicable_items_inuse = []
         for rname in self.resources:
-            if target is not None:
+            if target :
                 if self.get_item_value(f"{rname}.target") != target.upper():
                     continue
-            if group is not None:
+            if group:
                 if self.get_item_value(f"{rname}.group") != group.upper():
                     continue
+
             if self.resource_in_use(rname):
                 applicable_items_inuse.append(rname)
             else:
@@ -506,8 +507,20 @@ class ResourceManager:
             table.append(row)
 
         print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
-    def get_switch_config(self, resource) -> Tuple[str, str]:
-        
+
+    def get_switch_config(self, resource:str) -> Tuple[str, str]:
+        """Get Switch configuration
+
+        Parameters
+        ----------
+        resource : str
+            _description_
+
+        Returns
+        -------
+        Tuple[str, str]
+            _description_
+        """
         model = self.get_item_value(f'{resource}.sw_model')
         port =  self.get_item_value(f'{resource}.sw_state')
 
