@@ -13,7 +13,7 @@ function get_ocdcfg(){
 
     target_path=target/$(lower $1).cfg
     if [ ! -f $OPENOCD_PATH/tcl/scripts/$target_path ] && [ ! -f $OPENOCD_PATH/scripts/$target_path ] && [ ! -f $OPENOCD_PATH/$target_path ]; then
-        echo max32xxx
+        echo $1 #BUGFIX for now
     else
         echo $1
     fi
