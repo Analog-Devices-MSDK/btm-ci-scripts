@@ -1,24 +1,26 @@
 const Core = require('@actions/core');
-const { PythonShell } = require('python-shell');
 
 const TARGET_NAMES = Core.getMultilineInput('target');
 const GROUPS = Core.getMultilineInput('group');
 const NUM_BOARDS = parseInt(Core.getInput('num_boards'), 10);
 
 const findBoardList = function (target, group) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['--find-board', `${target} ${group}`]
-    };
+    const args = ["--find-board", `${target}`, `${group}`];
+    let foundBoards = [];
     return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (item) => { console.log('Found: %s', item[0]); resolve(item[0]); },
-            (error) => reject(error)
-        );
-    });
+        const findCmd = spawn('resource_manager', args);
+        findCmd.stdout.on('data', (data) => { foundBoards.push(data.toString()) });
+        findCmd.stderr.on('data', (data) => { console.log(data.toString()) });
+        findCmd.on('error', (error) => { console.log(`ERROR: ${error.message}`) });
+        findCmd.on('close', (code) => {
+            if (code !== 0) {
+                console.log(`Process exited with code ${code}`);
+                reject(code);
+            }
+            console.log("Found: %s", foundBoards[0]);
+            resolve(foundBoards[0]);
+        })
+    })
 }
 
 const main = async function() {

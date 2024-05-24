@@ -1,0 +1,130 @@
+###############################################################################
+#
+# Copyright (C) 2022-2023 Maxim Integrated Products, Inc. (now owned by
+# Analog Devices, Inc.),
+# Copyright (C) 2023-2024 Analog Devices, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+##############################################################################
+name: PER DTM
+
+concurrency:
+  group: ${{ github.workflow }}-&{{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+env:
+  RESULTS_DIR: results
+
+jobs:
+  run_per_tests:
+    runs-on: [self-hosted, btm-ci]
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          repository: analogdevicesinc/msdk
+          ref: main
+          fetch-depth: 0
+
+      - name: Clean
+        run: |
+          echo $PATH
+          git scorch
+          rm -f *.zip
+
+      - name: Get Targets
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
+        id: targets
+        with:
+          target: |
+            MAX32655
+            MAX32690
+            NRF52840
+          group: RFPHY
+      
+      - name: Parse Targets
+        id: target_ids
+        run: |
+          targets=$TARGET_STR
+          echo "max32655=${TARGETS%% *}" >> $GITHUB_OUTPUT
+
+          targets=${targets##$ME17 }
+          echo "max32690=${targets%% *}" >> $GITHUB_OUTPUT
+
+          targets=${targets##$ME18 }
+          echo "nrf52840=${targets%% *}" >> $GITHUB_OUTPUT
+        env:
+          TARGET_STR: ${{ steps.targets.outputs.board_ids }}
+
+      - name: Lock Resources
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        with:
+          boards: |
+            ${{ steps.target_ids.outputs.max32655 }}
+            ${{ steps.target_ids.outputs.max32690 }}
+            ${{ steps.target_ids.outputs.nrf52840 }}
+            minicircuits_rf_switch
+            minicircuits_rcdat6000
+          lock: true
+
+      - name: Flash DUTs
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
+        with:
+          board:
+            ${{ steps.target_ids.outputs.max32655 }}
+            ${{ steps.target_ids.outputs.max32690 }}
+          project: BLE5_ctr
+          build: true
+          suppress_output: true
+
+      - name: Test MAX32655
+        run: |
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $RESULTS_DIR/per_dtm_results_1M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $RESULTS_DIR/per_dtm_results_2M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $RESULTS_DIR/per_dtm_results_S2)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $RESULTS_DIR/per_dtm_results_S8)
+        env:
+          MASTER: ${{ steps.target_ids.outputs.nrf52840 }}
+          DUT: ${{ steps.target_ids.outputs.max32655 }}
+
+      - name: Test MAX32690
+        run: |
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $RESULTS_DIR/per_dtm_results_1M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $RESULTS_DIR/per_dtm_results_2M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $RESULTS_DIR/per_dtm_results_S2)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $RESULTS_DIR/per_dtm_results_S8)
+        env:
+          MASTER: ${{ steps.target_ids.outputs.nrf52840 }}
+          DUT: ${{ steps.target_ids.outputs.max32690 }}
+
+      # - name: Upload Results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: per_dtm_results
+      #     path: ${{ env.RESULTS_DIR }}
+
+      - name: Unlock Resources
+        if: always()
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        with:
+          all_owned: true
+
+      

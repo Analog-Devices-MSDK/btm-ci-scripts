@@ -3,7 +3,7 @@ const Github = require('@actions/github');
 const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
+const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists, findTargetDirectory } = require('../common');
 const { makeProject } = require('../make-project');
 
 const BOARD_IDS = Core.getMultilineInput('board');
@@ -83,7 +83,8 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet')
         ]).catch((err) => console.error(err));
-        let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
+
+        let projPath = findTargetDirectory(path.join(MSDK_PATH, 'Examples', targets[i]), PROJECT_DIRS[i])
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
             await makeProject(projPath, DISTCLEAN_FLAG, build_flags, SUPPRESS_FLAG).then(

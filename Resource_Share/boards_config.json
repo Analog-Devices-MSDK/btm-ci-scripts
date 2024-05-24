@@ -239,13 +239,13 @@
         "group"        : "RFPHY",
         "dap_sn"       : "1050234264",
         "console_port" : null,
-        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_001050234264-if00",
+        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000683893929-if00",
         "sw_model"     : "USB-1SP8T-63H",
         "sw_state"     : "2",
         "ocdports"     : {
-            "gdb"    : null,
-            "tcl"    : null,
-            "telnet" : null
+            "gdb"    : 3840,
+            "tcl"    : 4840,
+            "telnet" : 6840
         },
         
         "dbbfile"      : null
@@ -303,8 +303,17 @@
     "minicircuits_rf_switch" : {
         "desc"         : "one lock file is enough for the two switches",
         "target"       : null,
-        "group"        : "RFPHY"
+        "group"        : "RFPHY",
+        "sn16T"        : "12210300026",
+        "sn8T"         : "12205080052"
         
+    },
+
+    "minicircuits_rcdat6000" : {
+        "desc"         : "Minicircuits RCDAT6000 digital attenuator.",
+        "target"       : null,
+        "group"        : "RFPHY",
+        "sn"           : "12201130066"
     }
 
 }

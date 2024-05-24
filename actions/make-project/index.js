@@ -9,6 +9,7 @@ const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false 
 
 const cleanProject = function (projectPath, distclean, suppress) {
     let cleanOpt = distclean ? 'distclean' : 'clean';
+    
     return new Promise((resolve, reject) => {
         let logOut = '';
         let dumpOut = '';
