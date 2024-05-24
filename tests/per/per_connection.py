@@ -59,16 +59,15 @@ Description: Simple example showing creation of a connection and getting packet 
 import sys
 import time
 from typing import Dict
-
 import pandas as pd
 
 # pylint: disable=import-error,wrong-import-position
 from max_ble_hci import BleHci
 from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
+# from ble_test_suite.utils
+from ble_test_suite.utils.log_util import get_formatted_logger
 
-sys.path.append("../..")
-
-from Resource_Share.resource_manager import ResourceManager
+from resource_manager import ResourceManager
 
 # pylint: enable=import-error,wrong-import-position
 
@@ -99,20 +98,13 @@ def config_switches(resource_manager: ResourceManager, slave: str, master: str):
     ), "Boards must be on opposite switches to connect!"
 
 
-    print('Configuring Slave Switch')
-    sw_slave = mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model)
-    sw_slave.set_sw_state(slave_sw_port)
-        
-    print('Configuring Master Switch')
-    sw_master = mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model)
-    sw_master.set_sw_state(master_sw_port)    
-    # with mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model) as sw_slave:
-    #     print('Configuring Slave Switch')
-    #     sw_slave.set_sw_state(slave_sw_port)
+    with mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model) as sw_slave:
+        print('Configuring Slave Switch')
+        sw_slave.set_sw_state(slave_sw_port)
 
-    # with mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model) as sw_master:
-    #     print('Configuring Master Switch')
-    #     sw_master.set_sw_state(master_sw_port)
+    with mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model) as sw_master:
+        print('Configuring Master Switch')
+        sw_master.set_sw_state(master_sw_port)
     
 
 
@@ -181,6 +173,8 @@ def main():
 
     attens = list(range(20, 100, 5))
 
+    print(attens)
+
     results = {"attens": attens, "slave": [], "master": []}
 
     for i in attens:
@@ -196,6 +190,7 @@ def main():
 
             results["slave"].append(slave_per)
             results["master"].append(master_per)
+
 
             if (slave_per >= 30 or master_per >= 30) and i < 70:
                 save_results(slave_board, master_board, results)
