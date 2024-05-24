@@ -1,6 +1,6 @@
 const Core = require('@actions/core');
 const { spawn } = require('child_process');
-const { procSuccess, procFail } = require('../common');
+const { procSuccess, procFail, findTargetDirectory } = require('../common');
 
 const BUILD_PATH = Core.getInput('path');
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
@@ -8,7 +8,11 @@ const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 
 const cleanProject = function (projectPath, distclean, suppress) {
+
     let cleanOpt = distclean ? 'distclean' : 'clean';
+
+    projectPath = findTargetDirectory(".", projectPath);
+
     return new Promise((resolve, reject) => {
         let logOut = '';
         let dumpOut = '';
@@ -39,6 +43,9 @@ const cleanProject = function (projectPath, distclean, suppress) {
 }
 
 const makeProject = async function (projectPath, distclean, build_flags, suppress) {
+    
+    projectPath = findTargetDirectory(".", projectPath);
+    
     let makeArgs = ['-j', '-C', projectPath];
     makeArgs.push(...build_flags);
     let retVal = 0;

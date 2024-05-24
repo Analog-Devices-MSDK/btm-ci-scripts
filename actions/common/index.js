@@ -1,7 +1,32 @@
 const { PythonShell } = require('python-shell');
 const { env } = require('node:process');
 const fs = require('fs')
-
+const  findTargetDirectory = function(dir, target) {
+    // Read the contents of the directory
+    const files = fs.readdirSync(dir);
+  
+    // Iterate over each item in the directory
+    for (const file of files) {
+      // Get the full path of the file
+      const fullPath = path.join(dir, file);
+  
+      // Check if the item is a directory
+      if (fs.lstatSync(fullPath).isDirectory()) {
+        // If the directory name is the target, return the path
+        if (file === target) {
+          return fullPath;
+        }
+  
+        // Recursively search the subdirectory
+        const found = findTargetDirectory(fullPath, target);
+        if (found) {
+          return found;
+        }
+      }
+    }
+  
+    return null;
+  }
 const getBoardData = function (boardId, itemName) {
     let options = {
         mode: 'text',
