@@ -58,7 +58,7 @@ jobs:
           #push build
           git add Libraries BlePhy
           git commit -m "Upate phy"
-          git push
+          git push --force
         
 
       

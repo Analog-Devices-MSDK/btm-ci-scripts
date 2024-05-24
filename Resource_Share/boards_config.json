@@ -64,7 +64,7 @@
         "target"       : "MAX32655",
         "board"        : "EvKit_V1",
         "rev"          : "PCB-00177-B-0",
-        "group"        : "APP",
+        "group"        : "PHY",
         "dap_sn"       : "04090000ceeb82b000000000000000000000000097969906",
         "console_port" : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D309ZDEP-if00-port0",
         "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03OH8D-if00-port0",

@@ -46,7 +46,6 @@ jobs:
 
       - name: Clone and build RF-PHY
         run: |
-          ls
           git clone https://github.com/Analog-Devices-MSDK/RF-PHY Libraries/RF-PHY
           make -j -C Libraries/RF-PHY/MAX32655/build/gcc
           make -j -C Libraries/RF-PHY/MAX32690/build/gcc  
@@ -70,14 +69,16 @@ jobs:
       - name: Parse Targets
         id: target_ids
         run: |
-          targets=$TARGET_STR
-          echo "max32655=${TARGETS%% *}" >> $GITHUB_OUTPUT
+          # targets=$TARGET_STR
+          echo "max32655=max32655_board_3" >> $GITHUB_OUTPUT
 
           targets=${targets##$ME17 }
-          echo "max32690=${targets%% *}" >> $GITHUB_OUTPUT
 
-          targets=${targets##$ME18 }
-          echo "nrf52840=${targets%% *}" >> $GITHUB_OUTPUT
+          # echo "max32690=${targets%% *}" >> $GITHUB_OUTPUT
+          echo "max32690=max32690_board_w2" >> $GITHUB_OUTPUT
+
+          # targets=${targets##$ME18 }
+          echo "nrf52840=nRF52840_1" >> $GITHUB_OUTPUT
         env:
           TARGET_STR: ${{ steps.targets.outputs.board_ids }}
 
