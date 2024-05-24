@@ -102,14 +102,25 @@ jobs:
           resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000
 
       - name: Flash DUTs
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
-        with:
-          board:
-            ${{ steps.target_ids.outputs.max32655 }}
-            ${{ steps.target_ids.outputs.max32690 }}
-          project: BLE5_ctr
-          build: true
-          suppress_output: true
+        # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
+        # with:
+        #   board:
+        #     ${{ steps.target_ids.outputs.max32655 }}
+        #     ${{ steps.target_ids.outputs.max32690 }}
+        #   project: BLE5_ctr
+        #   build: true
+        #   suppress_output: true
+        env:
+            max32655: ${{ steps.target_ids.outputs.max32655 }}
+            max32690: ${{ steps.target_ids.outputs.max32690 }}
+        run: |
+
+          make -j Examples/MAX32690/Bluetooth/BLE_dats
+          make -j Examples/MAX32655/Bluetooth/BLE_dats
+          ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE_dats/max32655.elf
+          ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE_dats/max32690.elf
+
+
 
       - name: Test MAX32655
         run: |
