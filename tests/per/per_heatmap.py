@@ -108,6 +108,11 @@ def cfg_switches(rm: ResourceManager, devs: Tuple[str, str]) -> None:
     with MiniCircuitsRFSwitch(model=dev1_sw_model) as rf_sw:
         rf_sw.set_sw_state(dev1_sw_port)
 
+def create_results_dir(results_dir):
+    import pathlib
+    pathlib.Path(results_dir).mkdir(parents=True, exist_ok=True)
+    
+    os.mkdir
 def main():
     args = _setup_ci()
     cal_file = os.path.join(os.getenv(ENV_RESOURCE_SHARE_DIR), CALIBRATION_FNAME)
@@ -147,6 +152,11 @@ def main():
             "per" : True
         }
     }
+
+
+    create_results_dir(args.results)
+
+
 
     cfg = RxSens.init_new_test(master_info, dut_info, test_setup=test_settings)
     ctrl = RxSensitivityTestController(cfg)

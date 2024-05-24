@@ -126,11 +126,7 @@ jobs:
       - name: Test MAX32655
         run: |
 
-          $RESULTS_DIR/per_dtm_results_1M
-          $RESULTS_DIR/per_dtm_results_2M
-          $RESULTS_DIR/per_dtm_results_S2
-          $RESULTS_DIR/per_dtm_results_S8
-          
+        
           #DTM
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $RESULTS_DIR/per_dtm_results_1M)
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $RESULTS_DIR/per_dtm_results_2M)
