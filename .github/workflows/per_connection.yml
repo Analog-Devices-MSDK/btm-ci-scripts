@@ -56,7 +56,7 @@ jobs:
           rm -f *.zip
     
       - name: Lock Resources
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
         with:
           boards: |
             ${{ env.SLAVE_655 }}
@@ -67,7 +67,7 @@ jobs:
           lock: true
 
       - name: Flash Controller
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
         with:
           board: |
             ${{ env.SLAVE_655 }}
@@ -104,7 +104,7 @@ jobs:
       
       - name: Unlock Resources
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
         with:
           all_owned: true
           
