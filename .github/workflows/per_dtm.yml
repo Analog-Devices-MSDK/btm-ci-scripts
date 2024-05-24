@@ -56,15 +56,15 @@ jobs:
           git scorch
           rm -f *.zip
 
-      - name: Get Targets
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@per-integration
-        id: targets
-        with:
-          target: |
-            MAX32655
-            MAX32690
-            NRF52840
-          group: RFPHY
+      # - name: Get Targets
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@per-integration
+      #   id: targets
+      #   with:
+      #     target: |
+      #       MAX32655
+      #       MAX32690
+      #       NRF52840
+      #     group: RFPHY
       
       - name: Parse Targets
         id: target_ids
