@@ -63,6 +63,7 @@ jobs:
             ${{ env.SLAVE_690 }}
             ${{ env.MASTER }}
             minicircuits_rf_switch
+            minicircuits_rcdat6000
 
           lock: true
 
