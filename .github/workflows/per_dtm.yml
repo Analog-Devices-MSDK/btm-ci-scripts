@@ -44,10 +44,7 @@ jobs:
           ref: fix/me18_gcr
           fetch-depth: 0
 
-      # - uses: actions/checkout@v4
-      #   with:
-      #     repository
-      - name: Clone RF-PHY
+      - name: Clone and build RF-PHY
         run: 
           ls
           LIB_DIR=$GITHUB_WORKSPACE/msdk/Libraries
@@ -62,7 +59,7 @@ jobs:
           rm -f *.zip
 
       - name: Get Targets
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@per-integration
         id: targets
         with:
           target: |
@@ -86,7 +83,7 @@ jobs:
           TARGET_STR: ${{ steps.targets.outputs.board_ids }}
 
       - name: Lock Resources
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
         with:
           boards: |
             ${{ steps.target_ids.outputs.max32655 }}
@@ -98,7 +95,7 @@ jobs:
 
 
       - name: Flash DUTs
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
         with:
           board:
             ${{ steps.target_ids.outputs.max32655 }}
@@ -135,7 +132,7 @@ jobs:
 
       - name: Unlock Resources
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
         with:
           all_owned: true
 
