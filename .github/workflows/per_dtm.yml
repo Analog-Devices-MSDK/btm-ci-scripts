@@ -44,7 +44,16 @@ jobs:
           ref: fix/me18_gcr
           fetch-depth: 0
 
-      - uses: actions/checkout@v4
+      # - uses: actions/checkout@v4
+      #   with:
+      #     repository
+      - name: Clone RF-PHY
+        run: 
+          ls
+          LIB_DIR=$GITHUB_WORKSPACE/msdk/Libraries
+          git clone https://github.com/Analog-Devices-MSDK/RF-PHY $LIB_DIR
+          make -j -C $LIB_DIR/RF-PHY/MAX32655/build/gcc
+          make -j -C $LIB_DIR/RF-PHY/MAX32690/build/gcc  
 
       - name: Clean
         run: |
@@ -86,13 +95,6 @@ jobs:
             minicircuits_rf_switch
             minicircuits_rcdat6000
           lock: true
-
-      - name: Build Phy
-        run:
-          make -j -C MAX32655/build/gcc
-          make -j -C MAX32690/build/gcc  
-
-
 
 
       - name: Flash DUTs
