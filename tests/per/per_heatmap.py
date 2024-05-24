@@ -127,6 +127,10 @@ def main():
         rm.get_item_value(f"{args.dut}.target"),
         rm.get_item_value(f"{args.dut}.hci_port")
     )
+
+    print(master_info)
+    print(dut_info)
+    
     test_settings = {
         "results_dir": args.results,
         "calibration_file": cal_file,
