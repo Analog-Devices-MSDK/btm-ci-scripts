@@ -118,8 +118,8 @@ jobs:
 
           make -j -C Examples/MAX32690/Bluetooth/BLE_dats
           make -j -C Examples/MAX32655/Bluetooth/BLE_dats
-          ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE_dats/max32655.elf $GITHUB_REF
-          ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE_dats/max32690.elf $GITHUB_REF
+          ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE_dats/build/max32655.elf $GITHUB_REF
+          ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE_dats/build/max32690.elf $GITHUB_REF
 
 
 
