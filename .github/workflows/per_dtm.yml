@@ -45,7 +45,7 @@ jobs:
           fetch-depth: 0
 
       - name: Clone and build RF-PHY
-        run: 
+        run: |
           ls
           LIB_DIR=$GITHUB_WORKSPACE/msdk/Libraries
           git clone https://github.com/Analog-Devices-MSDK/RF-PHY $LIB_DIR
