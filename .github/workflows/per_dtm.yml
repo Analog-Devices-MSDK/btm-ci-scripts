@@ -41,8 +41,10 @@ jobs:
         with:
           submodules: false
           repository: analogdevicesinc/msdk
-          ref: main
+          ref: fix/me18_gcr
           fetch-depth: 0
+
+      - uses: actions/checkout@v4
 
       - name: Clean
         run: |
@@ -84,6 +86,14 @@ jobs:
             minicircuits_rf_switch
             minicircuits_rcdat6000
           lock: true
+
+      - name: Build Phy
+        run:
+          make -j -C MAX32655/build/gcc
+          make -j -C MAX32690/build/gcc  
+
+
+
 
       - name: Flash DUTs
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
