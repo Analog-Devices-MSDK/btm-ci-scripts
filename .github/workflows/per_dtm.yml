@@ -99,7 +99,7 @@ jobs:
           max32690: ${{ steps.target_ids.outputs.max32690 }}
           nrf52840: ${{ steps.target_ids.outputs.nrf52840 }}
         run: |
-          resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000
+          resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000 --owner $GITHUB_REF
 
       - name: Flash DUTs
         # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
@@ -115,8 +115,8 @@ jobs:
             max32690: ${{ steps.target_ids.outputs.max32690 }}
         run: |
 
-          make -j Examples/MAX32690/Bluetooth/BLE_dats
-          make -j Examples/MAX32655/Bluetooth/BLE_dats
+          make -j -C Examples/MAX32690/Bluetooth/BLE_dats
+          make -j -C Examples/MAX32655/Bluetooth/BLE_dats
           ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE_dats/max32655.elf
           ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE_dats/max32690.elf
 
@@ -157,5 +157,5 @@ jobs:
         # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
         # with:
         #   all_owned: true
-        run: resource_manager -uo $GITHUB_REF
+        run: resource_manager -uo $GITHUB_REF 
       
