@@ -83,21 +83,21 @@ jobs:
           TARGET_STR: ${{ steps.targets.outputs.board_ids }}
 
       - name: Lock Resources
-        # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
-        # with:
-        #   boards: |
-        #     ${{ steps.target_ids.outputs.max32655 }}
-        #     ${{ steps.target_ids.outputs.max32690 }}
-        #     ${{ steps.target_ids.outputs.nrf52840 }}
-        #     minicircuits_rf_switch
-        #     minicircuits_rcdat6000
-        #   lock: true
-        env:
-          max32655:  ${{ steps.target_ids.outputs.max32655 }}
-          max32690: ${{ steps.target_ids.outputs.max32690 }}
-          nrf52840: ${{ steps.target_ids.outputs.nrf52840 }}
-        run: |
-          resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
+        with:
+          boards: |
+            ${{ steps.target_ids.outputs.max32655 }}
+            ${{ steps.target_ids.outputs.max32690 }}
+            ${{ steps.target_ids.outputs.nrf52840 }}
+            minicircuits_rf_switch
+            minicircuits_rcdat6000
+          lock: true
+        # env:
+        #   max32655:  ${{ steps.target_ids.outputs.max32655 }}
+        #   max32690: ${{ steps.target_ids.outputs.max32690 }}
+        #   nrf52840: ${{ steps.target_ids.outputs.nrf52840 }}
+        # run: |
+        #   resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000
 
       - name: Flash DUTs
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
