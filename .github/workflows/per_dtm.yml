@@ -50,7 +50,8 @@ jobs:
       - name: Clone and build RF-PHY
         run: |
           git branch
-          git clone https://github.com/Analog-Devices-MSDK/RF-PHY Libraries/RF-PHY
+          git clone https://github.com/Analog-Devices-MSDK/RF-PHY ./Libraries/RF-PHY
+          ls Libraries
           # make -j -C Libraries/RF-PHY/MAX32655/build/gcc
           # make -j -C Libraries/RF-PHY/MAX32690/build/gcc
 

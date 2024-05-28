@@ -239,7 +239,7 @@
         "group"        : "RFPHY",
         "dap_sn"       : "1050234264",
         "console_port" : null,
-        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000908805860-if00",
+        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000683893929-if00",
         "sw_model"     : "USB-1SP8T-63H",
         "sw_state"     : "2",
         "ocdports"     : {
