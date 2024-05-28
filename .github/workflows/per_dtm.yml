@@ -31,6 +31,7 @@ on:
   workflow_dispatch:
 env:
   RESULTS_DIR: results
+  FULL_RESULTS_DIR: ${{env.GITHUB_WORKSPACE }}/${{ env.RESULTS_DIR }}
 
 jobs:
   run_per_tests:
@@ -59,9 +60,8 @@ jobs:
           git scorch
           rm -f *.zip
 
-          mkdir -p $RESULTS_DIR
-          FULL_RESULTS_DIR=$PWD/$RESULTS_DIR
-          echo "::set-env name=FULL_RESULTS_DIR::$FULL_RESULTS_DIR"
+          mkdir -p $FULL_RESULTS_DIR
+          
           
 
       # - name: Get Targets
