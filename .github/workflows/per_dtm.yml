@@ -131,6 +131,8 @@ jobs:
 
           make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr BOARD=WLP_V1
           make -j -C Examples/MAX32655/Bluetooth/BLE5_ctr
+
+          echo $max32655
           ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE5_ctr/build/max32655.elf $GITHUB_REF
           ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE5_ctr/build/max32690.elf $GITHUB_REF
 
