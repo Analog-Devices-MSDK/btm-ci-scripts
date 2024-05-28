@@ -66,7 +66,7 @@
         "rev"          : "PCB-00177-B-0",
         "group"        : "PHY",
         "dap_sn"       : "04090000ceeb82b000000000000000000000000097969906",
-        "console_port" : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D309ZDEP-if00-port0",
+        "console_port" : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D307NWJ4-if00-port0",
         "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03OH8D-if00-port0",
         "sw_model"     : "USB-1SP16T-83H",
         "sw_state"     : "1",
@@ -239,7 +239,7 @@
         "group"        : "RFPHY",
         "dap_sn"       : "1050234264",
         "console_port" : null,
-        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000683893929-if00",
+        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000908805860-if00",
         "sw_model"     : "USB-1SP8T-63H",
         "sw_state"     : "2",
         "ocdports"     : {
