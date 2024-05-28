@@ -59,6 +59,11 @@ jobs:
           git scorch
           rm -f *.zip
 
+          mkdir -p $RESULTS_DIR
+          FULL_RESULTS_DIR=$PWD/$RESULTS_DIR
+          echo "::set-env name=FULL_RESULTS_DIR::$FULL_RESULTS_DIR"
+          
+
       # - name: Get Targets
       #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@per-integration
       #   id: targets
@@ -116,22 +121,22 @@ jobs:
             max32690: ${{ steps.target_ids.outputs.max32690 }}
         run: |
 
-          make -j -C Examples/MAX32690/Bluetooth/BLE_dats
-          make -j -C Examples/MAX32655/Bluetooth/BLE_dats
-          ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE_dats/build/max32655.elf $GITHUB_REF
-          ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE_dats/build/max32690.elf $GITHUB_REF
+          make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr
+          make -j -C Examples/MAX32655/Bluetooth/BLE5_ctr
+          ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE5_ctr/build/max32655.elf $GITHUB_REF
+          ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE5_ctr/build/max32690.elf $GITHUB_REF
 
 
 
       - name: Test MAX32655
         run: |
 
-        
+          
           #DTM
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results results/per_dtm_results_S8)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $FULL_RESULTS_DIR/per_dtm_results_1M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $FULL_RESULTS_DIR/per_dtm_results_2M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $FULL_RESULTS_DIR/per_dtm_results_S2)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $FULL_RESULTS_DIR/per_dtm_results_S8)
 
           #Connection
 
