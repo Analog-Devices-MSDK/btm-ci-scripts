@@ -51,8 +51,12 @@ jobs:
         run: |
           git branch
           git clone https://github.com/Analog-Devices-MSDK/RF-PHY Libraries/RF-PHY
-          make -j -C Libraries/RF-PHY/MAX32655/build/gcc
-          make -j -C Libraries/RF-PHY/MAX32690/build/gcc  
+          # make -j -C Libraries/RF-PHY/MAX32655/build/gcc
+          # make -j -C Libraries/RF-PHY/MAX32690/build/gcc
+
+          (cd Libraries/RF-PHY && make clean)  
+          (cd Libraries/RF-PHY && make all)  
+
 
       - name: Clean
         run: |
@@ -86,7 +90,7 @@ jobs:
           targets=${targets##$ME17 }
 
           # echo "max32690=${targets%% *}" >> $GITHUB_OUTPUT
-          echo "max32690=max32690_board_w2" >> $GITHUB_OUTPUT
+          echo "max32690=max32690_board_A1" >> $GITHUB_OUTPUT
 
           # targets=${targets##$ME18 }
           echo "nrf52840=nRF52840_1" >> $GITHUB_OUTPUT
