@@ -31,7 +31,7 @@ on:
   workflow_dispatch:
 env:
   RESULTS_DIR: results
-  FULL_RESULTS_DIR: ${{env.GITHUB_WORKSPACE }}/${{ env.RESULTS_DIR }}
+  
 
 jobs:
   run_per_tests:
@@ -60,6 +60,8 @@ jobs:
           git scorch
           rm -f *.zip
 
+          
+          echo "FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/$RESULTS_DIR" >> $GITHUB_ENV
           mkdir -p $FULL_RESULTS_DIR
           
           
