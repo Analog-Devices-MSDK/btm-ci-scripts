@@ -47,19 +47,6 @@ jobs:
           ref: fix/me18_gcr
           fetch-depth: 0
 
-      - name: Clone and build RF-PHY
-        run: |
-          git branch
-          git clone https://github.com/Analog-Devices-MSDK/RF-PHY ./Libraries/RF-PHY
-          ls Libraries
-          cd Libraries/RF-PHY
-          pwd
-          make
-          cd ../../
-          # ( make clean)  
-          # (cd Libraries/RF-PHY && make all)  
-
-
       - name: Clean
         run: |
           echo $PATH
@@ -71,6 +58,13 @@ jobs:
           # printenv | grep FULL_RESULTS_DIR
           mkdir -p $FULL_RESULTS_DIR
           
+      - name: Clone and build RF-PHY
+        run: |
+          git branch
+          git clone https://github.com/Analog-Devices-MSDK/RF-PHY ./Libraries/RF-PHY
+          (cd Libraries/RF-PHY && make all)  
+
+
           
 
       # - name: Get Targets
