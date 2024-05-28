@@ -38,7 +38,7 @@ jobs:
     runs-on: [self-hosted, btm-ci]
     if: github.event.pull_request.draft == false
     steps:
-      - name: testenv
+      - name: envsetup
         run: resource_manager -v
       - uses: actions/checkout@v4
         with:
@@ -46,17 +46,19 @@ jobs:
           repository: analogdevicesinc/msdk
           ref: fix/me18_gcr
           fetch-depth: 0
+        run: |
+          FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/$RESULTS_DIR
+          echo "FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/${RESULTS_DIR}" >> $GITHUB_ENV
+          # printenv | grep FULL_RESULTS_DIR
+          mkdir -p $FULL_RESULTS_DIR
 
+      
       - name: Clean
         run: |
           echo $PATH
           git scorch
           rm -f *.zip
 
-          FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/$RESULTS_DIR
-          echo "FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/${RESULTS_DIR}" >> $GITHUB_ENV
-          # printenv | grep FULL_RESULTS_DIR
-          mkdir -p $FULL_RESULTS_DIR
           
       - name: Clone and build RF-PHY
         run: |
@@ -148,21 +150,21 @@ jobs:
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $FULL_RESULTS_DIR/per_dtm_results_S2)
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $FULL_RESULTS_DIR/per_dtm_results_S8)
 
-          Connection
+          # Connection
 
         env:
           MASTER: ${{ steps.target_ids.outputs.nrf52840 }}
           DUT: ${{ steps.target_ids.outputs.max32655 }}
 
-      # - name: Test MAX32690
-      #   run: |
-      #     (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
-      #     (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
-      #     (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2)
-      #     (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results results/per_dtm_results_S8)
-      #   env:
-      #     MASTER: ${{ steps.target_ids.outputs.nrf52840 }}
-      #     DUT: ${{ steps.target_ids.outputs.max32690 }}
+      - name: Test MAX32690
+        run: |
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results results/per_dtm_results_S8)
+        env:
+          MASTER: ${{ steps.target_ids.outputs.nrf52840 }}
+          DUT: ${{ steps.target_ids.outputs.max32690 }}
 
       # - name: Upload Results
       #   uses: actions/upload-artifact@v4
