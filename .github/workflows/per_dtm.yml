@@ -128,7 +128,7 @@ jobs:
             max32690: ${{ steps.target_ids.outputs.max32690 }}
         run: |
 
-          make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr
+          make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr BOARD=WLP_V1
           make -j -C Examples/MAX32655/Bluetooth/BLE5_ctr
           ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE5_ctr/build/max32655.elf $GITHUB_REF
           ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE5_ctr/build/max32690.elf $GITHUB_REF
