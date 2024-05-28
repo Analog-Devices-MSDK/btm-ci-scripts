@@ -7,6 +7,8 @@ const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
 
+
+
 const cleanProject = function (projectPath, distclean, suppress) {
     let cleanOpt = distclean ? 'distclean' : 'clean';
     
@@ -39,9 +41,15 @@ const cleanProject = function (projectPath, distclean, suppress) {
 
 }
 
-const makeProject = async function (projectPath, distclean, build_flags, suppress) {
+const makeProject = async function (projectPath, distclean, build_flags, board="", suppress=true) {
     let makeArgs = ['-j', '-C', projectPath];
     makeArgs.push(...build_flags);
+    
+    if(board != "")
+    {
+        makeArgs.push(`BOARD=${board}`)
+    }
+    
     let retVal = 0;
     await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
