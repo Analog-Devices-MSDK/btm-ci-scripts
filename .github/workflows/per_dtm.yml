@@ -60,8 +60,9 @@ jobs:
           git scorch
           rm -f *.zip
 
-          
+          FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/$RESULTS_DIR
           echo "FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/$RESULTS_DIR" >> $GITHUB_ENV
+          printenv | grep FULL_RESULTS_DIR
           mkdir -p $FULL_RESULTS_DIR
           
           
