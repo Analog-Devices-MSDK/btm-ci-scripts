@@ -143,9 +143,9 @@ jobs:
 
           #Connection
 
-        env:
-          MASTER: ${{ steps.target_ids.outputs.nrf52840 }}
-          DUT: ${{ steps.target_ids.outputs.max32655 }}
+        # env:
+        #   MASTER: ${{ steps.target_ids.outputs.nrf52840 }}
+        #   DUT: ${{ steps.target_ids.outputs.max32655 }}
 
       - name: Test MAX32690
         run: |
