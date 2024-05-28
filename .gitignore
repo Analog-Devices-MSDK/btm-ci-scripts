@@ -5,3 +5,4 @@ Resource_Share/__pycache__/*
 tests/**/*.txt
 envsetup/.env
 **/__results__
+tests/**/checkpoint
