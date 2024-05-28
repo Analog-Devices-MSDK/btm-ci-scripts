@@ -53,6 +53,7 @@ jobs:
           git clone https://github.com/Analog-Devices-MSDK/RF-PHY ./Libraries/RF-PHY
           ls Libraries
           cd Libraries/RF-PHY
+          pwd
           make
           cd ../../
           # ( make clean)  
