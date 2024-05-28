@@ -7,7 +7,7 @@
             "__enum__": "DeviceId.NRF52840"
         },
         "dut_port": "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03OH8D-if00-port0",
-        "master_port": "/dev/serial/by-id/usb-SEGGER_J-Link_000683893929-if00",
+        "master_port": "/dev/serial/by-id/usb-SEGGER_J-Link_000908805860-if00",
         "num_packets": 1000,
         "tx_power_out": 0,
         "log_level": "INFO",
@@ -80,12 +80,12 @@
         "rx_durations": {
             "37": 0.6255
         },
-        "heatmap_path": "results/per_dtm_results_1M/per_heatmap{}.png",
-        "masked_heatmap_path": "results/per_dtm_results_1M/per_masked_heatmap{}.png",
-        "surface_plot_path": "results/per_dtm_results_1M/per_surface_plot{}.png",
-        "masked_surface_plot_path": "results/per_dtm_results_1M/per_masked_surface_plot{}.png",
-        "lineplot_path": "results/per_dtm_results_1M/per_lineplot{}.png",
-        "single_lineplot_path": "results/per_dtm_results_1M/per_lineplot{}_CH{}.png",
+        "heatmap_path": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/per_heatmap{}.png",
+        "masked_heatmap_path": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/per_masked_heatmap{}.png",
+        "surface_plot_path": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/per_surface_plot{}.png",
+        "masked_surface_plot_path": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/per_masked_surface_plot{}.png",
+        "lineplot_path": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/per_lineplot{}.png",
+        "single_lineplot_path": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/per_lineplot{}_CH{}.png",
         "desired_plots": {
             "heatmap": [
                 {
@@ -101,7 +101,7 @@
                 }
             ]
         },
-        "results_csv_path": "results/per_dtm_results_1M/results.csv",
+        "results_csv_path": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/results.csv",
         "logger_name": "RX-SENSITIVITY-TEST"
     },
     "checkpoint": {
@@ -722,6 +722,6 @@
                 -100
             ]
         ],
-        "tempfile": "results/per_dtm_results_1M/accumulated.csv"
+        "tempfile": "/home/btm-ci/Workspace/btm-ci-github-runner0/_work/btm-ci-scripts/btm-ci-scripts/results/per_dtm_results_1M/accumulated.csv"
     }
 }
