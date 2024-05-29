@@ -166,13 +166,16 @@ def main():
 
     slave.start_advertising(connect=True)
     master.init_connection(addr=slave_addr)
+    
+    print('Sleeping for initial connection')
+    time.sleep(5)
 
     attens = list(range(20, 100, 5))
 
     print(attens)
 
     results = {"attens": attens, "slave": [], "master": []}
-
+    failed_per = False
     for i in attens:
         atten.set_attenuation(i)
         time.sleep(10)
@@ -187,11 +190,12 @@ def main():
             results["slave"].append(slave_per)
             results["master"].append(master_per)
 
+
+            
             if (slave_per >= 30 or master_per >= 30) and i < 70:
-                save_results(slave_board, master_board, results)
+                failed_per = True
                 print(f"Connection Failed PER TEST at {i}")
                 print(f"Master: {master_per}, Slave: {slave_per}")
-                sys.exit(-1)
 
         slave.reset_connection_stats()
         master.reset_connection_stats()
@@ -203,6 +207,9 @@ def main():
     slave.reset()
 
     save_results(slave_board, master_board, results)
+
+    if failed_per:
+        sys.exit(-1)
 
 
 if __name__ == "__main__":

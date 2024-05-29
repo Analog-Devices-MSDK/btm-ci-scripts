@@ -160,8 +160,8 @@ jobs:
           #DTM
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $FULL_RESULTS_DIR/per_dtm_results_1M)
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $FULL_RESULTS_DIR/per_dtm_results_2M)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $FULL_RESULTS_DIR/per_dtm_results_S2)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $FULL_RESULTS_DIR/per_dtm_results_S8)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $FULL_RESULTS_DIR/per_dtm_results_S2 --num-packets 100)
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $FULL_RESULTS_DIR/per_dtm_results_S8 --num-packets 100)
 
           mv $TEST_DIR/per/results .
 
