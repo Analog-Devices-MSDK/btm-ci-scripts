@@ -41,7 +41,7 @@ jobs:
       - name: envsetup
         run: |
           resource_manager -v
-          
+
           FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/$RESULTS_DIR
           echo "FULL_RESULTS_DIR=${GITHUB_WORKSPACE}/${RESULTS_DIR}" >> $GITHUB_ENV
           # printenv | grep FULL_RESULTS_DIR
@@ -51,15 +51,14 @@ jobs:
         with:
           submodules: false
           repository: analogdevicesinc/msdk
-          ref: fix/me18_gcr
+          ref: fix/dtm-memory-leak
           fetch-depth: 0
 
-      
-      - name: Clean
-        run: |
-          echo $PATH
-          git scorch
-          rm -f *.zip
+      # - name: Clean
+      #   run: |
+      #     echo $PATH
+      #     git scorch
+      #     rm -f *.zip
 
           
       - name: Clone and build RF-PHY
