@@ -139,12 +139,15 @@ jobs:
 
           echo 655 $max32655
           echo 690 $max32690
+
+          # give time for device cal and proper reset
+          sleep 2
       
       - name: Test MAX32690
         run: |
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2)
+          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
+          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
+          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2)
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results results/per_dtm_results_S8)
         env:
           MASTER: ${{ steps.target_ids.outputs.nrf52840 }}

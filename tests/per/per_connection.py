@@ -64,6 +64,7 @@ import pandas as pd
 # pylint: disable=import-error,wrong-import-position
 from max_ble_hci import BleHci
 from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
+
 # from ble_test_suite.utils
 from ble_test_suite.utils.log_util import get_formatted_logger
 
@@ -97,15 +98,13 @@ def config_switches(resource_manager: ResourceManager, slave: str, master: str):
         slave_sw_model != master_sw_model
     ), "Boards must be on opposite switches to connect!"
 
-
     with mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model) as sw_slave:
-        print('Configuring Slave Switch')
+        print("Configuring Slave Switch")
         sw_slave.set_sw_state(slave_sw_port)
 
     with mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model) as sw_master:
-        print('Configuring Master Switch')
+        print("Configuring Master Switch")
         sw_master.set_sw_state(master_sw_port)
-    
 
 
 def save_results(slave, master, results: Dict[str, list]):
@@ -119,11 +118,11 @@ def save_results(slave, master, results: Dict[str, list]):
     data = pd.DataFrame(results)
     data.to_csv(f"connection_per_{slave}_{master}.csv", index=False)
 
+
 def print_test_config(slave, master):
     print("Using:")
     print(f"\tSlave - {slave}")
     print(f"\tMaster - {master}")
-    
 
 
 def main():
@@ -135,14 +134,11 @@ def main():
         print("usage: <MASTER_BAORD> <SLAVE_BOARD>")
         sys.exit(-1)
 
-    
-
     master_board = sys.argv[1]
     slave_board = sys.argv[2]
 
     print_test_config(slave_board, master_board)
-    
-    
+
     assert (
         master_board != slave_board
     ), f"Master must not be the same as slave, {master_board} = {slave_board}"
@@ -190,7 +186,6 @@ def main():
 
             results["slave"].append(slave_per)
             results["master"].append(master_per)
-
 
             if (slave_per >= 30 or master_per >= 30) and i < 70:
                 save_results(slave_board, master_board, results)
