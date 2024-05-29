@@ -86,6 +86,9 @@ def _setup_ci():
     parser.add_argument(
         "--results", type=str, default="results", help="Results directory."
     )
+    parser.add_argument(
+        "--num-packets", type=int, default=1000, help="Num packets."
+    )
 
     return parser.parse_args()
 
@@ -143,7 +146,7 @@ def main():
     test_settings = {
         "results_dir": args.results,
         "calibration_file": cal_file,
-        "num_packets": 1000,
+        "num_packets": args.num_packets,
         "packet_lens": "37",
         "rx_input_powers": "-20:-100:2",
         "phy": args.phy,
