@@ -62,7 +62,6 @@ from ble_test_suite.equipment.mc_rf_sw import MiniCircuitsRFSwitch
 from ble_test_suite.phy import rx_sensitivity as RxSens
 from ble_test_suite.controllers import RxSensitivityTestController
 
-
 ENV_RESOURCE_SHARE_DIR = "RESOURCE_SHARE_DIR"
 CALIBRATION_FNAME = "rfphy_sw2atten_calibration.json"
 TEST_MASTER_ID = "nRF52840_1"
@@ -89,6 +88,7 @@ def _setup_ci():
     parser.add_argument(
         "--num-packets", type=int, default=1000, help="Num packets."
     )
+    
 
     return parser.parse_args()
 
@@ -144,13 +144,19 @@ def main():
     print(dut_info)
     print(args.num_packets)
 
-    
+
+    if args.phy in ("S2", "S8"):
+        attenuation_stop = -104
+    else:
+        attenuation_stop = -100
+
+
     test_settings = {
         "results_dir": args.results,
         "calibration_file": cal_file,
         "num_packets": args.num_packets,
         "packet_lens": "37",
-        "rx_input_powers": "-20:-100:2",
+        "rx_input_powers": f"-20:{attenuation_stop}:2",
         "phy": args.phy,
         "channels": "0,19,39",
         "margin": 2,
