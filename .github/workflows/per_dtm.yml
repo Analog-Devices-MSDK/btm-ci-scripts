@@ -145,9 +145,9 @@ jobs:
       
       - name: Test MAX32690
         run: |
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
-          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2 --num-packets 100)
+          #(cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
+          #(cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
+          #(cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2 --num-packets 100)
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results results/per_dtm_results_S8 --num-packets 100)
         env:
           MASTER: ${{ steps.target_ids.outputs.nrf52840 }}

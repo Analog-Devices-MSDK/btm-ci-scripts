@@ -142,7 +142,9 @@ def main():
 
     print(master_info)
     print(dut_info)
+    print(args.num_packets)
 
+    
     test_settings = {
         "results_dir": args.results,
         "calibration_file": cal_file,
