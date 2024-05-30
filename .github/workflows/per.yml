@@ -142,7 +142,7 @@ jobs:
           echo 655 $max32655
           echo 690 $max32690
 
-          give time for device cal and proper reset
+          #give time for device cal and proper reset
           sleep 2
       
       - name: Test MAX32690
