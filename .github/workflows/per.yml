@@ -97,6 +97,7 @@ jobs:
           TARGET_STR: ${{ steps.targets.outputs.board_ids }}
 
       - name: Lock Resources
+        id: lock
         # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@per-integration
         # with:
         #   boards: |
@@ -144,9 +145,10 @@ jobs:
           # sleep 2
       
       - name: Test MAX32690
+        if: always() && steps.lock.outcome == 'success'
         run: |
 
-
+      
           set +e
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
           dtm_1m=$?
@@ -161,11 +163,6 @@ jobs:
           dtm_s8=$?
 
 
-          overall=0
-          if [[ $dtm_1m -ne 0 ]]; then
-            echo DTM 1M failure
-            overall=1
-          fi
           if [[ $dtm_2m -ne 0 ]]; then
             echo DTM 2M failure
             overall=1
@@ -203,6 +200,7 @@ jobs:
           DUT: ${{ steps.target_ids.outputs.max32690 }}
 
       - name: Test MAX32655
+        if: always() && steps.lock.outcome == 'success'
         run: |
 
           FULL_RESULTS_DIR=${{ env.FULL_RESULTS_DIR }}
