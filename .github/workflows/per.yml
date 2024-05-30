@@ -115,6 +115,7 @@ jobs:
           resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000 --owner $GITHUB_REF
 
       - name: Flash DUTs
+        id: flash
         # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
         # with:
         #   board:
@@ -145,7 +146,7 @@ jobs:
           sleep 2
       
       - name: Test MAX32690
-        if: always() && steps.lock.outcome == 'success'
+        if: always() && steps.lock.outcome == 'success' && steps.flash.outcome == 'success'
         run: |
 
       
@@ -203,7 +204,7 @@ jobs:
           DUT: ${{ steps.target_ids.outputs.max32690 }}
 
       - name: Test MAX32655
-        if: always() && steps.lock.outcome == 'success'
+        if: always() && steps.lock.outcome == 'success' && steps.flash.outcome == 'success'
         run: |
 
           FULL_RESULTS_DIR=${{ env.FULL_RESULTS_DIR }}
