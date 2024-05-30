@@ -243,7 +243,11 @@ def main():
             retries -= 1
 
         print(f'RX Power {-i} dBm')
-        atten.set_attenuation(i + loss)
+        calibrated_value = int(i + loss)
+        
+        atten.set_attenuation(calibrated_value)
+        print(atten.get_attenuation(), calibrated_value)
+
         time.sleep(1)
 
         slave_stats, _ = slave.get_conn_stats()

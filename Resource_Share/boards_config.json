@@ -250,25 +250,7 @@
         "dbbfile"      : null
     },
 
-    "nRF52840_4" : {
-        "desc"         : "not in box",
-        "target"       : "NRF52840",
-        "board"        : null,
-        "rev"          : null,
-        "group"        : null,
-        "dap_sn"       : "000683893929",
-        "console_port" : null,
-        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000683893929-if00",
-        "sw_model"     : null,
-        "sw_state"     : null,
-        "ocdports"     : {
-            "gdb"    : null,
-            "tcl"    : null,
-            "telnet" : null
-        },
-        
-        "dbbfile"      : null
-    },
+
 
     "rsl15_1" : {
         "desc"         : "OnSemi, RSL15",

@@ -143,7 +143,7 @@ def main():
 
     print(master_info)
     print(dut_info)
-    print(args.num_packets)
+    print(args.phy)
 
     if args.phy in ("S2", "S8"):
         attenuation_stop = -104
