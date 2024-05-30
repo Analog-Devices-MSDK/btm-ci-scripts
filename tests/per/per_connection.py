@@ -111,7 +111,7 @@ def config_switches(resource_manager: ResourceManager, slave: str, master: str):
         sw_master.set_sw_state(master_sw_port)
 
 
-def save_results(slave, master, results: Dict[str, list], phy:str):
+def save_results(slave, master, results: Dict[str, list], phy:str, directory):
     """Store PER Results
 
     Parameters
@@ -120,10 +120,12 @@ def save_results(slave, master, results: Dict[str, list], phy:str):
         Results from per sweep
     """
     # print(results)
+
+
     df = pd.DataFrame(results)
     plot_title = f"connection_per_{slave}_{master}_{phy}"
     
-    df.to_csv(f'{plot_title}.csv', index=False)
+    df.to_csv(f'{directory}/{plot_title}.csv', index=False)
 
     fail_bar = [30] * len(results["attens"])
 
@@ -137,7 +139,7 @@ def save_results(slave, master, results: Dict[str, list], phy:str):
     plt.ylabel(f'PER %')
     plt.legend()
 
-    plt.savefig(f'{plot_title}.png')
+    plt.savefig(f'{directory}/{plot_title}.png')
 
 
 
@@ -173,11 +175,12 @@ def main():
 
     if len(sys.argv) < 3:
         print(f"Expected 2 inputs. Got {len(sys.argv)}")
-        print("usage: <MASTER_BAORD> <SLAVE_BOARD>")
+        print("usage: <MASTER_BAORD> <SLAVE_BOARD> <RESULTS DIRECTORY")
         sys.exit(-1)
 
     master_board = sys.argv[1]
     slave_board = sys.argv[2]
+    results_dir = sys.argv[3]
 
     print_test_config(slave_board, master_board)
 
@@ -228,7 +231,7 @@ def main():
         i = attens[0]
         print(f'RX Power {-i} dBm')
         atten.set_attenuation(i)
-        time.sleep(5)
+        time.sleep(1)
 
         slave_stats, _ = slave.get_conn_stats()
         master_stats, _ = master.get_conn_stats()

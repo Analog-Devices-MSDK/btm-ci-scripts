@@ -85,10 +85,7 @@ def _setup_ci():
     parser.add_argument(
         "--results", type=str, default="results", help="Results directory."
     )
-    parser.add_argument(
-        "--num-packets", type=int, default=1000, help="Num packets."
-    )
-    
+    parser.add_argument("--num-packets", type=int, default=1000, help="Num packets.")
 
     return parser.parse_args()
 
@@ -144,12 +141,10 @@ def main():
     print(dut_info)
     print(args.num_packets)
 
-
     if args.phy in ("S2", "S8"):
         attenuation_stop = -104
     else:
         attenuation_stop = -100
-
 
     test_settings = {
         "results_dir": args.results,
