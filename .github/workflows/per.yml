@@ -185,7 +185,7 @@ jobs:
           # set -e
 
           # Connection
-          (cd $TEST_DIR/per && per_connection.py $MASTER $DUT $RESULTS_DIR)
+          (cd $TEST_DIR/per && ls && per_connection.py $MASTER $DUT $RESULTS_DIR)
           
           if [[ $? -ne 0 ]]; then
             Connection test failed!
