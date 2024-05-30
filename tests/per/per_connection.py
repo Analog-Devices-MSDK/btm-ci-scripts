@@ -190,6 +190,15 @@ def main():
 
     resource_manager = ResourceManager()
 
+    try:
+        loss = resource_manager.get_item_value('rf_bench.cal.losses.2440')
+        loss = float(loss)
+    except KeyError:
+        print('Could not find cal data in config. Defaulting to 0')
+        loss = 0.0
+
+    
+
     config_switches(resource_manager, slave_board, master_board)
 
     master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
@@ -234,7 +243,7 @@ def main():
             retries -= 1
 
         print(f'RX Power {-i} dBm')
-        atten.set_attenuation(i)
+        atten.set_attenuation(i - loss)
         time.sleep(1)
 
         slave_stats, _ = slave.get_conn_stats()

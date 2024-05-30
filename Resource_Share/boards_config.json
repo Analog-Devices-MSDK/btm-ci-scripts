@@ -299,20 +299,31 @@
         
     },
 
-    "minicircuits_rf_switch" : {
-        "desc"         : "one lock file is enough for the two switches",
-        "target"       : null,
-        "group"        : "RFPHY",
-        "sn16T"        : "12210300026",
-        "sn8T"         : "12205080052"
-        
-    },
 
-    "minicircuits_rcdat6000" : {
-        "desc"         : "Minicircuits RCDAT6000 digital attenuator.",
-        "target"       : null,
-        "group"        : "RFPHY",
-        "sn"           : "12201130066"
+    "rf_bench": {
+
+        "minicircuits_rf_switch" : {
+            "desc"         : "one lock file is enough for the two switches",
+            "target"       : null,
+            "group"        : "RFPHY",
+            "sn16T"        : "12210300026",
+            "sn8T"         : "12205080052"
+            
+        },
+    
+        "minicircuits_rcdat6000" : {
+            "desc"         : "Minicircuits RCDAT6000 digital attenuator.",
+            "target"       : null,
+            "group"        : "RFPHY",
+            "sn"           : "12201130066"
+        },
+        "cal" : {
+            "losses" : {
+                "2402" : -14.10,
+                "2440" : -14.28,
+                "2480" : -14.31
+            }
+        }
     }
 
 }

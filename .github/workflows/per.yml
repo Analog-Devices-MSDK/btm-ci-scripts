@@ -112,7 +112,7 @@ jobs:
           max32690: ${{ steps.target_ids.outputs.max32690 }}
           nrf52840: ${{ steps.target_ids.outputs.nrf52840 }}
         run: |
-          resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000 --owner $GITHUB_REF
+          resource_manager -l $max32655 $max32690 $nrf52840 rf_bench --owner $GITHUB_REF
 
       - name: Flash DUTs
         id: flash
