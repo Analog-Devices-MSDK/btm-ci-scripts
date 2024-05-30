@@ -58,6 +58,7 @@ import sys
 from typing import Tuple
 import argparse
 import os
+import logging
 from resource_manager import ResourceManager
 from ble_test_suite.equipment.mc_rf_sw import MiniCircuitsRFSwitch
 from ble_test_suite.phy import rx_sensitivity as RxSens
@@ -168,7 +169,7 @@ def main():
     create_results_dir(args.results)
 
     cfg = RxSens.init_new_test(master_info, dut_info, test_setup=test_settings)
-    ctrl = RxSensitivityTestController(cfg)
+    ctrl = RxSensitivityTestController(cfg, hci_log_level=logging.WARN)
 
     ctrl.run_test()
     

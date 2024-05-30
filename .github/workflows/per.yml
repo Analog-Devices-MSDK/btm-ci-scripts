@@ -114,35 +114,35 @@ jobs:
         run: |
           resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000 --owner $GITHUB_REF
 
-      # - name: Flash DUTs
-      #   # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
-      #   # with:
-      #   #   board:
-      #   #     ${{ steps.target_ids.outputs.max32655 }}
-      #   #     ${{ steps.target_ids.outputs.max32690 }}
-      #   #   project: BLE5_ctr
-      #   #   build: true
-      #   #   suppress_output: true
-      #   env:
-      #       max32655: ${{ steps.target_ids.outputs.max32655 }}
-      #       max32690: ${{ steps.target_ids.outputs.max32690 }}
-      #   run: |
+      - name: Flash DUTs
+        # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
+        # with:
+        #   board:
+        #     ${{ steps.target_ids.outputs.max32655 }}
+        #     ${{ steps.target_ids.outputs.max32690 }}
+        #   project: BLE5_ctr
+        #   build: true
+        #   suppress_output: true
+        env:
+            max32655: ${{ steps.target_ids.outputs.max32655 }}
+            max32690: ${{ steps.target_ids.outputs.max32690 }}
+        run: |
 
 
-      #     echo $max32655
+          echo $max32655
 
-      #     make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr BOARD=WLP_V1
-      #     make -j -C Examples/MAX32655/Bluetooth/BLE5_ctr
+          make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr BOARD=WLP_V1
+          make -j -C Examples/MAX32655/Bluetooth/BLE5_ctr
 
           
-      #     ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE5_ctr/build/max32655.elf $GITHUB_REF
-      #     ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE5_ctr/build/max32690.elf $GITHUB_REF
+          ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE5_ctr/build/max32655.elf $GITHUB_REF
+          ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE5_ctr/build/max32690.elf $GITHUB_REF
 
-      #     echo 655 $max32655
-      #     echo 690 $max32690
+          echo 655 $max32655
+          echo 690 $max32690
 
-          # give time for device cal and proper reset
-          # sleep 2
+          give time for device cal and proper reset
+          sleep 2
       
       - name: Test MAX32690
         if: always() && steps.lock.outcome == 'success'
@@ -207,41 +207,41 @@ jobs:
         run: |
 
           FULL_RESULTS_DIR=${{ env.FULL_RESULTS_DIR }}
-          # #DTM
-          # set +e
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $FULL_RESULTS_DIR/per_dtm_results_1M)
-          # dtm_1m=$?
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $FULL_RESULTS_DIR/per_dtm_results_2M)
-          # dtm_2m=$?
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $FULL_RESULTS_DIR/per_dtm_results_S2 --num-packets 100)
-          # dtm_s2=$?
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $FULL_RESULTS_DIR/per_dtm_results_S8 --num-packets 100)
-          # dtm_s8=$?
+          #DTM
+          set +e
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $FULL_RESULTS_DIR/per_dtm_results_1M)
+          dtm_1m=$?
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $FULL_RESULTS_DIR/per_dtm_results_2M)
+          dtm_2m=$?
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results $FULL_RESULTS_DIR/per_dtm_results_S2 --num-packets 100)
+          dtm_s2=$?
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results $FULL_RESULTS_DIR/per_dtm_results_S8 --num-packets 100)
+          dtm_s8=$?
 
-          # overall=0
-          # if [[ $dtm_1m -ne 0 ]]; then
-          #   echo DTM 1M failure
-          #   overall=1
-          # fi
-          # if [[ $dtm_2m -ne 0 ]]; then
-          #   echo DTM 2M failure
-          #   overall=1
-          # fi
-          # if [[ $dtm_s2 -ne 0 ]]; then
-          #   echo DTM S2 failure
-          #   overall=1
-          # fi
-          # if [[ $dtm_s8 -ne 0 ]]; then
-          #   echo DTM S8 failure
-          #   overall=1
-          # fi
+          overall=0
+          if [[ $dtm_1m -ne 0 ]]; then
+            echo DTM 1M failure
+            overall=1
+          fi
+          if [[ $dtm_2m -ne 0 ]]; then
+            echo DTM 2M failure
+            overall=1
+          fi
+          if [[ $dtm_s2 -ne 0 ]]; then
+            echo DTM S2 failure
+            overall=1
+          fi
+          if [[ $dtm_s8 -ne 0 ]]; then
+            echo DTM S8 failure
+            overall=1
+          fi
 
-          # if [[ $overall -eq 1 ]]; then
-          #   echo DTM Overall Failure!
-          #   exit -1
-          # else
-          #   echo DTM Passed moving to connection
-          # fi
+          if [[ $overall -eq 1 ]]; then
+            echo DTM Overall Failure!
+            exit -1
+          else
+            echo DTM Passed moving to connection
+          fi
           
 
           # Connection
