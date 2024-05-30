@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 ##############################################################################
-name: PER DTM
+name: PER
 
 concurrency:
   group: ${{ github.workflow }}-&{{ github.ref }}
@@ -51,7 +51,7 @@ jobs:
         with:
           submodules: false
           repository: analogdevicesinc/msdk
-          ref: fix/dtm-memory-leak
+          ref: fix/me18-gcr
           fetch-depth: 0
 
       # - name: Clean
@@ -159,19 +159,19 @@ jobs:
 
 
           overall=0
-          if [[ $dtm_1m -ne 0]];then
+          if [[ $dtm_1m -ne 0]]; then
             echo DTM 1M failure
             overall=1
           fi
-          if [[ $dtm_2m -ne 0]];then
+          if [[ $dtm_2m -ne 0]]; then
             echo DTM 2M failure
             overall=1
           fi
-          if [[ $dtm_s2 -ne 0]];then
+          if [[ $dtm_s2 -ne 0]]; then
             echo DTM S2 failure
             overall=1
           fi
-          if [[ $dtm_s8 -ne 0]];then
+          if [[ $dtm_s8 -ne 0]]; then
             echo DTM S8 failure
             overall=1
           fi
@@ -213,19 +213,19 @@ jobs:
           dtm_s8=$?
 
           overall=0
-          if [[ $dtm_1m -ne 0]];then
+          if [[ $dtm_1m -ne 0]]; then
             echo DTM 1M failure
             overall=1
           fi
-          if [[ $dtm_2m -ne 0]];then
+          if [[ $dtm_2m -ne 0]]; then
             echo DTM 2M failure
             overall=1
           fi
-          if [[ $dtm_s2 -ne 0]];then
+          if [[ $dtm_s2 -ne 0]]; then
             echo DTM S2 failure
             overall=1
           fi
-          if [[ $dtm_s8 -ne 0]];then
+          if [[ $dtm_s8 -ne 0]]; then
             echo DTM S8 failure
             overall=1
           fi
