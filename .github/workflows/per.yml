@@ -184,7 +184,7 @@ jobs:
           # fi
 
           # Connection
-          (cd $TEST_DIR/per && ls && per_connection.py $MASTER $DUT $RESULTS_DIR)
+          (cd $TEST_DIR/per && ls && python3 per_connection.py $MASTER $DUT $RESULTS_DIR)
           connection=0
           if [[ $? -ne 0 ]]; then
             Connection test failed!
@@ -245,7 +245,7 @@ jobs:
           
 
           # Connection
-          (cd $TEST_DIR/per && ls && per_connection.py $MASTER $DUT $RESULTS_DIR)
+          (cd $TEST_DIR/per && ls && python3 per_connection.py $MASTER $DUT $RESULTS_DIR)
           connection=0
           if [[ $? -ne 0 ]]; then
             Connection test failed!
