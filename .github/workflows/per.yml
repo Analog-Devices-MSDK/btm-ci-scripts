@@ -114,19 +114,19 @@ jobs:
         run: |
           resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000 --owner $GITHUB_REF
 
-      # - name: Flash DUTs
-      #   # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
-      #   # with:
-      #   #   board:
-      #   #     ${{ steps.target_ids.outputs.max32655 }}
-      #   #     ${{ steps.target_ids.outputs.max32690 }}
-      #   #   project: BLE5_ctr
-      #   #   build: true
-      #   #   suppress_output: true
-      #   env:
-      #       max32655: ${{ steps.target_ids.outputs.max32655 }}
-      #       max32690: ${{ steps.target_ids.outputs.max32690 }}
-      #   run: |
+      - name: Flash DUTs
+        # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
+        # with:
+        #   board:
+        #     ${{ steps.target_ids.outputs.max32655 }}
+        #     ${{ steps.target_ids.outputs.max32690 }}
+        #   project: BLE5_ctr
+        #   build: true
+        #   suppress_output: true
+        env:
+            max32655: ${{ steps.target_ids.outputs.max32655 }}
+            max32690: ${{ steps.target_ids.outputs.max32690 }}
+        run: |
 
 
       #     echo $max32655

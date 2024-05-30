@@ -54,6 +54,7 @@ per_heatmap.py
 Description: CI Oriented PER Heatmap Test
 
 """
+import sys
 from typing import Tuple
 import argparse
 import os
@@ -123,6 +124,8 @@ def create_results_dir(results_dir):
 
 
 def main():
+    
+
     args = _setup_ci()
     cal_file = os.path.join(os.getenv(ENV_RESOURCE_SHARE_DIR), CALIBRATION_FNAME)
     rm = ResourceManager()
