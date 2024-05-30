@@ -113,32 +113,32 @@ jobs:
         run: |
           resource_manager -l $max32655 $max32690 $nrf52840 minicircuits_rf_switch minicircuits_rcdat6000 --owner $GITHUB_REF
 
-      - name: Flash DUTs
-        # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
-        # with:
-        #   board:
-        #     ${{ steps.target_ids.outputs.max32655 }}
-        #     ${{ steps.target_ids.outputs.max32690 }}
-        #   project: BLE5_ctr
-        #   build: true
-        #   suppress_output: true
-        env:
-            max32655: ${{ steps.target_ids.outputs.max32655 }}
-            max32690: ${{ steps.target_ids.outputs.max32690 }}
-        run: |
+      # - name: Flash DUTs
+      #   # uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@per-integration
+      #   # with:
+      #   #   board:
+      #   #     ${{ steps.target_ids.outputs.max32655 }}
+      #   #     ${{ steps.target_ids.outputs.max32690 }}
+      #   #   project: BLE5_ctr
+      #   #   build: true
+      #   #   suppress_output: true
+      #   env:
+      #       max32655: ${{ steps.target_ids.outputs.max32655 }}
+      #       max32690: ${{ steps.target_ids.outputs.max32690 }}
+      #   run: |
 
 
-          echo $max32655
+      #     echo $max32655
 
-          make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr BOARD=WLP_V1
-          make -j -C Examples/MAX32655/Bluetooth/BLE5_ctr
+      #     make -j -C Examples/MAX32690/Bluetooth/BLE5_ctr BOARD=WLP_V1
+      #     make -j -C Examples/MAX32655/Bluetooth/BLE5_ctr
 
           
-          ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE5_ctr/build/max32655.elf $GITHUB_REF
-          ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE5_ctr/build/max32690.elf $GITHUB_REF
+      #     ocdflash $max32655 Examples/MAX32655/Bluetooth/BLE5_ctr/build/max32655.elf $GITHUB_REF
+      #     ocdflash $max32690 Examples/MAX32690/Bluetooth/BLE5_ctr/build/max32690.elf $GITHUB_REF
 
-          echo 655 $max32655
-          echo 690 $max32690
+      #     echo 655 $max32655
+      #     echo 690 $max32690
 
           # give time for device cal and proper reset
           sleep 2
