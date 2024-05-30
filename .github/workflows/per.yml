@@ -149,39 +149,39 @@ jobs:
         run: |
 
       
-          # set +e
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
-          # dtm_1m=$?
+          set +e
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results results/per_dtm_results_1M)
+          dtm_1m=$?
 
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
-          # dtm_2m=$?
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results results/per_dtm_results_2M)
+          dtm_2m=$?
 
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2 --num-packets 100)
-          # dtm_s2=$?
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S2 --results results/per_dtm_results_S2 --num-packets 100)
+          dtm_s2=$?
 
-          # (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results results/per_dtm_results_S8 --num-packets 100)
-          # dtm_s8=$?
+          (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy S8 --results results/per_dtm_results_S8 --num-packets 100)
+          dtm_s8=$?
 
 
-          # if [[ $dtm_2m -ne 0 ]]; then
-          #   echo DTM 2M failure
-          #   overall=1
-          # fi
-          # if [[ $dtm_s2 -ne 0 ]]; then
-          #   echo DTM S2 failure
-          #   overall=1
-          # fi
-          # if [[ $dtm_s8 -ne 0 ]]; then
-          #   echo DTM S8 failure
-          #   overall=1
-          # fi
+          if [[ $dtm_2m -ne 0 ]]; then
+            echo DTM 2M failure
+            overall=1
+          fi
+          if [[ $dtm_s2 -ne 0 ]]; then
+            echo DTM S2 failure
+            overall=1
+          fi
+          if [[ $dtm_s8 -ne 0 ]]; then
+            echo DTM S8 failure
+            overall=1
+          fi
 
-          # if [[ $overall -eq 1 ]]; then
-          #   echo DTM Overall Failure!
-          #   exit -1
-          # else
-          #   echo DTM Passed moving to connection
-          # fi
+          if [[ $overall -eq 1 ]]; then
+            echo DTM Overall Failure!
+            exit -1
+          else
+            echo DTM Passed moving to connection
+          fi
 
           # Connection
           (cd $TEST_DIR/per && ls && python3 per_connection.py $MASTER $DUT $RESULTS_DIR)

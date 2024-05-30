@@ -227,8 +227,7 @@
             "gdb"    : "3903",
             "tcl"    : "4903",
             "telnet" : "6903"
-        },
-        "dbbfile"      : "max32690_board_A1.json"
+        }
     },
 
     "nRF52840_1" : {
