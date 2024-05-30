@@ -51,7 +51,7 @@ jobs:
         with:
           submodules: false
           repository: analogdevicesinc/msdk
-          ref: fix/me18-gcr
+          ref: fix/me18_gcr
           fetch-depth: 0
 
       # - name: Clean
