@@ -195,10 +195,10 @@ def main():
     master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
     slave_hci_port = resource_manager.get_item_value(f"{slave_board}.hci_port")
 
-    master = BleHci(master_hci_port, log_level=logging.WARN,evt_callback=hci_callback)
-    slave = BleHci(slave_hci_port, log_level=logging.WARN, evt_callback=hci_callback)
-    # master = BleHci(master_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
-    # slave = BleHci(slave_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
+    # master = BleHci(master_hci_port, log_level=logging.WARN,evt_callback=hci_callback)
+    # slave = BleHci(slave_hci_port, log_level=logging.WARN, evt_callback=hci_callback)
+    master = BleHci(master_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
+    slave = BleHci(slave_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
     atten = mc_rcdat_6000.RCDAT6000()
 
     master_addr = 0x001234887733
@@ -226,9 +226,13 @@ def main():
     failed_per = False
     total_dropped_connections = 0 
     
-    retries=3
+    prev_rx = 100000
+    retries = 3
     while attens:
         i = attens[0]
+        if prev_rx == i:
+            retries -= 1
+
         print(f'RX Power {-i} dBm')
         atten.set_attenuation(i)
         time.sleep(1)
@@ -263,11 +267,10 @@ def main():
             slave.start_advertising(connect=True)
             master.init_connection(addr=slave_addr)
             time.sleep(2)
-        else:
-            retries -= 1
 
-
-
+        prev_rx = i
+        if retries == 0:
+            break
 
         slave.reset_connection_stats()
         master.reset_connection_stats()
@@ -278,7 +281,7 @@ def main():
     master.reset()
     slave.reset()
 
-    save_results(slave_board, master_board, results, '1M')
+    save_results(slave_board, master_board, results, '1M', results_dir)
     
     print(f'Total Dropped Connections: {total_dropped_connections}')
 

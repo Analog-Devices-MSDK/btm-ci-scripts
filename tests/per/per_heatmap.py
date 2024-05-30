@@ -171,7 +171,10 @@ def main():
     ctrl = RxSensitivityTestController(cfg)
 
     ctrl.run_test()
-    ctrl.results()
+    
+    if not ctrl.results():
+        sys.exit(-1)
+    
 
 
 if __name__ == "__main__":
