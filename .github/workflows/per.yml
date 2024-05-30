@@ -202,7 +202,7 @@ jobs:
 
           FULL_RESULTS_DIR=${{ env.FULL_RESULTS_DIR }}
           #DTM
-
+          set -e
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 1M --results $FULL_RESULTS_DIR/per_dtm_results_1M)
           dtm_1m=$?
           (cd $TEST_DIR/per && python3 per_heatmap.py $MASTER $DUT --phy 2M --results $FULL_RESULTS_DIR/per_dtm_results_2M)
@@ -232,10 +232,12 @@ jobs:
 
           if [[ $overall -eq 1 ]]; then
             echo DTM Overall Failure!
+            exit -1
           else
             echo DTM Passed moving to connection
           fi
-
+          set +e
+          
           # Connection
           (cd $TEST_DIR/per && per_connection.py $MASTER $DUT $RESULTS_DIR)
           
