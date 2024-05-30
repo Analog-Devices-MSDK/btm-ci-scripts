@@ -59,14 +59,14 @@
         "dbbfile"      : "max32655_board2.json"
     },
 
-    "max32655_board_2" : {
+    "max32655_board_3" : {
         "desc"         : "marked sn #2, for per test,",
         "target"       : "MAX32655",
         "board"        : "EvKit_V1",
         "rev"          : "PCB-00177-B-0",
-        "group"        : "APP",
+        "group"        : "RFPHY",
         "dap_sn"       : "04090000ceeb82b000000000000000000000000097969906",
-        "console_port" : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D309ZDEP-if00-port0",
+        "console_port" : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D307NWJ4-if00-port0",
         "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03OH8D-if00-port0",
         "sw_model"     : "USB-1SP16T-83H",
         "sw_state"     : "1",
@@ -201,7 +201,7 @@
         "group"        : "RFPHY",
         "dap_sn"       : "0409170211cd0dd400000000000000000000000097969906",
         "console_port" : "/dev/serial/by-id/usb-FTDI_FT231X_USB_UART_D30ALJQ8-if00-port0",
-        "hci_port"     : "/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0409170211cd0dd400000000000000000000000097969906-if01",
+        "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03OEYG-if00-port0",
         "sw_model"     : "USB-1SP16T-83H",
         "sw_state"     : "4",
         "ocdports"     : {
@@ -227,8 +227,7 @@
             "gdb"    : "3903",
             "tcl"    : "4903",
             "telnet" : "6903"
-        },
-        "dbbfile"      : "max32690_board_A1.json"
+        }
     },
 
     "nRF52840_1" : {
@@ -239,37 +238,19 @@
         "group"        : "RFPHY",
         "dap_sn"       : "1050234264",
         "console_port" : null,
-        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_001050234264-if00",
+        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000683893929-if00",
         "sw_model"     : "USB-1SP8T-63H",
         "sw_state"     : "2",
         "ocdports"     : {
-            "gdb"    : null,
-            "tcl"    : null,
-            "telnet" : null
+            "gdb"    : 3840,
+            "tcl"    : 4840,
+            "telnet" : 6840
         },
         
         "dbbfile"      : null
     },
 
-    "nRF52840_4" : {
-        "desc"         : "not in box",
-        "target"       : "NRF52840",
-        "board"        : null,
-        "rev"          : null,
-        "group"        : null,
-        "dap_sn"       : "000683893929",
-        "console_port" : null,
-        "hci_port"     : "/dev/serial/by-id/usb-SEGGER_J-Link_000683893929-if00",
-        "sw_model"     : null,
-        "sw_state"     : null,
-        "ocdports"     : {
-            "gdb"    : null,
-            "tcl"    : null,
-            "telnet" : null
-        },
-        
-        "dbbfile"      : null
-    },
+
 
     "rsl15_1" : {
         "desc"         : "OnSemi, RSL15",
@@ -300,11 +281,31 @@
         
     },
 
-    "minicircuits_rf_switch" : {
-        "desc"         : "one lock file is enough for the two switches",
-        "target"       : null,
-        "group"        : "RFPHY"
-        
+
+    "rf_bench": {
+
+        "minicircuits_rf_switch" : {
+            "desc"         : "one lock file is enough for the two switches",
+            "target"       : null,
+            "group"        : "RFPHY",
+            "sn16T"        : "12210300026",
+            "sn8T"         : "12205080052"
+            
+        },
+    
+        "minicircuits_rcdat6000" : {
+            "desc"         : "Minicircuits RCDAT6000 digital attenuator.",
+            "target"       : null,
+            "group"        : "RFPHY",
+            "sn"           : "12201130066"
+        },
+        "cal" : {
+            "losses" : {
+                "2402" : -14.10,
+                "2440" : -14.28,
+                "2480" : -14.31
+            }
+        }
     }
 
 }

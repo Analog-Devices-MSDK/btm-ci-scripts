@@ -1,24 +1,27 @@
 const Core = require('@actions/core');
-const { PythonShell } = require('python-shell');
+const { spawn } = require('child_process')
 
 const TARGET_NAMES = Core.getMultilineInput('target');
 const GROUPS = Core.getMultilineInput('group');
 const NUM_BOARDS = parseInt(Core.getInput('num_boards'), 10);
 
 const findBoardList = function (target, group) {
-    let options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        pythonOptions: ['-u'],
-        scriptPath: env.RESOURCE_SHARE_DIR,
-        args: ['--find-board', `${target} ${group}`]
-    };
+    const args = ["--find-board", `${target}`, `${group}`];
+    let foundBoards = [];
     return new Promise((resolve, reject) => {
-        PythonShell.run('resource_manager.py', options).then(
-            (item) => { console.log('Found: %s', item[0]); resolve(item[0]); },
-            (error) => reject(error)
-        );
-    });
+        const findCmd = spawn('resource_manager', args);
+        findCmd.stdout.on('data', (data) => { foundBoards.push(data.toString()) });
+        findCmd.stderr.on('data', (data) => { console.log(data.toString()) });
+        findCmd.on('error', (error) => { console.log(`ERROR: ${error.message}`) });
+        findCmd.on('close', (code) => {
+            if (code !== 0) {
+                console.log(`Process exited with code ${code}`);
+                reject(code);
+            }
+            console.log("Found: %s", foundBoards[0]);
+            resolve(foundBoards[0]);
+        })
+    })
 }
 
 const main = async function() {
@@ -40,7 +43,7 @@ const main = async function() {
     }
     var retBoards = '';
     if (GROUPS.length === 1 && TARGET_NAMES.length === 1) {
-        let matches = findBoardList(TARGET_NAMES[0], GROUPS[0]).split(" ");
+        let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]).split(" ");
         if (matches.length < NUM_BOARDS) {
             throw new Error('!! ERROR: Not enough matches to fill desired amount of boards. !!');
         }
@@ -57,7 +60,7 @@ const main = async function() {
         for (let i = 0; i < GROUPS.length; i++) {
             let match = matches[i][valid[i].indexOf(true)];
             for (let j = i+1; j < GROUPS.length; j++) {
-                if (matches[j].indexOf(match) !== -1) {
+                if (matches[j].index(match) !== -1) {
                     valid[j][matches[j].indexOf(match)] = false;
                 }
             }

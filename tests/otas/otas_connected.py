@@ -87,7 +87,7 @@ class BasicTester:
             Data to write out
         """
         for byte in data:
-            print(f'slow {byte}')
+            print(f"slow {byte}")
             self.serial_port.write(byte)
             time.sleep(0.1)
 
@@ -109,17 +109,15 @@ class BasicTester:
         # self.slow_write(command)
         # time.sleep(0.5)
 
-    
     def save_console_output(self, path):
-        
-        folder = 'otas_out'
+
+        folder = "otas_out"
         if not os.path.exists(folder):
             os.mkdir(folder)
         full_path = os.path.join(folder, path)
-        
-        with open(full_path, 'w', encoding='utf-8') as console_out_file:
-            console_out_file.write(self.console_output)
 
+        with open(full_path, "w", encoding="utf-8") as console_out_file:
+            console_out_file.write(self.console_output)
 
 
 class ClientTester(BasicTester):
@@ -139,7 +137,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise
         """
-        
+
         self.press_btn(BTN2, "s")
 
         start = datetime.now()
@@ -159,7 +157,7 @@ class ClientTester(BasicTester):
                 if retry:
                     time.sleep(5)
                     return self.test_discover_filespace(retry=False)
-                
+
                 return False
 
             time.sleep(1)
@@ -178,7 +176,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise
         """
-        
+
         self.press_btn(BTN2, "m")
 
         start = datetime.now()
@@ -198,9 +196,9 @@ class ClientTester(BasicTester):
                 if retry:
                     time.sleep(5)
                     return self.test_discover_filespace(retry=False)
-                
+
                 return False
-            
+
             time.sleep(1)
             self.press_btn(BTN2, "m")
 
@@ -232,7 +230,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise
         """
-        
+
         self.press_btn(BTN2, "l")
 
         start = datetime.now()
@@ -244,7 +242,7 @@ class ClientTester(BasicTester):
                 "utf-8"
             )
             self.console_output += new_text
-            
+
             print(new_text, end="")
 
             status_match = re.search(pattern, self.console_output)
@@ -262,11 +260,13 @@ class ClientTester(BasicTester):
                 if retry:
                     time.sleep(5)
                     return self.test_discover_filespace(retry=False)
-                
+
                 return False
 
 
-def client_tests(portname: str, boardname:str, resource_manager: ResourceManager) -> Dict[str, bool]:
+def client_tests(
+    portname: str, boardname: str, resource_manager: ResourceManager
+) -> Dict[str, bool]:
     """All client tests
 
     Parameters
@@ -279,7 +279,7 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     Dict[str, bool]
         Test report
     """
-    
+
     client = ClientTester(portname)
     client.serial_port.flush()
     resource_manager.resource_reset(boardname)
@@ -289,7 +289,7 @@ def client_tests(portname: str, boardname:str, resource_manager: ResourceManager
     client_results["update"] = client.test_start_update_xfer()
     client_results["verify"] = client.verify_xfer()
 
-    client.save_console_output(f'otac_out_{boardname}.txt')
+    client.save_console_output(f"otac_out_{boardname}.txt")
 
     return client_results
 
@@ -323,7 +323,7 @@ class ServerTester(BasicTester):
             )
             self.console_output += new_text
 
-            print(new_text, end='')
+            print(new_text, end="")
 
             version_match = re.search(pattern, self.console_output)
 
@@ -358,7 +358,7 @@ def server_tests(portname: str, boardname):
     server = ServerTester(portname)
     test_results_server["versioning"] = server.test_version()
 
-    server.save_console_output(f'otas_out_{boardname}.txt')
+    server.save_console_output(f"otas_out_{boardname}.txt")
 
     return test_results_server
 
@@ -379,10 +379,11 @@ def _print_results(name, report):
 
     return overall
 
+
 def main():
     if len(sys.argv) < 3:
         print(f"OTAS TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
-        
+
         for arg in sys.argv[1:]:
             print(arg)
 
