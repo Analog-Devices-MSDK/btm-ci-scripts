@@ -63,6 +63,7 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         let logOut = '';
         let dumpOut = '';
         if (retVal < 0) {
+            console.log("i guess we exit here?")
             reject(retVal);
         }
         const makeCmd = spawn('make', makeArgs);
