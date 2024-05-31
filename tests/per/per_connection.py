@@ -209,6 +209,7 @@ def main():
     master = BleHci(master_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
     slave = BleHci(slave_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
     atten = mc_rcdat_6000.RCDAT6000()
+    atten.set_attenuation(0)
 
     master_addr = 0x001234887733
     slave_addr = 0x111234887733
@@ -297,7 +298,8 @@ def main():
     save_results(slave_board, master_board, results, '1M', results_dir)
     
     print(f'Total Dropped Connections: {total_dropped_connections}')
-
+    
+    
     if failed_per:
         sys.exit(-1)
 
