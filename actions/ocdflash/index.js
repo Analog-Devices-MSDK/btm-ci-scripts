@@ -74,8 +74,8 @@ const main = async function () {
     let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
-        console.log(typeof(owner))
-        console.log(typeof(OWNER_REF))
+        console.log(owner.length)
+        console.log(OWNER_REF.length)
         console.log(OWNER_REF === owner)
         if (owner !== OWNER_REF && owner !== undefined) {
             throw new Error(
