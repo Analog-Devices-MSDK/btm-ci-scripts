@@ -6,5 +6,5 @@ tests/**/*.txt
 envsetup/.env
 **/__results__
 **/results
-
+Resource_Share/dist
 tests/**/checkpoint*
