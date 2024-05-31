@@ -1,5 +1,6 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
+const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
@@ -21,12 +22,16 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
         const eraseCmd = spawn('openocd', args);
         if (suppress) {
             eraseCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+            eraseCmd.stderr.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
             eraseCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+            eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         }
-        eraseCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         eraseCmd.on('error', (error) => {
-            console.error(`ERROR: ${error.message}`);
+            if (suppress) {
+                logOut = `${logOut}${dumpOut}`
+            }
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         eraseCmd.on('close', (code) => {
             if (code != 0) {
@@ -37,18 +42,19 @@ const eraseFlash = function(target, bank, dap, gdb, tcl, telnet, suppress) {
                 }
                 if (logLines[idx].trim() === 'Error: flash bank 1 does not exist') {
                     if (!suppress) {
+                        logOut = `${logOut}Process exited with code ${code} -- OK`
                         console.log(logOut);
                     }
                     console.log(`Process exited with code ${code} -- OK`);
                     resolve(0);
                 } else {
+                    logOut = `${logOut}Process exited with code ${code}`
                     console.log(logOut);
-                    console.log(`Process exited with code ${code}`);
-                    reject(code);
+                    resolve(code);
                 }
             } else {
+                logOut = `${logOut}Process exited with code ${code}`
                 console.log(logOut);
-                console.log(`Process exited with code ${code}`);
                 resolve(code);
             }
         });
@@ -61,7 +67,6 @@ const main = async function () {
     const gdbPorts = [];
     const tclPorts = [];
     const telnetPorts = [];
-    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -79,11 +84,14 @@ const main = async function () {
     }
     let promises = [];
     var target;
+    var cfgBoardSpec;
     for (let i = 0; i < BOARD_IDS.length; i++) {
-        if (cfgMax32xxx) {
-            target = 'MAX32xxx';
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
         } else {
-            target = targets[i]
+            target = 'MAX32XXX'
         }
         promises[i] = eraseFlash(
             target, 0, dapSNs[i], gdbPorts[0], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
@@ -92,22 +100,40 @@ const main = async function () {
     let retCodes = await Promise.all(promises).then(
         (values) => {
             for (const val of values) {
-                procSuccess(val, 'Erase');
+                if (val === 0) {
+                    procSuccess(val, 'Erase');
+                } else {
+                    procFail(val, 'Erase', true);
+                }
             }
         }
     );
     for (const i in retCodes) {
         if (retCodes[i] === 0) {
-            if (cfgMax32xxx) {
-                target = 'MAX32xxx';
+            cfgBoardSpec = await fileExists(
+                path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+            if (cfgBoardSpec) {
+                target = targets[i];
             } else {
-                target = targets[i]
+                target = 'MAX32XXX'
             }
             await eraseFlash(
                 targets[i], 1, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
-                (success) => procSuccess(success, 'Erase'),
-                (error) => procFail(error, 'Erase', false)
+                (value) => {
+                    if (value === 0) {
+                        procSuccess(success, 'Erase');
+                    } else {
+                        retVal--;
+                        procFail(error, 'Erase', false);
+                        Core.setFailed(`Failed to erase ${targets[i]}.`);
+                    }
+                },
+                (error) => {
+                    retVal--;
+                    procFail(error, 'Erase', false);
+                    Core.setFailed(`Failed to erase ${targets[i]}.`);
+                }
             );
         }
     }

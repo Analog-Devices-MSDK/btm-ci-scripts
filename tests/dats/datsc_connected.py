@@ -107,7 +107,6 @@ class BasicTester:
             True if test success. False otherwise
         """
 
-        
         start = datetime.now()
         time_extended = False
         while True:
@@ -126,7 +125,7 @@ class BasicTester:
 
             if "Connection encrypted" in self.conosle_output:
                 return True
-            
+
             if not time_extended and "Connection opened" in self.conosle_output:
                 time_extended = True
                 start = datetime.now()
@@ -135,7 +134,6 @@ class BasicTester:
                 print("TIMEOUT!!")
                 return False
 
-        
         start = datetime.now()
         while True:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
@@ -156,18 +154,17 @@ class BasicTester:
                 print("Pairing success")
                 return True
 
-            
-
             if (datetime.now() - start).total_seconds() > 30:
                 print("TIMEOUT!!")
                 return False
+
     def save_console_output(self, path):
-        folder = 'dats_out'
+        folder = "dats_out"
         if not os.path.exists(folder):
             os.mkdir(folder)
         full_path = os.path.join(folder, path)
-        
-        with open(full_path, 'w') as console_out_file:
+
+        with open(full_path, "w") as console_out_file:
             console_out_file.write(self.console_output)
 
 
@@ -230,7 +227,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise.
         """
-        
+
         time.sleep(3)
         self.serial_port.write("btn 2 m\n".encode("utf-8"))
 
@@ -246,7 +243,10 @@ class ClientTester(BasicTester):
             if "No action assigned" in self.conosle_output:
                 return False
 
-            if "hello" in self.conosle_output or "Secure data received!" in self.conosle_output:
+            if (
+                "hello" in self.conosle_output
+                or "Secure data received!" in self.conosle_output
+            ):
                 return True
             if (datetime.now() - start).total_seconds() > 10:
                 print("TIMEOUT!!")
@@ -314,9 +314,7 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise.
         """
-        
 
-        
         # self._run_speed_test()
         self.serial_port.write("btn 2 x\n".encode("utf-8"))
         time.sleep(1)
@@ -342,22 +340,22 @@ class ClientTester(BasicTester):
             if (datetime.now() - start).total_seconds() > 20:
                 print("\nTIMEOUT!!")
                 return False
-            
+
             self.serial_port.write("btn 2 x\n".encode("utf-8"))
             time.sleep(1)
             self.serial_port.write("btn 2 x\n".encode("utf-8"))
             time.sleep(0.5)
-            
-            print('Execute')
-            # self._run_speed_test()  
-            
-            
+
+            print("Execute")
+            # self._run_speed_test()
 
 
 test_results_client = {}
 
 
-def _client_thread(portname: str, board: str, resource_manager: ResourceManager, owner: str):
+def _client_thread(
+    portname: str, board: str, resource_manager: ResourceManager, owner: str
+):
     resource_manager.resource_reset(board, owner)
 
     client = ClientTester(portname)
@@ -371,7 +369,7 @@ def _client_thread(portname: str, board: str, resource_manager: ResourceManager,
     test_results_client["write secure"] = client.write_secure_test()
     test_results_client["phy switch"] = client.phy_switch_test()
 
-    client.save_console_output(f'datc_console_out_{board}.txt')
+    client.save_console_output(f"datc_console_out_{board}.txt")
 
     return test_results_client
 
@@ -379,18 +377,21 @@ def _client_thread(portname: str, board: str, resource_manager: ResourceManager,
 test_results_server = {}
 kill_server = False
 
-def _server_thread(portname: str, board: str, resource_manager: ResourceManager, owner: str):
+
+def _server_thread(
+    portname: str, board: str, resource_manager: ResourceManager, owner: str
+):
     server = BasicTester(portname)
     resource_manager.resource_reset(board, owner)
     test_results_server["pairing"] = server.test_secure_connection()
-   
 
     while not kill_server:
-        new_text = server.serial_port.read(server.serial_port.in_waiting).decode('utf-8')
+        new_text = server.serial_port.read(server.serial_port.in_waiting).decode(
+            "utf-8"
+        )
         server.conosle_output += new_text
-        
 
-    server.save_console_output(f'dats_console_out_{board}.txt')
+    server.save_console_output(f"dats_console_out_{board}.txt")
 
     return test_results_server
 
@@ -416,7 +417,7 @@ def main():
     global kill_server
     if len(sys.argv) < 3:
         print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
-        
+
         for arg in sys.argv[1:]:
             print(arg)
 

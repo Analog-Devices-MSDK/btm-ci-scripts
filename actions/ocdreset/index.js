@@ -1,5 +1,6 @@
 const Core = require('@actions/core');
 const Github = require('@actions/github');
+const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
@@ -26,15 +27,18 @@ const resetBoard = function(target, dap, gdb, tcl, telnet, suppress) {
         }
         resetCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         resetCmd.on('error', error => {
-            console.error(`ERROR: ${error.message}`);
+            // console.error(`ERROR: ${error.message}`);
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         resetCmd.on('close', code => {
+            logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            console.log(`Process exited with code ${code}`);
-            if (code != 0) reject(code);
-            else {
-                resolve(code);
-            }
+            // console.log(`Process exited with code ${code}`);
+            // if (code != 0) reject(code);
+            // else {
+            //     resolve(code);
+            // }
+            resolve(code);
         });
     });
 }
@@ -45,7 +49,6 @@ const main = async function () {
     const gdbPorts = [];
     const tclPorts = [];
     const telnetPorts = [];
-    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
@@ -63,11 +66,14 @@ const main = async function () {
     }
     let promises = [];
     var target;
+    var cfgBoardSpec;
     for (let i = 0; i < BOARD_IDS.length; i++) {
-        if (cfgMax32xxx) {
-            target = 'MAX32xxx';
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
         } else {
-            target = targets[i]
+            target = 'MAX32XXX'
         }
         promises[i] = resetBoard(
             target, dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG

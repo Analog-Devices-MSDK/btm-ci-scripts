@@ -3,7 +3,7 @@ const Github = require('@actions/github');
 const path = require('path');
 const { spawn } = require('child_process');
 const { env } = require('node:process');
-const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists } = require('../common');
+const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists, findTargetDirectory } = require('../common');
 const { makeProject } = require('../make-project');
 
 const BOARD_IDS = Core.getMultilineInput('board');
@@ -28,16 +28,20 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
         const flashCmd = spawn('openocd', args);
         if (suppress) {
             flashCmd.stdout.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
+            flashCmd.stderr.on('data', (data) => { dumpOut = `${dumpOut}${data.toString()}` });
         } else {
             flashCmd.stdout.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
+            flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         }
-        flashCmd.stderr.on('data', (data) => { logOut = `${logOut}${data.toString()}` });
         flashCmd.on('error', error => {
-            console.error(`ERROR: ${error.message}`);
+            if (suppress) {
+                logOut = `${logOut}${dumpOut}`
+            }
+            logOut = `${logOut}ERROR: ${error.message}`;
         });
         flashCmd.on('close', code => {
+            logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            console.log(`Process exited with code ${code}`);
             resolve(code);
         });
     });
@@ -45,6 +49,7 @@ const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
 
 const main = async function () {
     let build_flags = [];
+
     for (var i=0; i<BUILD_FLAGS.length; i++) {
         build_flags.push(...BUILD_FLAGS[i].split(" "))
     }
@@ -64,6 +69,7 @@ const main = async function () {
     const tclPorts = [];
     const telnetPorts = [];
     const elfPaths = [];
+    const app_boards = []
     retVal = 0;
     let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
@@ -73,17 +79,24 @@ const main = async function () {
                 "!! ERROR: Improper permissions. Board could not be flashed. !!"
             );
         }
-        [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i]] = await Promise.all([
+        [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], app_boards[i]] = await Promise.all([
             getBoardData(BOARD_IDS[i], 'target'),
             getBoardData(BOARD_IDS[i], 'dap_sn'),
             getBoardData(BOARD_IDS[i], 'ocdports.gdb'),
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
-            getBoardData(BOARD_IDS[i], 'ocdports.telnet')
+            getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
+            getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
+            getBoardData(BOARD_IDS[i], 'board'),
+            
+
+
         ]).catch((err) => console.error(err));
-        let projPath = path.join(MSDK_PATH, 'Examples', targets[i], 'Bluetooth', PROJECT_DIRS[i]);
+
+        let projPath = findTargetDirectory(path.join(MSDK_PATH, 'Examples', targets[i]), PROJECT_DIRS[i])
+        let app_board = app_boards[i] 
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
-            await makeProject(projPath, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
+            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).then(
                 (success) => procSuccess(success, 'Build'),
                 (error) => {
                     retVal--;
@@ -99,11 +112,14 @@ const main = async function () {
 
     let promises = [];
     var target;
+    var cfgBoardSpec;
     for (let i = 0; i < BOARD_IDS.length; i++) {
-        if (cfgMax32xxx) {
-            target = 'MAX32xxx';
+        cfgBoardSpec = await fileExists(
+            path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+        if (cfgBoardSpec) {
+            target = targets[i];
         } else {
-            target = targets[i]
+            target = 'MAX32XXX'
         }
         promises[i] = flashBoard(
             target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
@@ -112,20 +128,30 @@ const main = async function () {
     let retCodes = await Promise.all(promises);
     for (let i = 0; i < retCodes.length; i++) {
         if (retCodes[i] != 0) {
-            if (cfgMax32xxx) {
-                target = 'MAX32xxx';
+            cfgBoardSpec = await fileExists(
+                path.join(env.OPENOCD_PATH, 'target', `${targets[i].toLowerCase()}.cfg`));
+            if (cfgBoardSpec) {
+                target = targets[i];
             } else {
-                target = targets[i]
+                target = 'MAX32XXX'
             }
             procFail(retCodes[i], 'Flash', true);
             await flashBoard(
                 target, elfPaths[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], SUPPRESS_FLAG
             ).then(
-                (success) => procSuccess(success, 'Flash'),
+                (value) => {
+                    if (value === 0) {
+                        procSuccess(success, 'Flash');
+                    } else {
+                        retVal--;
+                        procFail(value, 'Flash', false);
+                        Core.setFailed(`Failed to flash ${targets[i]}`);
+                    }
+                },
                 (error) => {
                     retVal--;
                     procFail(error, 'Flash', false);
-                    Core.setFailed(`Failed to flash ${targets[i]}.`)
+                    Core.setFailed(`Failed to flash ${targets[i]}.`);
                 }
             );
         } else {
