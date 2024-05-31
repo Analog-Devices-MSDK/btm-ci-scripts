@@ -60,7 +60,7 @@ const main = async function() {
         for (let i = 0; i < GROUPS.length; i++) {
             let match = matches[i][valid[i].indexOf(true)];
             for (let j = i+1; j < GROUPS.length; j++) {
-                if (matches[j].index(match) !== -1) {
+                if (matches[j].indexOf(match) !== -1) {
                     valid[j][matches[j].indexOf(match)] = false;
                 }
             }
