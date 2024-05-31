@@ -57,6 +57,7 @@ const main = async function() {
             matches[i] = findBoardList(TARGET_NAMES[i], GROUPS[i].split(" "));
             valid[i] = Array(matches[i].length).fill(true);
         }
+        console.log(matches)
         for (let i = 0; i < GROUPS.length; i++) {
             let match = matches[i][valid[i].indexOf(true)];
             for (let j = i+1; j < GROUPS.length; j++) {
