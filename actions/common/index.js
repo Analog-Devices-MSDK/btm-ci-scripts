@@ -21,7 +21,7 @@ const  findTargetDirectory = function(dir, target) {
 }
 
 const getBoardData = function (boardId, itemName) {
-    const args = ['-g' `${boardId}.${itemName}`]
+    const args = ['-g', `${boardId}.${itemName}`]
     let boardData = [];
     return new Promise((resolve, reject) => {
         const getCmd = spawn('resource_manager', args);

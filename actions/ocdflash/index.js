@@ -13,7 +13,8 @@ const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
 const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
-const OWNER_REF = Github.context.ref;
+let tmp = Core.getInput('owner', {required: false }); 
+const OWNER_REF = tmp ? tmp : Github.context.ref;
 
 const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
     const args = [
@@ -71,12 +72,8 @@ const main = async function () {
     const elfPaths = [];
     const app_boards = []
     retVal = 0;
-    let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
-        console.log(owner.length)
-        console.log(OWNER_REF.length)
-        console.log(OWNER_REF === owner)
         if (owner !== OWNER_REF && owner !== undefined) {
             throw new Error(
                 "!! ERROR: Improper permissions. Board could not be flashed. !!"
