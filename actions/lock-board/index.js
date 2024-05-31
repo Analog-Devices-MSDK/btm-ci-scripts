@@ -70,7 +70,9 @@ const main = async function () {
     if (ALL_OWNED) {
         await unlockOwner(OWNER_REF).catch((err) => { Core.setFailed("Unlock all failed.") });
     } else if (LOCK_FLAG) {
-        await lock(BOARD_IDS, OWNER_REF, TIMEOUT).catch((err) => { Core.setFailed("Lock failed") });
+        await lock(BOARD_IDS, OWNER_REF, TIMEOUT).catch((err) => { 
+            console.log(err.message)
+            Core.setFailed("Lock failed") });
     } else {
         await unlock(BOARD_IDS, OWNER_REF, TIMEOUT).catch((err) => { Core.setFailed("Unlock failed.")});
     }
