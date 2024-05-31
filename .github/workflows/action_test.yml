@@ -104,6 +104,5 @@ jobs:
         if: always()
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
         with:
-          boards: |
-            max32655_board1
+          all_owned: true
           lock: false
