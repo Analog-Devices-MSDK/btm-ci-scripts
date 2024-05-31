@@ -59,9 +59,9 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         }
     );
 
-    let logOut = '';
-    let dumpOut = '';
     return new Promise((resolve, reject) => {
+        let logOut = '';
+        let dumpOut = '';
         if (retVal < 0) {
             reject(retVal);
         }

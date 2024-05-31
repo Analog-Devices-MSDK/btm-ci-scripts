@@ -49,8 +49,7 @@ const unlock = function (boardIds, ownerRef, timeout) {
 }
 
 const unlockOwner = function (ownerRef) {
-    // const args = ['--unlock-owner', `${ownerRef}`];
-    const args = ['unlock-owner', `${ownerRef}`];
+    const args = ['--unlock-owner', `${ownerRef}`];
     return new Promise((resolve, reject) => {
         const cmd = spawn('resource_manager', args);
         cmd.stdout.on('data', (data) => { console.log(data.toString()) });
