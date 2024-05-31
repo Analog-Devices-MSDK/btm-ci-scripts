@@ -5,6 +5,7 @@ const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists, findTargetDirectory } = require('../common');
 const { makeProject } = require('../make-project');
+const { Cipher } = require('crypto');
 
 const BOARD_IDS = Core.getMultilineInput('board');
 const PROJECT_DIRS = Core.getMultilineInput('project');
@@ -96,14 +97,17 @@ const main = async function () {
         let app_board = app_boards[i] 
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
-            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).then(
-                (success) => procSuccess(success, 'Build'),
-                (error) => {
-                    retVal--;
-                    procFail(error, 'Build', false);
-                    Core.setFailed(`Build ${projPath} failed.`);
-                }
-            );
+            // await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).then(
+            //     (success) => procSuccess(success, 'Build'),
+            //     (error) => {
+            //         retVal--;
+            //         procFail(error, 'Build', false);
+            //         Core.setFailed(`Build ${projPath} failed.`);
+            //     }
+            // );
+            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).catch((err) => {
+                Core.setFailed(err.message)
+            })
         }
         if (retVal < 0) {
             return;
