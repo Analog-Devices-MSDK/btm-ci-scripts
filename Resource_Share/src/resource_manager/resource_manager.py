@@ -464,13 +464,15 @@ class ResourceManager:
         applicable_items_open = []
         applicable_items_inuse = []
         for rname in self.resources:
-            if target :
-                if self.get_item_value(f"{rname}.target") != target.upper():
-                    continue
-            if group:
-                if self.get_item_value(f"{rname}.group") != group.upper():
-                    continue
-
+            try:
+                if target :
+                    if self.get_item_value(f"{rname}.target") != target.upper():
+                        continue
+                if group:
+                    if self.get_item_value(f"{rname}.group") != group.upper():
+                        continue
+            except KeyError:
+                continue
             if self.resource_in_use(rname):
                 applicable_items_inuse.append(rname)
             else:

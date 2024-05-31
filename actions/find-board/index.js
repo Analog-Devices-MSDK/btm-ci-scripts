@@ -19,7 +19,7 @@ const findBoardList = function (target, group) {
                 reject(code);
             }
             console.log("Found: %s", foundBoards[0]);
-            resolve(foundBoards[0]);
+            resolve(foundBoards[0].trim());
         })
     })
 }
@@ -41,32 +41,42 @@ const main = async function() {
             '!! ERROR: Mismatched parameter lengths. Boards could not be selected. !!'
         );
     }
-    var retBoards = '';
+    let retBoards = [];
     if (GROUPS.length === 1 && TARGET_NAMES.length === 1) {
-        let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]).split(" ");
+        let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]);
+        matches = matches.split(" ");
         if (matches.length < NUM_BOARDS) {
             throw new Error('!! ERROR: Not enough matches to fill desired amount of boards. !!');
         }
         for (let i = 0; i < NUM_BOARDS; i++) {
-            retBoards = `${retBoards} ${matches[i]}`;
+            retBoards.push(matches[i]);
         }
     } else {
         let matches = [];
         let valid = [];
         for (let i = 0; i < GROUPS.length; i++) {
-            matches[i] = findBoardList(TARGET_NAMES[i], GROUPS[i].split(" "));
+            matches[i] = await findBoardList(TARGET_NAMES[i], GROUPS[i]);
+            matches[i] = matches[i].split(" ");
             valid[i] = Array(matches[i].length).fill(true);
         }
+        console.log(matches)
         for (let i = 0; i < GROUPS.length; i++) {
             let match = matches[i][valid[i].indexOf(true)];
             for (let j = i+1; j < GROUPS.length; j++) {
-                if (matches[j].index(match) !== -1) {
+                if (matches[j].indexOf(match) !== -1) {
                     valid[j][matches[j].indexOf(match)] = false;
                 }
             }
-            retBoards = `${retBoards} ${match}`;
+            retBoards.push(match);
         }
     }
-    Core.setOutput('board_ids', retBoards.trim());
+
+    for (let i = 0; i < 10; i++) {
+        if (i >= retBoards.length) {
+            Core.setOutput(`board${i+1}`, "");
+        } else {
+            Core.setOutput(`board${i+1}`, retBoards[i]);
+        }
+    }
 }
 main()

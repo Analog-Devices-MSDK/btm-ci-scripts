@@ -49,7 +49,6 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
     {
         makeArgs.push(`BOARD=${board}`)
     }
-    
     let retVal = 0;
     await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
@@ -59,9 +58,9 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         }
     );
 
-    let logOut = '';
-    let dumpOut = '';
     return new Promise((resolve, reject) => {
+        let logOut = '';
+        let dumpOut = '';
         if (retVal < 0) {
             reject(retVal);
         }

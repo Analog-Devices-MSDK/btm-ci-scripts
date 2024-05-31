@@ -1,5 +1,5 @@
 name: findBoard
-description: 'Find boards matching the given criteria'
+description: 'Find boards matching the given criteria. At max 10 boards can be returned at once.'
 inputs:
   target:
     description: 'Desired part number.'
@@ -12,8 +12,26 @@ inputs:
     required: false
     default: '1'
 outputs:
-  board_ids:
-    description: 'Space separated list of board IDs'
+  board1:
+    description: 'Board ID which meets the given criteria.'
+  board2:
+    description: 'Board ID which meets the given criteria.'
+  board3:
+    description: 'Board ID which meets the given criteria.'
+  board4:
+    description: 'Board ID which meets the given criteria.'
+  board5:
+    description: 'Board ID which meets the given criteria.'
+  board6:
+    description: 'Board ID which meets the given criteria.'
+  board7:
+    description: 'Board ID which meets the given criteria.'
+  board8:
+    description: 'Board ID which meets the given criteria.'
+  board9:
+    description: 'Board ID which meets the given criteria.'
+  board10:
+    description: 'Board ID which meets the given criteria.'
 runs:
   using: 'node20'
   main: 'index.js'

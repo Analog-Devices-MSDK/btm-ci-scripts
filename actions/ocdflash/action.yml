@@ -23,6 +23,9 @@ inputs:
     description: 'Perform distclean before building? (ignored if build=false)'
     required: false
     default: 'false'
+  owner:
+    description: "Name of owner of resources"
+    required: false
   suppress_output:
     description: 'Used to suppress console unless an error is encountered.'
     required: false

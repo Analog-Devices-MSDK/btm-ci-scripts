@@ -5,6 +5,7 @@ const { spawn } = require('child_process');
 const { env } = require('node:process');
 const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists, findTargetDirectory } = require('../common');
 const { makeProject } = require('../make-project');
+const { Cipher } = require('crypto');
 
 const BOARD_IDS = Core.getMultilineInput('board');
 const PROJECT_DIRS = Core.getMultilineInput('project');
@@ -13,7 +14,8 @@ const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
 const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
-const OWNER_REF = Github.context.ref;
+let tmp = Core.getInput('owner', {required: false }); 
+const OWNER_REF = tmp ? tmp : Github.context.ref;
 
 const flashBoard = function (target, elf, dap, gdb, tcl, telnet, suppress) {
     const args = [
@@ -84,11 +86,7 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.gdb'),
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
-            getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
-            getBoardData(BOARD_IDS[i], 'board'),
-            
-
-
+            getBoardData(BOARD_IDS[i], 'board')
         ]).catch((err) => console.error(err));
 
         let projPath = findTargetDirectory(path.join(MSDK_PATH, 'Examples', targets[i]), PROJECT_DIRS[i])

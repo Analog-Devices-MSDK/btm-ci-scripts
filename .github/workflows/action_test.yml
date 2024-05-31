@@ -66,17 +66,37 @@ jobs:
 
             printenv
       #----------------------------------------------------------------------------------------------
+      # Test findBoard
+      - name: TestFind
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
+        id: boardGet
+        with:
+          target: |
+            MAX32655
+            MAX32665
+          group: APP
+
+      - name: GetFound
+        run: |
+          echo $MAX32655
+          echo $MAX32665
+        env:
+          MAX32655: ${{ steps.boardGet.outputs.board1 }}
+          MAX32665: ${{ steps.boardGet.outputs.board2 }}
+      
+      #----------------------------------------------------------------------------------------------
       # Test lockBoard --> lock action
       - name: TestLock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
         with:
           boards: |
             max32655_board1
+            max32655_board2
           lock: true
       # #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
         with:
           board: |
             max32655_board1
@@ -86,24 +106,22 @@ jobs:
       # # #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@v1
         with:
           board: |
             max32655_board1
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
       - name: TestErase
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@v1
         with:
           board: |
             max32655_board1
-          has_two_flash_banks: false
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> unlock action
       - name: TestUnlock
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
         with:
-          boards: |
-            max32655_board1
+          all_owned: true
           lock: false

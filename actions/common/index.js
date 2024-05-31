@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
+const path = require('path');
 
 const  findTargetDirectory = function(dir, target) {
     const files = fs.readdirSync(dir);
@@ -10,22 +11,22 @@ const  findTargetDirectory = function(dir, target) {
             if (file === target) {
                 return fullPath;
             }
-        }
 
-        const found = findTargetDirectory(fullPath, target);
-        if (found) {
-            return found;
+            const found = findTargetDirectory(fullPath, target);
+            if (found) {
+                return found;
+            }
         }
     }
     return null;
 }
 
 const getBoardData = function (boardId, itemName) {
-    const args = ['-g' `${boardId}.${itemName}`]
+    const args = ['-g', `${boardId}.${itemName}`]
     let boardData = [];
     return new Promise((resolve, reject) => {
         const getCmd = spawn('resource_manager', args);
-        getCmd.stdout.on('data', (data) => { boardData.push(data.toString()) });
+        getCmd.stdout.on('data', (data) => { boardData.push(data.toString().trim()) });
         getCmd.stderr.on('data', (data) => { console.log(data.toString()) });
         getCmd.on('error', (error) => { console.log(`ERROR: ${error.message}`) });
         getCmd.on('close', (code) => {
@@ -44,7 +45,7 @@ const getBoardOwner = function (boardId) {
     let ownerData = []
     return new Promise((resolve, reject) => {
         const getCmd = spawn('resource_manager', args);
-        getCmd.stdout.on('data', (data) => { ownerData.push(data.toString()) });
+        getCmd.stdout.on('data', (data) => { ownerData.push(data.toString().trim()) });
         getCmd.stderr.on('data', (data) => { console.log(data.toString()) });
         getCmd.on('error', (error) => { console.log(`ERROR: ${error.message}`) });
         getCmd.on('close', (code) => {

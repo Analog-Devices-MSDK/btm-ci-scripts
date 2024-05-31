@@ -3,6 +3,7 @@ const Github = require('@actions/github');
 const { env } = require('node:process');
 const { ALL } = require('node:dns');
 
+const { spawn } = require('child_process');
 const BOARD_IDS = Core.getMultilineInput('boards');
 const LOCK_FLAG = Core.getBooleanInput('lock', {required: false});
 const TIMEOUT = Core.getInput('timeout', {required: false });
@@ -48,7 +49,7 @@ const unlock = function (boardIds, ownerRef, timeout) {
 }
 
 const unlockOwner = function (ownerRef) {
-    const args = ['unlock-owner', `${ownerRef}`];
+    const args = ['--unlock-owner', `${ownerRef}`];
     return new Promise((resolve, reject) => {
         const cmd = spawn('resource_manager', args);
         cmd.stdout.on('data', (data) => { console.log(data.toString()) });
