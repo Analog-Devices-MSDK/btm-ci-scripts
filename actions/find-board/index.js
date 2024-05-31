@@ -55,7 +55,7 @@ const main = async function() {
         let matches = [];
         let valid = [];
         for (let i = 0; i < GROUPS.length; i++) {
-            matches[i] = await findBoardList(TARGET_NAMES[i], GROUPS[i].split(" "));
+            matches[i] = await findBoardList(TARGET_NAMES[i], GROUPS[i]).split(" ");
             valid[i] = Array(matches[i].length).fill(true);
         }
         console.log(matches)
