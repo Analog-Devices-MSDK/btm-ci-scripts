@@ -53,7 +53,7 @@ const getBoardOwner = function (boardId) {
                 reject(code);
             }
             console.log("owner --> %s", ownerData[0]);
-            resolve(ownerData[0]);
+            resolve(ownerData[0].trim());
         });
     });
 }
