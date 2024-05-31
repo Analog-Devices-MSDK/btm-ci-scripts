@@ -87,14 +87,12 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
-            getBoardData(BOARD_IDS[i], 'board'),
-            
-
-
+            getBoardData(BOARD_IDS[i], 'board')
         ]).catch((err) => console.error(err));
 
         let projPath = findTargetDirectory(path.join(MSDK_PATH, 'Examples', targets[i]), PROJECT_DIRS[i])
         let app_board = app_boards[i] 
+        console.log(app_board)
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
             await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).then(
