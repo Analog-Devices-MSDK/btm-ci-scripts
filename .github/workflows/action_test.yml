@@ -66,6 +66,25 @@ jobs:
 
             printenv
       #----------------------------------------------------------------------------------------------
+      # Test findBoard
+      - name: TestFind
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@action-testing
+        id: boardGet
+        with:
+          target: |
+            MAX32655
+            MAX32665
+          group: APP
+
+      - name: GetFound
+        run: |
+          echo $MAX32655
+          echo $MAX32665
+        env:
+          MAX32655: ${{ steps.boardGet.outputs.board1 }}
+          MAX32665: ${{ steps.boardGet.outputs.board2 }}
+      
+      #----------------------------------------------------------------------------------------------
       # Test lockBoard --> lock action
       - name: TestLock
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing

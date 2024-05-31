@@ -91,7 +91,6 @@ const main = async function () {
 
         let projPath = findTargetDirectory(path.join(MSDK_PATH, 'Examples', targets[i]), PROJECT_DIRS[i])
         let app_board = app_boards[i] 
-        console.log(app_board)
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
             await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).then(
@@ -102,11 +101,6 @@ const main = async function () {
                     Core.setFailed(`Build ${projPath} failed.`);
                 }
             );
-            // await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).catch((err) => {
-            //     retVal--;
-            //     console.log(err.message)
-            //     Core.setFailed(err.message)
-            // })
         }
         if (retVal < 0) {
             return;

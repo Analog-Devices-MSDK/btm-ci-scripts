@@ -49,7 +49,6 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
     {
         makeArgs.push(`BOARD=${board}`)
     }
-    console.log(makeArgs)
     let retVal = 0;
     await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
@@ -63,11 +62,9 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         let logOut = '';
         let dumpOut = '';
         if (retVal < 0) {
-            console.log("i guess we exit here?")
             reject(retVal);
         }
         const makeCmd = spawn('make', makeArgs);
-        console.log('here after creation')
         if (suppress) {
             makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
             makeCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
@@ -79,14 +76,11 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
             if (suppress) {
                 logOut = `${logOut}${dumpOut}`
             }
-            console.log('here')
-            console.log(error.message)
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         makeCmd.on('close', code => {
             logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
-            console.log(code)
             if (code != 0) reject(code);
             else {
                 resolve(code);

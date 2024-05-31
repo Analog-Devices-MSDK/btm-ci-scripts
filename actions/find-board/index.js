@@ -41,14 +41,14 @@ const main = async function() {
             '!! ERROR: Mismatched parameter lengths. Boards could not be selected. !!'
         );
     }
-    var retBoards = '';
+    let retBoards = [];
     if (GROUPS.length === 1 && TARGET_NAMES.length === 1) {
         let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]).split(" ");
         if (matches.length < NUM_BOARDS) {
             throw new Error('!! ERROR: Not enough matches to fill desired amount of boards. !!');
         }
         for (let i = 0; i < NUM_BOARDS; i++) {
-            retBoards = `${retBoards} ${matches[i]}`;
+            retBoards.push(matches[i]);
         }
     } else {
         let matches = [];
@@ -64,9 +64,16 @@ const main = async function() {
                     valid[j][matches[j].indexOf(match)] = false;
                 }
             }
-            retBoards = `${retBoards} ${match}`;
+            retBoards.push(match);
         }
     }
-    Core.setOutput('board_ids', retBoards.trim());
+
+    for (let i = 0; i < 10; i++) {
+        if (i >= retBoards.length) {
+            Core.setOutput(`board${i+1}`, "");
+        } else {
+            Core.setOutput(`board${i+1}`, retBoards[i]);
+        }
+    }
 }
 main()
