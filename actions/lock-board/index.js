@@ -17,6 +17,7 @@ const lock = function (boardIds, ownerRef, timeout) {
     console.log("HERE================================================================================");
     return new Promise((resolve, reject) => {
         const cmd = spawn('resource_manager', args);
+        console.log("Wrote a command!!!!!!!!!!!!!!!")
         cmd.stdout.on('data', (data) => { console.log(data.toString()) });
         cmd.stderr.on('data', (data) => { console.log(data.toString()) });
         cmd.on('error', (error) => { console.log(`ERROR: ${error.message}`) });
