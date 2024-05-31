@@ -100,6 +100,7 @@ const main = async function () {
                 (success) => procSuccess(success, 'Build'),
                 (error) => {
                     retVal--;
+                    console.log(error.message)
                     procFail(error, 'Build', false);
                     Core.setFailed(`Build ${projPath} failed.`);
                 }
