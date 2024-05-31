@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
+const path = require('path');
 
 const  findTargetDirectory = function(dir, target) {
     const files = fs.readdirSync(dir);
