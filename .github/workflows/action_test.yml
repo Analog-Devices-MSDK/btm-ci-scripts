@@ -68,15 +68,16 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> lock action
       - name: TestLock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
         with:
           boards: |
             max32655_board1
+            max32655_board2
           lock: true
       # #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
         with:
           board: |
             max32655_board1
@@ -86,23 +87,22 @@ jobs:
       # # #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
         with:
           board: |
             max32655_board1
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
       - name: TestErase
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@action-testing
         with:
           board: |
             max32655_board1
-          has_two_flash_banks: false
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> unlock action
       - name: TestUnlock
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
         with:
           boards: |
             max32655_board1
