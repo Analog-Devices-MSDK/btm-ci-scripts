@@ -106,7 +106,7 @@ const main = async function () {
             //     }
             // );
             await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).catch((err) => {
-                retval--;
+                retVal--;
                 console.log(err.message)
                 Core.setFailed(err.message)
             })
