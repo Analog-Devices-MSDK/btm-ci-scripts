@@ -42,7 +42,6 @@ const main = async function() {
         );
     }
     let retBoards = [];
-    console.log(TARGET_NAMES)
     if (GROUPS.length === 1 && TARGET_NAMES.length === 1) {
         let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]).split(" ");
         if (matches.length < NUM_BOARDS) {
@@ -55,7 +54,8 @@ const main = async function() {
         let matches = [];
         let valid = [];
         for (let i = 0; i < GROUPS.length; i++) {
-            matches[i] = await findBoardList(TARGET_NAMES[i], GROUPS[i]).split(" ");
+            matches[i] = await findBoardList(TARGET_NAMES[i], GROUPS[i]);
+            matches[i] = matches[i].split(" ";)
             valid[i] = Array(matches[i].length).fill(true);
         }
         console.log(matches)
