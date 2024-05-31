@@ -86,6 +86,7 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         makeCmd.on('close', code => {
             logOut = `${logOut}Process exited with code ${code}`;
             console.log(logOut);
+            console.log(code)
             if (code != 0) reject(code);
             else {
                 resolve(code);
