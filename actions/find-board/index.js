@@ -43,7 +43,8 @@ const main = async function() {
     }
     let retBoards = [];
     if (GROUPS.length === 1 && TARGET_NAMES.length === 1) {
-        let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]).split(" ");
+        let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]);
+        matches = matches.split(" ");
         if (matches.length < NUM_BOARDS) {
             throw new Error('!! ERROR: Not enough matches to fill desired amount of boards. !!');
         }
