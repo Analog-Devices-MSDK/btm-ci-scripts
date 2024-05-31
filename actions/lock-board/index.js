@@ -14,6 +14,7 @@ const OWNER_REF = OWNER ? OWNER : Github.context.ref;
 
 const lock = function (boardIds, ownerRef, timeout) {
     const args = ['-l', ...boardIds, '--owner', `${ownerRef}`, '--timeout', `${timeout}`];
+    console.log("HERE================================================================================");
     return new Promise((resolve, reject) => {
         const cmd = spawn('resource_manager', args);
         cmd.stdout.on('data', (data) => { console.log(data.toString()) });
