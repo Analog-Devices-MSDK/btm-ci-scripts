@@ -19,9 +19,9 @@ If multiple boards are required with the same criteria, the number of boards can
 
 ## Outputs
 
-### board_ids
+### board[n]
 
-Space separated list containing the IDs of boards which match the criteria. The action will always return IDs for available boards before returning IDs for boards which are currently in use.
+Board matching the given criteria, where `n` is from 1...10 and matches the position of the criteria in the original input.
 
 ## Example usage
 
@@ -39,5 +39,11 @@ The output can be accessed via `${{ steps.STEPID.outputs.OUTPUTNAME}}. In this c
 
 ```yaml
 - name: Echo Output
-  run: echo "Found matching boards --> ${{ steps.findBoards.outputs.board_ids }}"
+  run: echo "Found matching boards --> ${{ steps.findBoards.outputs.board1 }}, ${{ steps.findBoards.outputs.board2 }}"
+```
+
+Console output:
+
+```
+Found matching boards --> max32655_board1, max32655_board2
 ```

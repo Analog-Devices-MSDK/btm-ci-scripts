@@ -68,7 +68,7 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test findBoard
       - name: TestFind
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@action-testing
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
         id: boardGet
         with:
           target: |
@@ -87,7 +87,7 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> lock action
       - name: TestLock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
         with:
           boards: |
             max32655_board1
@@ -96,7 +96,7 @@ jobs:
       # #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@action-testing
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
         with:
           board: |
             max32655_board1
@@ -106,14 +106,14 @@ jobs:
       # # #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@action-testing
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@v1
         with:
           board: |
             max32655_board1
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
       - name: TestErase
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@action-testing
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@v1
         with:
           board: |
             max32655_board1
@@ -121,7 +121,7 @@ jobs:
       # Test lockBoard --> unlock action
       - name: TestUnlock
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@action-testing
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
         with:
           all_owned: true
           lock: false
