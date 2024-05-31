@@ -34,7 +34,7 @@ const getBoardData = function (boardId, itemName) {
                 reject(code);
             }
             console.log("%s --> %s", itemName, boardData[0]);
-            resolve(boardData[0]);
+            resolve(boardData[0].trim());
         });
     });
 }
