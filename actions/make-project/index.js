@@ -66,6 +66,7 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
             reject(retVal);
         }
         const makeCmd = spawn('make', makeArgs);
+        console.log('here after creation')
         if (suppress) {
             makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
             makeCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
