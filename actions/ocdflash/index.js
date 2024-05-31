@@ -86,7 +86,6 @@ const main = async function () {
             getBoardData(BOARD_IDS[i], 'ocdports.gdb'),
             getBoardData(BOARD_IDS[i], 'ocdports.tcl'),
             getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
-            getBoardData(BOARD_IDS[i], 'ocdports.telnet'),
             getBoardData(BOARD_IDS[i], 'board')
         ]).catch((err) => console.error(err));
 
