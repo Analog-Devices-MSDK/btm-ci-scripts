@@ -77,6 +77,8 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
             if (suppress) {
                 logOut = `${logOut}${dumpOut}`
             }
+            console.log('here')
+            console.log(error.message)
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         makeCmd.on('close', code => {
