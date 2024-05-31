@@ -74,6 +74,7 @@ const main = async function () {
     let cfgMax32xxx = await fileExists(path.join(env.OPENOCD_PATH, 'target', 'max32xxx.cfg'));
     for (let i = 0; i < BOARD_IDS.length; i++) {
         let owner = await getBoardOwner(BOARD_IDS[i]);
+        console.log(owner)
         if (owner !== OWNER_REF && owner !== undefined) {
             throw new Error(
                 "!! ERROR: Improper permissions. Board could not be flashed. !!"
