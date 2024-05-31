@@ -49,7 +49,7 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
     {
         makeArgs.push(`BOARD=${board}`)
     }
-    
+    console.log(makeArgs)
     let retVal = 0;
     await cleanProject(projectPath, distclean, suppress).then(
         (success) => procSuccess(success, 'Clean'),
