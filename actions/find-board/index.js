@@ -19,7 +19,7 @@ const findBoardList = function (target, group) {
                 reject(code);
             }
             console.log("Found: %s", foundBoards[0]);
-            resolve(foundBoards[0]);
+            resolve(foundBoards[0].trim());
         })
     })
 }
@@ -42,6 +42,7 @@ const main = async function() {
         );
     }
     let retBoards = [];
+    console.log(TARGET_NAMES)
     if (GROUPS.length === 1 && TARGET_NAMES.length === 1) {
         let matches = await findBoardList(TARGET_NAMES[0], GROUPS[0]).split(" ");
         if (matches.length < NUM_BOARDS) {
