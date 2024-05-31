@@ -86,7 +86,7 @@ def config_cli() -> argparse.Namespace:
         default=[],
         action="extend",
         nargs="*",
-        help="Name of resource to unlock per boards_config.json",
+        help="Name of board to unlock per boards_config.json",
     )
 
     parser.add_argument(
@@ -107,7 +107,7 @@ def config_cli() -> argparse.Namespace:
         default=[],
         action="extend",
         nargs="*",
-        help="Name of resource to lock per boards_config.json",
+        help="Name of board to lock per boards_config.json",
     )
 
     parser.add_argument(
@@ -141,7 +141,7 @@ def config_cli() -> argparse.Namespace:
         "-f",
         "--find-board",
         nargs=2,
-        default=["", ""],
+        default=None,
         help="Find a board which matches the criteria TARGET GROUP",
     )
     parser.add_argument(
@@ -182,20 +182,20 @@ def main():
         resource_manager.print_usage()
 
     if args.unlock_all:
-        print("Unlocking all resources!")
+        print("Unlocking all boards!")
         resource_manager.unlock_all_resources()
         sys.exit(0)
 
     if lock_boards:
-        print(f"Attempting to lock resources {lock_boards}")
+        print(f"Attempting to lock all boards {lock_boards}")
 
         could_lock = resource_manager.lock_resources(lock_boards, args.owner)
 
         if could_lock:
-            print("Successfully locked resources")
+            print("Successfully locked boards")
             sys.exit(0)
         else:
-            print("Failed to lock all resources")
+            print("Failed to lock all boards")
             sys.exit(-1)
 
     if unlock_boards:
@@ -223,6 +223,9 @@ def main():
         resources = resource_manager.get_owned_boards(args.owner_resources)
         for resource in resources:
             print(resource)
+
+    if args.find_board is not None:
+        resource_manager.print_applicable_items(target=args.find_board[0], group=args.find_board[1])
 
     sys.exit(0)
 
