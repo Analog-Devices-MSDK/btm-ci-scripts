@@ -59,6 +59,7 @@ from resource_manager import ResourceManager
 
 VERSION = "1.0.0"
 
+
 def config_cli() -> argparse.Namespace:
     """
     Configure CLI
@@ -163,6 +164,7 @@ def config_cli() -> argparse.Namespace:
 
     return parser.parse_args()
 
+
 def main():
     """
     MAIN
@@ -225,7 +227,9 @@ def main():
             print(resource)
 
     if args.find_board is not None:
-        resource_manager.print_applicable_items(target=args.find_board[0], group=args.find_board[1])
+        resource_manager.print_applicable_items(
+            target=args.find_board[0], group=args.find_board[1]
+        )
 
     sys.exit(0)
 

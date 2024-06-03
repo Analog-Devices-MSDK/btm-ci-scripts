@@ -440,13 +440,8 @@ class ResourceManager:
                 if self.get_item_value(f"{rname}.group") != group.upper():
                     continue
             applicable_items.append(rname)
-            
-     
-        
 
-    def print_applicable_items(
-        self, target: str = "", group: str = ""
-    ) -> List[str]:
+    def print_applicable_items(self, target: str = "", group: str = "") -> List[str]:
         """Print an item that matches criteria of group and target
 
         Parameters
@@ -465,7 +460,7 @@ class ResourceManager:
         applicable_items_inuse = []
         for rname in self.resources:
             try:
-                if target :
+                if target:
                     if self.get_item_value(f"{rname}.target") != target.upper():
                         continue
                 if group:
@@ -504,7 +499,7 @@ class ResourceManager:
 
         print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
 
-    def get_switch_config(self, resource:str) -> Tuple[str, str]:
+    def get_switch_config(self, resource: str) -> Tuple[str, str]:
         """Get Switch configuration
 
         Parameters
@@ -517,8 +512,8 @@ class ResourceManager:
         Tuple[str, str]
             _description_
         """
-        model = self.get_item_value(f'{resource}.sw_model')
-        port =  self.get_item_value(f'{resource}.sw_state')
+        model = self.get_item_value(f"{resource}.sw_model")
+        port = self.get_item_value(f"{resource}.sw_state")
 
         return model, port
 
@@ -548,7 +543,7 @@ class ResourceManager:
                 ""
                 """Requires dap_sn and ocdports"""
             )
-        
+
         owner = owner if owner != "" else self.owner
 
         with subprocess.Popen(

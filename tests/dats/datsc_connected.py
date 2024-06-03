@@ -54,6 +54,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
+
 import serial
 
 # RESOURCE_SHARE_DIR = os.environ.get("RESOURCE_SHARE_DIR")

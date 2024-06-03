@@ -56,22 +56,21 @@ Description: Simple example showing creation of a connection and getting packet 
 
 """
 
+import logging
 import sys
 import time
 from typing import Dict
-import pandas as pd
-import logging
-# pylint: disable=import-error,wrong-import-position
-from max_ble_hci import BleHci 
-from max_ble_hci.packet_codes import EventCode
-from max_ble_hci.hci_packets import EventPacket
 
-from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
-from ble_test_suite.results import Plot, Mask
-
-
-from ble_test_suite.utils.log_util import get_formatted_logger
 import matplotlib.pyplot as plt
+import pandas as pd
+from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
+from ble_test_suite.results import Mask, Plot
+from ble_test_suite.utils.log_util import get_formatted_logger
+
+# pylint: disable=import-error,wrong-import-position
+from max_ble_hci import BleHci
+from max_ble_hci.hci_packets import EventPacket
+from max_ble_hci.packet_codes import EventCode
 from resource_manager import ResourceManager
 
 # pylint: enable=import-error,wrong-import-position
@@ -111,7 +110,7 @@ def config_switches(resource_manager: ResourceManager, slave: str, master: str):
         sw_master.set_sw_state(master_sw_port)
 
 
-def save_results(slave, master, results: Dict[str, list], phy:str, directory):
+def save_results(slave, master, results: Dict[str, list], phy: str, directory):
     """Store PER Results
 
     Parameters
@@ -121,28 +120,23 @@ def save_results(slave, master, results: Dict[str, list], phy:str, directory):
     """
     # print(results)
 
-
     df = pd.DataFrame(results)
     plot_title = f"connection_per_{slave}_{master}_{phy}"
-    
-    df.to_csv(f'{directory}/{plot_title}.csv', index=False)
+
+    df.to_csv(f"{directory}/{plot_title}.csv", index=False)
 
     fail_bar = [30] * len(results["attens"])
 
-    plt.plot(df['attens'], df['slave'], label=f'{slave}')
-    plt.plot(df['attens'], df['master'], label=f'{master}')
-    plt.plot(df['attens'], fail_bar)
-
+    plt.plot(df["attens"], df["slave"], label=f"{slave}")
+    plt.plot(df["attens"], df["master"], label=f"{master}")
+    plt.plot(df["attens"], fail_bar)
 
     plt.title(plot_title)
-    plt.xlabel(f'Received Power (dBm)')
-    plt.ylabel(f'PER %')
+    plt.xlabel(f"Received Power (dBm)")
+    plt.ylabel(f"PER %")
     plt.legend()
 
-    plt.savefig(f'{directory}/{plot_title}.png')
-
-
-
+    plt.savefig(f"{directory}/{plot_title}.png")
 
 
 def print_test_config(slave, master):
@@ -151,21 +145,19 @@ def print_test_config(slave, master):
     print(f"\tMaster - {master}\n")
 
 
+reconnect = False
 
-reconnect=False
 
 def hci_callback(packet):
-    
     if not isinstance(packet, EventPacket):
         print(packet)
         return
-    
+
     global reconnect
 
-    event :EventPacket = packet
+    event: EventPacket = packet
     if event.evt_code == EventCode.DICON_COMPLETE:
         reconnect = True
-
 
 
 def main():
@@ -191,13 +183,11 @@ def main():
     resource_manager = ResourceManager()
 
     try:
-        loss = resource_manager.get_item_value('rf_bench.cal.losses.2440')
+        loss = resource_manager.get_item_value("rf_bench.cal.losses.2440")
         loss = float(loss)
     except KeyError:
-        print('Could not find cal data in config. Defaulting to 0')
+        print("Could not find cal data in config. Defaulting to 0")
         loss = 0.0
-
-    
 
     config_switches(resource_manager, slave_board, master_board)
 
@@ -206,8 +196,12 @@ def main():
 
     # master = BleHci(master_hci_port, log_level=logging.WARN,evt_callback=hci_callback)
     # slave = BleHci(slave_hci_port, log_level=logging.WARN, evt_callback=hci_callback)
-    master = BleHci(master_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
-    slave = BleHci(slave_hci_port, async_callback=hci_callback, evt_callback=hci_callback)
+    master = BleHci(
+        master_hci_port, async_callback=hci_callback, evt_callback=hci_callback
+    )
+    slave = BleHci(
+        slave_hci_port, async_callback=hci_callback, evt_callback=hci_callback
+    )
     atten = mc_rcdat_6000.RCDAT6000()
 
     master_addr = 0x001234887733
@@ -222,19 +216,16 @@ def main():
 
     slave.start_advertising(connect=True)
     master.init_connection(addr=slave_addr)
-    
-    print('Sleeping for initial connection')
+
+    print("Sleeping for initial connection")
     time.sleep(5)
 
     attens = list(range(20, 100, 2))
 
-
-
-
     results = {"attens": [], "slave": [], "master": []}
     failed_per = False
-    total_dropped_connections = 0 
-    
+    total_dropped_connections = 0
+
     prev_rx = 100000
     retries = 3
     while attens:
@@ -242,9 +233,9 @@ def main():
         if prev_rx == i:
             retries -= 1
 
-        print(f'RX Power {-i} dBm')
+        print(f"RX Power {-i} dBm")
         calibrated_value = int(i + loss)
-        
+
         atten.set_attenuation(calibrated_value)
         print(atten.get_attenuation(), calibrated_value)
 
@@ -258,23 +249,21 @@ def main():
             slave_per = slave_stats.per()
             master_per = master_stats.per()
 
-            print('Slave - ', slave_per)
-            print('Master - ', master_per)
+            print("Slave - ", slave_per)
+            print("Master - ", master_per)
 
             results["slave"].append(slave_per)
             results["master"].append(master_per)
             results["attens"].append(-i)
             attens.pop(0)
 
-
-            
             if (slave_per >= 30 or master_per >= 30) and i < 70:
                 failed_per = True
                 print(f"Connection Failed PER TEST at {i}")
                 print(f"Master: {master_per}, Slave: {slave_per}")
 
         elif reconnect:
-            print('Attempting reconnect!')
+            print("Attempting reconnect!")
             total_dropped_connections += 1
             reconnect = False
             slave.start_advertising(connect=True)
@@ -294,9 +283,9 @@ def main():
     master.reset()
     slave.reset()
 
-    save_results(slave_board, master_board, results, '1M', results_dir)
-    
-    print(f'Total Dropped Connections: {total_dropped_connections}')
+    save_results(slave_board, master_board, results, "1M", results_dir)
+
+    print(f"Total Dropped Connections: {total_dropped_connections}")
 
     if failed_per:
         sys.exit(-1)

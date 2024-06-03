@@ -50,13 +50,14 @@ Description: Data server-client connection test
 """
 
 import os
-import sys
 import re
+import sys
 import time
 from datetime import datetime
-from typing import Dict
-import serial
 from pathlib import Path
+from typing import Dict
+
+import serial
 
 sys.path.append("../..")
 
@@ -110,7 +111,6 @@ class BasicTester:
         # time.sleep(0.5)
 
     def save_console_output(self, path):
-
         folder = "otas_out"
         if not os.path.exists(folder):
             os.mkdir(folder)
