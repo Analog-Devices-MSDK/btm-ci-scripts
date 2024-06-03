@@ -77,7 +77,7 @@ const main = async function () {
         let owner = await getBoardOwner(BOARD_IDS[i]);
         if (owner !== OWNER_REF && owner !== undefined) {
             throw new Error(
-                "!! ERROR: Improper permissions. Board could not be flashed. !!"
+                `!! ERROR: Improper permissions. Board could not be flashed. !! Owner found ${owner} Expected ${OWNER_REF}, Board ${BOARD_IDS[i]}`
             );
         }
         [targets[i], dapSNs[i], gdbPorts[i], tclPorts[i], telnetPorts[i], app_boards[i]] = await Promise.all([
