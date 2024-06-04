@@ -60,18 +60,19 @@ from tabulate import tabulate
 
 
 class ResourceManager:
+    # pylint: disable=too-many-public-methods,dangerous-default-value
     """BTM-CI Resource Manager"""
 
     ENV_RESOURCE_LOCK_DIR = "RESOURCE_LOCK_DIR"
     ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
     ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
 
-    def __init__(self, timeout=60, owner="") -> None:
+    def __init__(self, timeout=60, owner="", extra_resources: List[str] = []) -> None:
         # Initialize the resource file
         self.timeout = timeout
         self.resources = self._add_base_config()
         self.owner = owner
-        self._add_custom_config()
+        self._add_custom_config(extra_resources)
         self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
         self._add_lockdir()
 
@@ -79,23 +80,49 @@ class ResourceManager:
         if not os.path.exists(self.resource_lock_dir):
             os.mkdir(self.resource_lock_dir)
 
+    def _get_config(self, filepath):
+        if not os.path.exists(filepath):
+            return {}
+
+        with open(filepath, "r", encoding="utf-8") as config_file:
+            try:
+                config = json.load(config_file)
+            except json.decoder.JSONDecodeError:
+                print("Error parsing json from file! returning empty json")
+                return {}
+
+        return config
+
+    def _get_base_resource_path(self):
+        return os.environ.get(self.ENV_CI_BOARD_CONFIG)
+
+    def _get_custom_resource_path(self):
+        return os.environ.get(self.ENV_CI_BOARD_CONFIG_CUSTOM)
+
+    def _get_base_config(self):
+        base_resource_path = self._get_base_resource_path()
+        return self._get_config(base_resource_path)
+
+    def _get_custom_config(self):
+        custom_resource_filepath = os.environ.get(self.ENV_CI_BOARD_CONFIG_CUSTOM)
+        return self._get_config(custom_resource_filepath)
+
     def _add_base_config(self):
-        base_resource_path = os.environ.get(self.ENV_CI_BOARD_CONFIG)
+        base_resource_path = self._get_base_resource_path()
 
         if not base_resource_path:
             if os.getlogin() == "btm-ci":
                 print("Warning! BOARD CONFIG Environment Variable DOES NOT EXIST!")
             return {}
 
-        with open(base_resource_path, "r", encoding="utf-8") as resource_file:
-            resources = json.load(resource_file)
-        return resources
+        return self._get_config(base_resource_path)
 
-    def _add_custom_config(self):
-        custom_resource_filepath = os.environ.get(self.ENV_CI_BOARD_CONFIG_CUSTOM)
+    def _add_custom_config(self, extra_resources: List[str]):
+        custom_resource_filepath = self._get_custom_resource_path()
         if custom_resource_filepath is not None:
-            with open(custom_resource_filepath, "r", encoding="utf-8") as resource_file:
-                custom_resources = json.load(resource_file)
+            extra_resources.append(custom_resource_filepath)
+            for resource in extra_resources:
+                custom_resources = self._get_config(resource)
                 self.resources.update(custom_resources)
 
     def get_owner(self, resource: str) -> str:
@@ -382,6 +409,56 @@ class ResourceManager:
 
         return boards_locked
 
+    def _update_config(self, new_config: Dict, filepath: str):
+        old_config = self._get_config(filepath)
+        old_config.update(new_config)
+        with open(filepath, "w", encoding="utf-8") as config_file:
+            json.dump(old_config, config_file)
+
+    def add_item(self, item: str, filepath: str = ""):
+        """Add item to config file
+
+        Parameters
+        ----------
+        item : str
+            Item string (ex: board_name.serial_num=1234)
+        filepath : str, optional
+            Filepath to write item to, by default ""
+            If empty, function will write to baseconfig first.
+            If baseconfig does not exist, it will atempt to use the custom file.
+            If all paths exhausted the new item will not be written
+        Raises: AttributeError
+            If config failed to write to any path
+        """
+        value: str
+        key, value = item.split("=")
+        key = key.strip()
+        key_tree = key.split(".")
+
+        base = key_tree.pop()
+        sub_item = {base: value.strip()}
+
+        while key_tree:
+            base = key_tree.pop()
+            sub_item = {base: sub_item}
+
+        base_resource_path = self._get_base_resource_path()
+        custom_resource_path = self._get_custom_resource_path()
+
+        if filepath is not None and os.path.exists(filepath):
+            self._update_config(sub_item, filepath=filepath)
+        elif filepath:
+            with open(filepath, "w", encoding="utf-8") as new_config:
+                json.dump(sub_item, new_config)
+        elif base_resource_path and os.path.exists(base_resource_path):
+            self._update_config(new_config=sub_item, filepath=base_resource_path)
+        elif custom_resource_path and os.path.exists(custom_resource_path):
+            self._update_config(new_config=sub_item, filepath=custom_resource_path)
+        else:
+            raise AttributeError(
+                "Could not find an applicable config file to write to!"
+            )
+
     def get_item_value(self, item_name: str) -> str:
         """Get value attached to json item
 
@@ -479,6 +556,8 @@ class ResourceManager:
             print(" ".join(applicable_items))
             return []
         print("")
+
+        return []
 
     def print_usage(self):
         """Pretty print the resource usage"""
