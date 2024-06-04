@@ -20,6 +20,7 @@ printf '%s\n' \
     "RESOURCE_SHARE_DIR=$RESOURCE_SHARE_DIR" \
     "OPENOCD_PATH=$OPENOCD_PATH" \
     "TEST_DIR=$TEST_DIR" \
+    "CI_CONFIG_DIR=$CI_CONFIG_DIR" \
     "PATH=$PATH"\
     >.env
 
