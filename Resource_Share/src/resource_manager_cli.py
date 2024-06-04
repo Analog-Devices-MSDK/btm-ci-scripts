@@ -44,20 +44,11 @@
 ###############################################################################
 """Resource manager command line interface."""
 import argparse
-import glob
-import json
-import os
-import subprocess
 import sys
-from datetime import datetime
-from typing import Dict, List, Set, Tuple
-
-# pylint: disable=import-error
-from tabulate import tabulate
-
 from resource_manager import ResourceManager
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
+
 
 def config_cli() -> argparse.Namespace:
     """
@@ -78,6 +69,21 @@ def config_cli() -> argparse.Namespace:
         "--version",
         action="store_true",
         help="Get application version",
+    )
+    parser.add_argument(
+        "-r",
+        "--resources",
+        default=[],
+        action="extend",
+        nargs="*",
+        help="List of extra resource files usable to get information",
+    )
+
+    parser.add_argument(
+        "-fp",
+        "--filepath",
+        default="",
+        help="Filepath to add new config item to",
     )
 
     parser.add_argument(
@@ -161,7 +167,15 @@ def config_cli() -> argparse.Namespace:
         help="Delete all locks and erase all boards with a programmable feature",
     )
 
+    parser.add_argument(
+        "-a",
+        "--add-item",
+        default="",
+        help="Set value for resource in config (ex: max32655_board1.dap_sn=3)",
+    )
+
     return parser.parse_args()
+
 
 def main():
     """
@@ -173,7 +187,10 @@ def main():
 
     lock_boards = set(args.lock)
     unlock_boards = set(args.unlock)
-    resource_manager = ResourceManager(timeout=int(args.timeout))
+
+    resource_manager = ResourceManager(
+        timeout=int(args.timeout), extra_resources=args.resources
+    )
 
     if args.clean_env:
         resource_manager.clean_environment()
@@ -210,6 +227,9 @@ def main():
         for resource in unlocked_resources:
             print(resource)
 
+    if args.add_item:
+        resource_manager.add_item(args.add_item, args.filepath)
+
     if args.get_value:
         print(resource_manager.get_item_value(args.get_value))
 
@@ -225,7 +245,9 @@ def main():
             print(resource)
 
     if args.find_board is not None:
-        resource_manager.print_applicable_items(target=args.find_board[0], group=args.find_board[1])
+        resource_manager.print_applicable_items(
+            target=args.find_board[0], group=args.find_board[1]
+        )
 
     sys.exit(0)
 

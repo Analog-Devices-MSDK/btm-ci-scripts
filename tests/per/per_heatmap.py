@@ -54,15 +54,16 @@ per_heatmap.py
 Description: CI Oriented PER Heatmap Test
 
 """
+import argparse
+import logging
+import os
 import sys
 from typing import Tuple
-import argparse
-import os
-import logging
-from resource_manager import ResourceManager
+
+from ble_test_suite.controllers import RxSensitivityTestController
 from ble_test_suite.equipment.mc_rf_sw import MiniCircuitsRFSwitch
 from ble_test_suite.phy import rx_sensitivity as RxSens
-from ble_test_suite.controllers import RxSensitivityTestController
+from resource_manager import ResourceManager
 
 ENV_RESOURCE_SHARE_DIR = "RESOURCE_SHARE_DIR"
 CALIBRATION_FNAME = "rfphy_sw2atten_calibration.json"
@@ -125,8 +126,6 @@ def create_results_dir(results_dir):
 
 
 def main():
-    
-
     args = _setup_ci()
     cal_file = os.path.join(os.getenv(ENV_RESOURCE_SHARE_DIR), CALIBRATION_FNAME)
     rm = ResourceManager()
@@ -172,10 +171,9 @@ def main():
     ctrl = RxSensitivityTestController(cfg, hci_log_level=logging.WARN)
 
     ctrl.run_test()
-    
+
     if not ctrl.results():
         sys.exit(-1)
-    
 
 
 if __name__ == "__main__":
