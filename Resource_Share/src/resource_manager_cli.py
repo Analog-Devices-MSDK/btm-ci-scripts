@@ -151,6 +151,11 @@ def config_cli() -> argparse.Namespace:
         help="Find a board which matches the criteria TARGET GROUP",
     )
     parser.add_argument(
+        "--delimiter",
+        default=".",
+        help="Delimiter used for get item syntax",
+    )
+    parser.add_argument(
         "--timeout",
         "-t",
         default=60,
@@ -231,7 +236,7 @@ def main():
         resource_manager.add_item(args.add_item, args.filepath)
 
     if args.get_value:
-        print(resource_manager.get_item_value(args.get_value))
+        print(resource_manager.get_item_value(args.get_value, delimiter=args.delimiter))
 
     if args.get_owner:
         print(resource_manager.get_owner(args.get_owner))

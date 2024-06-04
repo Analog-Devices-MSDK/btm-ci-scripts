@@ -415,7 +415,7 @@ class ResourceManager:
         with open(filepath, "w", encoding="utf-8") as config_file:
             json.dump(old_config, config_file)
 
-    def add_item(self, item: str, filepath: str = ""):
+    def add_item(self, item: str, filepath: str = "", delimiter="."):
         """Add item to config file
 
         Parameters
@@ -433,7 +433,7 @@ class ResourceManager:
         value: str
         key, value = item.split("=")
         key = key.strip()
-        key_tree = key.split(".")
+        key_tree = key.split(delimiter)
 
         base = key_tree.pop()
         sub_item = {base: value.strip()}
@@ -459,7 +459,7 @@ class ResourceManager:
                 "Could not find an applicable config file to write to!"
             )
 
-    def get_item_value(self, item_name: str) -> str:
+    def get_item_value(self, item_name: str, delimiter=".") -> str:
         """Get value attached to json item
 
         Parameters
@@ -467,7 +467,7 @@ class ResourceManager:
         item_name : strans
             json item value
         """
-        tree = item_name.split(".")
+        tree = item_name.split(delimiter)
 
         if not tree:
             raise ValueError("Tree could not be parsed!")
