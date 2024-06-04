@@ -121,9 +121,10 @@ class ResourceManager:
         custom_resource_filepath = self._get_custom_resource_path()
         if custom_resource_filepath is not None:
             extra_resources.append(custom_resource_filepath)
-            for resource in extra_resources:
-                custom_resources = self._get_config(resource)
-                self.resources.update(custom_resources)
+            
+        for resource in extra_resources:
+            custom_resources = self._get_config(resource)
+            self.resources.update(custom_resources)
 
     def get_owner(self, resource: str) -> str:
         """Get the current owner of a resource
