@@ -256,7 +256,7 @@
         "rev"          : null,
         "group"        : "APP",
         "dap_sn"       : null,
-        "console_port" : null,
+        "console_port" : "/dev/serial/by-id/usb-ZEPHYR_nRF_Sniffer_for_Bluetooth_LE_A3CF7993F3E6FDEA-if00",
         "hci_port"     : null
     },
 
