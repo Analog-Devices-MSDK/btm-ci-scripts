@@ -126,6 +126,7 @@ class ResourceManager:
             custom_resources = self._get_config(resource)
             self.resources.update(custom_resources)
 
+
     def get_owner(self, resource: str) -> str:
         """Get the current owner of a resource
 

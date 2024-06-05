@@ -249,6 +249,16 @@
         
         "dbbfile"      : null
     },
+    "nRF52840_sniffer" : {
+        "desc"         : "sniffer",
+        "target"       : "NRF52840",
+        "board"        : null,
+        "rev"          : null,
+        "group"        : "APP",
+        "dap_sn"       : null,
+        "console_port" : null,
+        "hci_port"     : null
+    },
 
 
 
