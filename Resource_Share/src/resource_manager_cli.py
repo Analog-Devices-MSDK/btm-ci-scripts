@@ -47,7 +47,7 @@ import argparse
 import sys
 from resource_manager import ResourceManager
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 
 
 def config_cli() -> argparse.Namespace:
@@ -76,14 +76,7 @@ def config_cli() -> argparse.Namespace:
         default=[],
         action="extend",
         nargs="*",
-        help="List of extra resource files usable to get information",
-    )
-
-    parser.add_argument(
-        "-fp",
-        "--filepath",
-        default="",
-        help="Filepath to add new config item to",
+        help="List of extra resource files usable to get/add information",
     )
 
     parser.add_argument(
@@ -233,7 +226,8 @@ def main():
             print(resource)
 
     if args.add_item:
-        resource_manager.add_item(args.add_item, args.filepath)
+        for path in args.resources:
+            resource_manager.add_item(args.add_item, path)
 
     if args.get_value:
         print(resource_manager.get_item_value(args.get_value, delimiter=args.delimiter))

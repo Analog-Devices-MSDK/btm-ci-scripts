@@ -149,9 +149,9 @@ def main():
         with open(args.file, "r") as watch:
             extra_files = watch.readlines()
             watch_files.extend(extra_files)
-    
+
     touched_folders = get_changed_folders()
-    
+
     for folder in touched_folders:
         ans = get_subfolders(folder)
         for watch in watch_files:
@@ -159,7 +159,7 @@ def main():
             if watch.strip().strip(os.sep) in ans:
                 print("Watched files found in touched files!")
                 sys.exit(1)
-    print('No files changed')
+    print("No files changed")
     sys.exit(0)
 
 
