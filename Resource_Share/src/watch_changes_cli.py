@@ -1,4 +1,3 @@
-
 #! /usr/bin/env python3
 ###############################################################################
 #
@@ -49,6 +48,7 @@ import sys
 import os
 from resource_manager import ResourceManager
 import subprocess
+
 VERSION = "1.0.1"
 
 
@@ -57,9 +57,7 @@ def config_cli() -> argparse.Namespace:
     Configure CLI
     """
     desc_text = """
-    Lock/Unlock Hardware resources
-    Query resource information
-    Monitor resources
+    Check for changes in git repo compared to list of watch files
     """
 
     # Parse the command line arguments
@@ -94,79 +92,75 @@ def config_cli() -> argparse.Namespace:
         help="Path to git repo to diff",
     )
 
-    
-    
-    
     return parser.parse_args()
+
 
 def get_changed_folders():
     try:
         # Run the git diff command
         result = subprocess.run(
-            ['git', 'diff', '--dirstat=files,0', 'HEAD~1'],
+            # ['git', 'diff', '--dirstat=files,0', 'HEAD~1'],
+            ["git", "ls-files", "--other", "--modified", "--exclude-standard"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
-        
+
         # Process the output
         output = result.stdout
         # Use sed-like processing in Python to extract the folder names
         folders = [line.split()[-1] for line in output.splitlines() if line.strip()]
-        
+
         return folders
-    
+
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
         return []
-    
 
 
 def get_subfolders(path):
-    # Ensure the path is absolute
-    # abs_path = os.path.abspath(path)
-    # Split the path into components
     parts = path.split(os.sep)
-    
+
     # Initialize an empty list to hold subfolder paths
     subfolders = []
-    
+
     # Build subfolder paths iteratively
     for i in range(1, len(parts) + 1):
         subfolder = os.sep.join(parts[:i])
         subfolders.append(subfolder)
-    
+
     return subfolders
+
 
 def main():
     """
     MAIN
     """
-    # pylint: disable=too-many-branches
 
     args = config_cli()
 
-    watch_files = args.watch_files    
+    watch_files = args.watch_files
     os.chdir(args.watch_path)
 
-    
-    
     if args.file:
         if not os.path.exists(args.file):
             sys.exit(-1)
-        
-        with open(args.file, 'r') as watch:
+
+        with open(args.file, "r") as watch:
             extra_files = watch.readlines()
             watch_files.extend(extra_files)
-
     
     touched_folders = get_changed_folders()
-    # print(touched_folders)
-
+    
     for folder in touched_folders:
         ans = get_subfolders(folder)
-        print(ans)
-
+        for watch in watch_files:
+            # print(watch.strip().strip(os.sep))
+            if watch.strip().strip(os.sep) in ans:
+                print("Watched files found in touched files!")
+                sys.exit(1)
+    print('No files changed')
+    sys.exit(0)
 
 
 if __name__ == "__main__":

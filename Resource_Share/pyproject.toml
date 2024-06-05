@@ -2,11 +2,11 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
-packages = ["src/resource_manager", "src/resource_manager_cli.py"]
+packages = ["src/resource_manager", "src/resource_manager_cli.py", "src/watch_changes_cli.py"]
 
 [project]
 name = "resource_manager"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
     "tabulate>=0.9.0"
 ]
@@ -22,6 +22,7 @@ classifiers = [
 
 [project.scripts]
 resource_manager = "resource_manager_cli:main"
+watch_changes = "watch_changes_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Analog-Devices-MSDK/btm-ci-scripts"

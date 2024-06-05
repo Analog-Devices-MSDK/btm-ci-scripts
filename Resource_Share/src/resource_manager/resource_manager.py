@@ -121,7 +121,7 @@ class ResourceManager:
         custom_resource_filepath = self._get_custom_resource_path()
         if custom_resource_filepath is not None:
             extra_resources.append(custom_resource_filepath)
-            
+
         for resource in extra_resources:
             custom_resources = self._get_config(resource)
             self.resources.update(custom_resources)
@@ -416,7 +416,6 @@ class ResourceManager:
         with open(filepath, "w", encoding="utf-8") as config_file:
             json.dump(old_config, config_file)
 
-
     def add_item(self, item: str, filepath: str = "", delimiter="."):
         """Add item to config file
 
@@ -462,9 +461,7 @@ class ResourceManager:
                 "Could not find an applicable config file to write to!"
             )
 
-
     def get_item_value(self, item_name: str, delimiter=".") -> str:
-
         """Get value attached to json item
 
         Parameters
