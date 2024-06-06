@@ -182,7 +182,7 @@
         "group"        : "APP",
         "dap_sn"       : "04091702b55e4e9600000000000000000000000097969906",
         "console_port" : "/dev/serial/by-id/usb-FTDI_FT231X_USB_UART_D30AKVTH-if00-port0",
-        "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT231X_USB_UART_D30AKVTH-if00-port0",
+        "hci_port"     : "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DT03NRQB-if00-port0",
         "sw_model"     : null,
         "sw_state"     : null,
         "ocdports"     : {
