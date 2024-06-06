@@ -65,7 +65,7 @@ from ble_test_suite.equipment.mc_rf_sw import MiniCircuitsRFSwitch
 from ble_test_suite.phy import rx_sensitivity as RxSens
 from resource_manager import ResourceManager
 
-ENV_RESOURCE_SHARE_DIR = "RESOURCE_SHARE_DIR"
+ENV_CI_CONFIG = "CI_CONFIG_DIR"
 CALIBRATION_FNAME = "rfphy_sw2atten_calibration.json"
 TEST_MASTER_ID = "nRF52840_1"
 DESC = """
@@ -127,7 +127,7 @@ def create_results_dir(results_dir):
 
 def main():
     args = _setup_ci()
-    cal_file = os.path.join(os.getenv(ENV_RESOURCE_SHARE_DIR), CALIBRATION_FNAME)
+    cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
     rm = ResourceManager()
     cfg_switches(rm, (TEST_MASTER_ID, args.dut))
 
