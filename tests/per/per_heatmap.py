@@ -85,12 +85,8 @@ def _setup_ci():
     parser.add_argument(
         "--phy", type=str, default="1M", choices=["1M", "2M", "S2", "S8"]
     )
-    parser.add_argument(
-        "--channels", type=str, default="0,19,39"
-    )
-    parser.add_argument(
-        "--attenuation-step", type=str, default="2"
-    )
+    parser.add_argument("--channels", type=str, default="0,19,39")
+    parser.add_argument("--attenuation-step", type=str, default="2")
 
     parser.add_argument(
         "--results", type=str, default="results", help="Results directory."
@@ -113,6 +109,9 @@ def cfg_switches(rm: ResourceManager, devs: Tuple[str, str]) -> None:
     """
     dev0_sw_model, dev0_sw_port = rm.get_switch_config(devs[0])
     dev1_sw_model, dev1_sw_port = rm.get_switch_config(devs[1])
+
+    print(dev0_sw_model, dev1_sw_model)
+
     if None in [dev0_sw_model, dev0_sw_port, dev1_sw_model, dev1_sw_port]:
         raise RuntimeError("Switches must have both a model and a state attribute.")
     if dev0_sw_model == dev1_sw_model:
@@ -136,7 +135,6 @@ def main():
     args = _setup_ci()
     cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
     rm = ResourceManager()
-    cfg_switches(rm, (TEST_MASTER_ID, args.dut))
 
     master_info = (
         rm.get_item_value(f"{args.master}.target"),
@@ -146,9 +144,10 @@ def main():
         rm.get_item_value(f"{args.dut}.target"),
         rm.get_item_value(f"{args.dut}.hci_port"),
     )
-
     print(master_info)
     print(dut_info)
+    cfg_switches(rm, (args.master, args.dut))
+
     print(args.phy)
 
     if args.phy in ("S2", "S8"):
