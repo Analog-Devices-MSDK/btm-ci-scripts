@@ -86,6 +86,13 @@ def _setup_ci():
         "--phy", type=str, default="1M", choices=["1M", "2M", "S2", "S8"]
     )
     parser.add_argument(
+        "--channels", type=str, default="0,19,39"
+    )
+    parser.add_argument(
+        "--attenuation-step", type=str, default="2"
+    )
+
+    parser.add_argument(
         "--results", type=str, default="results", help="Results directory."
     )
     parser.add_argument("--num-packets", type=int, default=1000, help="Num packets.")
@@ -154,9 +161,9 @@ def main():
         "calibration_file": cal_file,
         "num_packets": args.num_packets,
         "packet_lens": "37",
-        "rx_input_powers": f"-20:{attenuation_stop}:2",
+        "rx_input_powers": f"-20:{attenuation_stop}:{args.attenuation_step}",
         "phy": args.phy,
-        "channels": "0,19,39",
+        "channels": args.channels,
         "margin": 2,
         "create_heatmap": {"per": True},
         "create_surface_plot": {"per": False},
