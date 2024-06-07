@@ -56,8 +56,9 @@ Description: Simple example showing creation of a connection and getting packet 
 
 """
 
-import logging
+
 import sys
+import os
 import time
 from typing import Dict
 
@@ -72,6 +73,7 @@ from max_ble_hci import BleHci
 from max_ble_hci.hci_packets import EventPacket
 from max_ble_hci.packet_codes import EventCode
 from resource_manager import ResourceManager
+from serial import Timeout
 
 # pylint: enable=import-error,wrong-import-position
 
@@ -119,6 +121,8 @@ def save_results(slave, master, results: Dict[str, list], phy: str, directory):
         Results from per sweep
     """
     # print(results)
+    if not os.path.exists(directory):
+        os.mkdir(directory)
 
     df = pd.DataFrame(results)
     plot_title = f"connection_per_{slave}_{master}_{phy}"
@@ -189,18 +193,25 @@ def main():
         print("Could not find cal data in config. Defaulting to 0")
         loss = 0.0
 
-    config_switches(resource_manager, slave_board, master_board)
+    # config_switches(resource_manager, slave_board, master_board)
 
     master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
     slave_hci_port = resource_manager.get_item_value(f"{slave_board}.hci_port")
 
+    time.sleep(1)
     # master = BleHci(master_hci_port, log_level=logging.WARN,evt_callback=hci_callback)
     # slave = BleHci(slave_hci_port, log_level=logging.WARN, evt_callback=hci_callback)
     master = BleHci(
-        master_hci_port, async_callback=hci_callback, evt_callback=hci_callback
+        master_hci_port,
+        async_callback=hci_callback,
+        evt_callback=hci_callback,
+        id_tag="master",
     )
     slave = BleHci(
-        slave_hci_port, async_callback=hci_callback, evt_callback=hci_callback
+        slave_hci_port,
+        async_callback=hci_callback,
+        evt_callback=hci_callback,
+        id_tag="slave",
     )
     atten = mc_rcdat_6000.RCDAT6000()
 
@@ -218,7 +229,7 @@ def main():
     master.init_connection(addr=slave_addr)
 
     print("Sleeping for initial connection")
-    time.sleep(5)
+    time.sleep(3)
 
     attens = list(range(20, 100, 2))
 
@@ -228,6 +239,8 @@ def main():
 
     prev_rx = 100000
     retries = 3
+
+    
     while attens:
         i = attens[0]
         if prev_rx == i:
@@ -237,12 +250,14 @@ def main():
         calibrated_value = int(i + loss)
 
         atten.set_attenuation(calibrated_value)
-        print(atten.get_attenuation(), calibrated_value)
 
         time.sleep(1)
 
-        slave_stats, _ = slave.get_conn_stats()
-        master_stats, _ = master.get_conn_stats()
+        try:
+            slave_stats, _ = slave.get_conn_stats()
+            master_stats, _ = master.get_conn_stats()
+        except TimeoutError:
+            break
 
         if slave_stats.rx_data and master_stats.rx_data:
             retries = 3
@@ -273,15 +288,17 @@ def main():
         prev_rx = i
         if retries == 0:
             break
-
+        
         slave.reset_connection_stats()
         master.reset_connection_stats()
+    try:
+        master.disconnect()
+        slave.disconnect()
 
-    master.disconnect()
-    slave.disconnect()
-
-    master.reset()
-    slave.reset()
+        master.reset()
+        slave.reset()
+    except TimeoutError:
+        pass
 
     save_results(slave_board, master_board, results, "1M", results_dir)
 
