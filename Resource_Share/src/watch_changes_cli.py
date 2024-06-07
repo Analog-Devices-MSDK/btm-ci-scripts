@@ -44,12 +44,13 @@
 ###############################################################################
 """Resource manager command line interface."""
 import argparse
-import sys
 import os
-from resource_manager import ResourceManager
 import subprocess
+import sys
+from typing import List
 
-VERSION = "1.0.1"
+
+VERSION = "1.0.0"
 
 
 def config_cli() -> argparse.Namespace:
@@ -95,7 +96,14 @@ def config_cli() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def get_changed_folders():
+def get_changed_folders() -> List[str]:
+    """Get changed folders
+
+    Returns
+    -------
+    List[str]
+        Changed folders
+    """
     try:
         # Run the git diff command
         result = subprocess.run(
@@ -113,12 +121,24 @@ def get_changed_folders():
 
         return folders
 
-    except subprocess.CalledProcessError as e:
-        print(f"Error: {e}")
+    except subprocess.CalledProcessError as err:
+        print(f"Error: {err}")
         return []
 
 
-def get_subfolders(path):
+def get_subfolders(path: str) -> List[str]:
+    """Get subfolders given full path to file
+
+    Parameters
+    ----------
+    path : str
+        Full path to file
+
+    Returns
+    -------
+    List[str]
+        List of subfolders leading to path
+    """
     parts = path.split(os.sep)
 
     # Initialize an empty list to hold subfolder paths
@@ -146,7 +166,7 @@ def main():
         if not os.path.exists(args.file):
             sys.exit(-1)
 
-        with open(args.file, "r") as watch:
+        with open(args.file, "r", encoding="utf-8") as watch:
             extra_files = watch.readlines()
             watch_files.extend(extra_files)
 

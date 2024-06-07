@@ -183,8 +183,8 @@ def main():
 
     args = config_cli()
 
-    lock_boards = set(args.lock)
-    unlock_boards = set(args.unlock)
+    lock_resources = set(args.lock)
+    unlock_resources = set(args.unlock)
 
     resource_manager = ResourceManager(
         timeout=int(args.timeout), extra_resources=args.resources
@@ -197,25 +197,25 @@ def main():
         resource_manager.print_usage()
 
     if args.unlock_all:
-        print("Unlocking all boards!")
+        print("Unlocking all resources!")
         resource_manager.unlock_all_resources()
         sys.exit(0)
 
-    if lock_boards:
-        print(f"Attempting to lock all boards {lock_boards}")
+    if lock_resources:
+        print(f"Attempting to lock resources {lock_resources}")
 
-        could_lock = resource_manager.lock_resources(lock_boards, args.owner)
+        could_lock = resource_manager.lock_resources(lock_resources, args.owner)
 
         if could_lock:
-            print("Successfully locked boards")
+            print("Successfully locked resources")
             sys.exit(0)
         else:
-            print("Failed to lock all boards")
+            print("Failed to lock resources")
             sys.exit(-1)
 
-    if unlock_boards:
-        print(f"Unlocking resources {unlock_boards}")
-        resource_manager.unlock_resources(unlock_boards, args.owner)
+    if unlock_resources:
+        print(f"Unlocking resources {unlock_resources}")
+        resource_manager.unlock_resources(unlock_resources, args.owner)
 
     if args.unlock_owner:
         unlocked_resources = resource_manager.unlock_resource_by_owner(
@@ -239,7 +239,7 @@ def main():
         print(VERSION)
 
     if args.owner_resources:
-        resources = resource_manager.get_owned_boards(args.owner_resources)
+        resources = resource_manager.get_owned_resources(args.owner_resources)
         for resource in resources:
             print(resource)
 

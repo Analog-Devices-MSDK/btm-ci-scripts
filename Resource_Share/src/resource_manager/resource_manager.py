@@ -126,7 +126,6 @@ class ResourceManager:
             custom_resources = self._get_config(resource)
             self.resources.update(custom_resources)
 
-
     def get_owner(self, resource: str) -> str:
         """Get the current owner of a resource
 
@@ -142,7 +141,7 @@ class ResourceManager:
         """
         return self.get_resource_lock_info(resource).get("owner", "")
 
-    def get_owned_boards(self, owner: str) -> List[str]:
+    def get_owned_resources(self, owner: str) -> List[str]:
         """Get resources owned by specific owner
 
         Parameters
@@ -321,7 +320,7 @@ class ResourceManager:
         if owner == "":
             raise ValueError("Owner must not be empty")
 
-        resources = self.get_owned_boards(owner)
+        resources = self.get_owned_resources(owner)
 
         self.unlock_resources(resources, owner)
 
