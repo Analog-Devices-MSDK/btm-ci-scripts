@@ -57,26 +57,15 @@ from pathlib import Path
 
 import serial
 
-# RESOURCE_SHARE_DIR = os.environ.get("RESOURCE_SHARE_DIR")
 
-# if RESOURCE_SHARE_DIR is None:
-#     print("Cannot find resource share directory in environment!")
-#     sys.exit(-1)
+from resource_manager import ResourceManager
 
-
-# sys.path.append(RESOURCE_SHARE_DIR)
-sys.path.append("../..")
-
-# pylint: disable=import-error,wrong-import-position
-from Resource_Share.resource_manager import ResourceManager
-
-# pylint: enable=import-error,wrong-import-position
 
 
 class BasicTester:
     def __init__(self, portname: str) -> None:
         self.portname = portname
-        self.conosle_output = ""
+        self.console_output = ""
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
         self.serial_port.flush()
 
@@ -114,20 +103,20 @@ class BasicTester:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.conosle_output += new_text
+            self.console_output += new_text
 
             print(new_text, end="")
 
             # wait until you see the term passkey, so we can enter the pin
-            if "passkey" in self.conosle_output:
+            if "passkey" in self.console_output:
                 time.sleep(1)
                 self.serial_port.write("pin 1 1234\n".encode("utf-8"))
                 break
 
-            if "Connection encrypted" in self.conosle_output:
+            if "Connection encrypted" in self.console_output:
                 return True
 
-            if not time_extended and "Connection opened" in self.conosle_output:
+            if not time_extended and "Connection opened" in self.console_output:
                 time_extended = True
                 start = datetime.now()
 
@@ -140,17 +129,17 @@ class BasicTester:
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.conosle_output += new_text
+            self.console_output += new_text
             print(new_text, end="")
 
             # wait for pairing process to go through and see if it passed or failed
-            if "Pairing failed" in self.conosle_output:
+            if "Pairing failed" in self.console_output:
                 print("Pairing failed")
                 return False
 
             if (
-                "Pairing completed successfully" in self.conosle_output
-                or "Connection encrypted" in self.conosle_output
+                "Pairing completed successfully" in self.console_output
+                or "Connection encrypted" in self.console_output
             ):
                 print("Pairing success")
                 return True
@@ -199,13 +188,13 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.conosle_output += new_text
+            self.console_output += new_text
             print(new_text, end="")
 
-            if "No action assigned" in self.conosle_output:
+            if "No action assigned" in self.console_output:
                 return False
 
-            if "hello" in self.conosle_output:
+            if "hello" in self.console_output:
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
@@ -238,15 +227,15 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.conosle_output += new_text
+            self.console_output += new_text
             print(new_text, end="")
 
-            if "No action assigned" in self.conosle_output:
+            if "No action assigned" in self.console_output:
                 return False
 
             if (
-                "hello" in self.conosle_output
-                or "Secure data received!" in self.conosle_output
+                "hello" in self.console_output
+                or "Secure data received!" in self.console_output
             ):
                 return True
             if (datetime.now() - start).total_seconds() > 10:
@@ -278,15 +267,15 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.conosle_output += new_text
+            self.console_output += new_text
             print(new_text, end="")
 
-            if "No action assigned" in self.conosle_output:
+            if "No action assigned" in self.console_output:
                 return False
 
-            if "PHY Requested" in self.conosle_output:
+            if "PHY Requested" in self.console_output:
                 return True
-            if "DM_PHY_UPDATE_IND" in self.conosle_output:
+            if "DM_PHY_UPDATE_IND" in self.console_output:
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
@@ -331,11 +320,11 @@ class ClientTester(BasicTester):
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
-            self.conosle_output += new_text
+            self.console_output += new_text
             print(new_text, end="")
 
-            if "bps" in self.conosle_output:
-                print(self.conosle_output)
+            if "bps" in self.console_output:
+                print(self.console_output)
                 return True
 
             if (datetime.now() - start).total_seconds() > 20:
@@ -390,7 +379,7 @@ def _server_thread(
         new_text = server.serial_port.read(server.serial_port.in_waiting).decode(
             "utf-8"
         )
-        server.conosle_output += new_text
+        server.console_output += new_text
 
     server.save_console_output(f"dats_console_out_{board}.txt")
 
