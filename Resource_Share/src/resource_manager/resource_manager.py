@@ -73,12 +73,23 @@ class ResourceManager:
         self.resources = self._add_base_config()
         self.owner = owner
         self._add_custom_config(extra_resources)
+        self._add_resources_path()
         self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
         self._add_lockdir()
 
     def _add_lockdir(self):
         if not os.path.exists(self.resource_lock_dir):
             os.mkdir(self.resource_lock_dir)
+
+    def _add_resources_path(self):
+        resource_files = os.getenv("RESOURCE_FILES")
+
+        if not resource_files:
+            return
+
+        resources = resource_files.split(":")
+        for resource in resources:
+            self.resources.update(self._get_config(resource))
 
     def _get_config(self, filepath):
         if not os.path.exists(filepath):
