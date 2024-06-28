@@ -5,19 +5,21 @@ btm-ci-scripts is located at ```~/Tools```
 
 ## WALLE Environment Variables
 ```
-chmod +x /home/btm-ci/Tools/btm-ci-scripts/Resource_Share/resource_manager.py
 export PATH=$PATH:/home/btm-ci/Tools
 export PATH=$PATH:/home/btm-ci/Tools/JLink_Linux_V780c_x86_64
 export PATH="$PATH:/home/btm-ci/Tools/btm-ci-scripts"
-export PATH="$PATH:/home/btm-ci/Tools/btm-ci-scripts/Resource_Share"
-export CI_BOARD_CONFIG=/home/btm-ci/Tools/btm-ci-scripts/Resource_Share/boards_config.json
+export CI_BOARD_CONFIG=<PATH TO CI BOARD CONFIG>
+export CI_BOARD_CONFIG_CUSTOM=<PATH TO CUSTOM CONFIG>
 export RESOURCE_LOCK_DIR=/home/btm-ci/Tools/btm-ci-scripts/Resource_Share/Locks
-export RESOURCE_SHARE_DIR=/home/btm-ci/Tools/btm-ci-scripts/Resource_Share
 export OPENOCD_PATH=/home/btm-ci/Tools/openocd
 source /home/btm-ci/Tools/btm-ci-scripts/shell-scripts/flash-utils.sh
+export RESOURCE_FILES="$CI_BOARD_CONFIG_CUSTOM"
+export RESOURCE_FILES="$CI_BOARD_CONFIG:my_extra_config.json"
 ```
 This setup in the .bashrc gives access to ocdflash, ocderase, resource_manager.py, BOARD_CONFIG_PATH, RESOURCE_LOCK_DIR, and OPENOCD path. Others will be added as time goes on.
 
+## OPENOCD_PATH
+Openocd commands will try to use the scripts folder. This path needs to point to the base of openocd where scripts is.
 
 ## ocdflash
 - Flash a board given the resource board name and the path to the elf file
@@ -27,8 +29,14 @@ This setup in the .bashrc gives access to ocdflash, ocderase, resource_manager.p
  - Erase a board in the resource board name
  - Example: ```ocderase max32655_board1```
 
-## resource_manager.py
+## resource_manager
+
 Resource manager handles locking/unlock boards, monitoring usage, and getting information about the boards. 
+### Installation
+Navigate to the ``Resource_Share`` folder inside the btm-ci-scripts repo and run the ``install.sh`` script
+
+The script will be installed to your python site packages and accessible via the command line by running ``resource_manager``
+
 ```
 btm-ci@wall-e:~$ resource_manager.py -h
 usage: resource_manager.py [-h] [--custom-config CUSTOM_CONFIG] [--timeout TIMEOUT] [-u [UNLOCK [UNLOCK ...]]] [--unlock-all]

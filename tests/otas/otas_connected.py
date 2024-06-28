@@ -71,7 +71,7 @@ class BasicTester:
         self.console_output = ""
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
         self.serial_port.flush()
-
+        # self.serial_port.write('echo off\n'.encode())
     def slow_write(self, data: bytes):
         """Write UART data at human typing speeds
 
@@ -83,7 +83,7 @@ class BasicTester:
             Data to write out
         """
         for byte in data:
-            print(f"slow {byte}")
+            # print(f"slow {byte}")
             self.serial_port.write(byte)
             time.sleep(0.1)
 
@@ -99,7 +99,7 @@ class BasicTester:
         method : str
             Button method (s/m/l/x)
         """
-        command = f"btn {btn_num} {method}\n".encode("utf-8")
+        command = f"btn {btn_num} {method}\r".encode("utf-8")
         # self.serial_port.writelines([command])
         self.serial_port.write(command)
         # self.slow_write(command)
