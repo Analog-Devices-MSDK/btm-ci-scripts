@@ -472,6 +472,19 @@ class ResourceManager:
                 "Could not find an applicable config file to write to!"
             )
 
+    def get_dapsn(self, resource: str) -> str:
+        return self.get_item_value(f"{resource}.dap_sn")
+
+    def get_target(self, resource: str) -> str:
+        return self.get_item_value(f"{resource}.target")
+
+    def get_ocdports(self, resource: str) -> str:
+        gdb = self.get_item_value(f"{resource}.ocdports.gdb")
+        telnet = self.get_item_value(f"{resource}.ocdports.telnet")
+        tcl = self.get_item_value(f"{resource}.ocdports.tcl")
+
+        return gdb, telnet, tcl
+
     def get_item_value(self, item_name: str, delimiter=".") -> str:
         """Get value attached to json item
 
@@ -621,6 +634,9 @@ class ResourceManager:
 
         return True
 
+    def _get_ocdpath(self):
+        return os.getenv("OPENOCD_PATH")
+
     def resource_reset(self, resource_name: str, owner: str = "") -> bool:
         """Reset resource found in board_config.json or custom config
 
@@ -637,13 +653,35 @@ class ResourceManager:
             )
 
         owner = owner if owner != "" else self.owner
+        ocdpath = self._get_ocdpath()
+        target = self.get_target(resource_name)
+        dapsn = self.get_dapsn(resource_name)
+        gdb, telnet, tcl = self.get_ocdports(resource_name)
 
-        with subprocess.Popen(
-            ["bash", "-c", f"ocdreset {resource_name} {owner}"]
-        ) as process:
+        command = [
+            "openocd",
+            "-s",
+            ocdpath,
+            "-f",
+            "interface/cmsis-dap.cfg",
+            "-f",
+            f"target/{target.lower()}.cfg",
+            "-c",
+            f"adapter serial {dapsn}",
+            "-c",
+            f"gdb_port {gdb}",
+            "-c",
+            f"telnet_port {telnet}",
+            "-c",
+            f"tcl_port {tcl}",
+            "-c",
+            "init; reset; exit",
+        ]
+
+        with subprocess.Popen(command) as process:
             process.wait()
 
-        return process.returncode == 0
+        return process.returncode
 
     def resource_erase(self, resource_name: str, owner: str = ""):
         """Erase resource found in board_config.json or custom config
@@ -660,12 +698,52 @@ class ResourceManager:
             )
         owner = owner if owner != "" else self.owner
 
-        with subprocess.Popen(
-            ["bash", "-c", f"ocderase {resource_name} {owner}"]
-        ) as process:
+        ocdpath = self._get_ocdpath()
+        target = self.get_target(resource_name)
+        dapsn = self.get_dapsn(resource_name)
+        gdb, telnet, tcl = self.get_ocdports(resource_name)
+        common_command = [
+            "openocd",
+            "-s",
+            ocdpath,
+            "-f",
+            f"interface/cmsis-dap.cfg",
+            "-f",
+            f"target/{target.lower()}.cfg",
+            "-c",
+            f"adapter serial {dapsn}",
+            "-c",
+            f"gdb_port {gdb}",
+            "-c",
+            f"telnet_port {telnet}",
+            "-c",
+            f"tcl_port {tcl}",
+        ]
+
+        first_command = common_command + [
+            "-c",
+            "init; reset halt; max32xxx mass_erase 0;",
+            "-c",
+            "exit",
+        ]
+
+        with subprocess.Popen(first_command) as process:
             process.wait()
 
-        return process.returncode == 0
+        if target.lower() == "max32655":
+            return process.returncode
+
+        second_command = common_command + [
+            "-c",
+            "init; reset halt; max32xxx mass_erase 1;",
+            "-c",
+            "exit",
+        ]
+
+        with subprocess.Popen(second_command) as process:
+            process.wait()
+
+        return process.returncode
 
     def resource_flash(self, resource_name: str, elf_file: str, owner: str = ""):
         """Flash a resource in board_config.json or custom config with given elf
@@ -686,9 +764,33 @@ class ResourceManager:
 
         owner = owner if owner != "" else self.owner
 
-        with subprocess.Popen(
-            ["bash", "-c", f"ocdflash {resource_name} {elf_file} {owner}"]
-        ) as process:
+        ocdpath = os.getenv("OPENOCD_PATH")
+        dapsn = self.get_dapsn(resource_name)
+        gdb, telnet, tcl = self.get_ocdports(resource_name)
+        target = self.get_target(resource_name).lower()
+
+        command = [
+            "bash",
+            "-c" "openocd",
+            "-s",
+            ocdpath,
+            "-f",
+            f"interface/cmsis-dap.cfg",
+            "-f",
+            f"target/{target}.cfg",
+            "-c",
+            f"adapter serial {dapsn}",
+            "-c",
+            f"gdb_port {gdb}",
+            "-c",
+            f"telnet_port {telnet}",
+            "-c",
+            f"tcl_port {tcl}",
+            "-c",
+            f"program {elf_file} verify; reset; exit",
+        ]
+
+        with subprocess.Popen(command) as process:
             process.wait()
 
         return process.returncode == 0
