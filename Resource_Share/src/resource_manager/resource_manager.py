@@ -771,7 +771,8 @@ class ResourceManager:
 
         command = [
             "bash",
-            "-c" "openocd",
+            "-c",
+            "openocd",
             "-s",
             ocdpath,
             "-f",
