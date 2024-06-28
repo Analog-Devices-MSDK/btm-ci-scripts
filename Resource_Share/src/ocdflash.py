@@ -55,13 +55,12 @@ ocdflash.py
 Description: ocdflash cli
 
 """
-import sys
-import subprocess
-import resource_manager
 import argparse
+from resource_manager import ResourceManager
 
 
 def main():
+    """MAIN"""
     parser = argparse.ArgumentParser()
 
     parser.add_argument("resource", help="Resource name as listed in board config")
@@ -73,17 +72,17 @@ def main():
 
     args = parser.parse_args()
 
-    rm = resource_manager.ResourceManager()
+    resource_manager = ResourceManager()
 
     resource = args.resource
     elf = args.elf
     owner = args.owner
 
     if elf == "":
-        target_str = rm.get_target(resource).lower()
+        target_str = resource_manager.get_target(resource).lower()
         elf = f"build/{target_str}.elf"
 
-    rm.resource_flash(resource_name=resource, elf_file=elf, owner=owner)
+    resource_manager.resource_flash(resource_name=resource, elf_file=elf, owner=owner)
 
 
 if __name__ == "__main__":

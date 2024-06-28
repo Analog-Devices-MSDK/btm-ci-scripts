@@ -473,12 +473,48 @@ class ResourceManager:
             )
 
     def get_dapsn(self, resource: str) -> str:
+        """Get Dap serial number as found in board config
+
+        Parameters
+        ----------
+        resource : str
+            Name of resource to get dap sn from 
+
+        Returns
+        -------
+        str
+           dap sn
+        """
         return self.get_item_value(f"{resource}.dap_sn")
 
     def get_target(self, resource: str) -> str:
+        """Get target chip from resource
+
+        Parameters
+        ----------
+        resource : str
+            Resource name
+
+        Returns
+        -------
+        str
+            target associated with resource
+        """
         return self.get_item_value(f"{resource}.target")
 
     def get_ocdports(self, resource: str) -> str:
+        """_summary_
+
+        Parameters
+        ----------
+        resource : str
+            _description_
+
+        Returns
+        -------
+        str
+            _description_
+        """
         gdb = self.get_item_value(f"{resource}.ocdports.gdb")
         telnet = self.get_item_value(f"{resource}.ocdports.telnet")
         tcl = self.get_item_value(f"{resource}.ocdports.tcl")
@@ -678,6 +714,8 @@ class ResourceManager:
             "init; reset; exit",
         ]
 
+        return subprocess.run(command, check=True).returncode
+
     def resource_erase(self, resource_name: str, owner: str = ""):
         """Erase resource found in board_config.json or custom config
 
@@ -702,9 +740,9 @@ class ResourceManager:
             "-s",
             ocdpath,
             "-f",
-            f"interface/cmsis-dap.cfg",
+            "interface/cmsis-dap.cfg",
             "-f",
-            f"target/{target.lower()}.cfg",
+            "target/{target.lower()}.cfg",
             "-c",
             f"adapter serial {dapsn}",
             "-c",
@@ -722,7 +760,7 @@ class ResourceManager:
             "exit",
         ]
 
-        returncode = subprocess.run(first_command).returncode
+        returncode = subprocess.run(first_command, check=False).returncode
 
         if target.lower() == "max32655" or returncode != 0:
             return returncode
@@ -734,7 +772,7 @@ class ResourceManager:
             "exit",
         ]
 
-        return subprocess.run(second_command).returncode
+        return subprocess.run(second_command, check=False).returncode
 
     def resource_flash(self, resource_name: str, elf_file: str, owner: str = ""):
         """Flash a resource in board_config.json or custom config with given elf
@@ -765,7 +803,7 @@ class ResourceManager:
             "-s",
             ocdpath,
             "-f",
-            f"interface/cmsis-dap.cfg",
+            "interface/cmsis-dap.cfg",
             "-f",
             f"target/{target}.cfg",
             "-c",
@@ -780,7 +818,7 @@ class ResourceManager:
             f"program {elf_file} verify; reset; exit",
         ]
 
-        return subprocess.run(command).returncode
+        return subprocess.run(command, check=False).returncode
 
     def clean_environment(self):
         """Erase all boards and delete all locks"""
