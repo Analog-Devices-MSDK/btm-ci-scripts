@@ -59,12 +59,7 @@ from typing import Dict
 
 import serial
 
-sys.path.append("../..")
-
-# pylint: disable=import-error,wrong-import-position
-from Resource_Share.resource_manager import ResourceManager
-
-# pylint: enable=import-error,wrong-import-position
+from resource_manager import ResourceManager
 
 BTN1 = 1
 BTN2 = 2

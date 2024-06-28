@@ -65,13 +65,7 @@ import serial
 
 
 # sys.path.append(RESOURCE_SHARE_DIR)
-sys.path.append("../..")
-
-# pylint: disable=import-error,wrong-import-position
-from Resource_Share.resource_manager import ResourceManager
-
-# pylint: enable=import-error,wrong-import-position
-
+from resource_manager import ResourceManager
 
 class BasicTester:
     def __init__(self, portname: str) -> None:
