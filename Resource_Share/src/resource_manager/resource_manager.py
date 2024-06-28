@@ -678,11 +678,6 @@ class ResourceManager:
             "init; reset; exit",
         ]
 
-        with subprocess.Popen(command) as process:
-            process.wait()
-
-        return process.returncode
-
     def resource_erase(self, resource_name: str, owner: str = ""):
         """Erase resource found in board_config.json or custom config
 
@@ -727,11 +722,10 @@ class ResourceManager:
             "exit",
         ]
 
-        with subprocess.Popen(first_command) as process:
-            process.wait()
+        returncode = subprocess.run(first_command).returncode
 
-        if target.lower() == "max32655":
-            return process.returncode
+        if target.lower() == "max32655" or returncode != 0:
+            return returncode
 
         second_command = common_command + [
             "-c",
@@ -740,10 +734,7 @@ class ResourceManager:
             "exit",
         ]
 
-        with subprocess.Popen(second_command) as process:
-            process.wait()
-
-        return process.returncode
+        return subprocess.run(second_command).returncode
 
     def resource_flash(self, resource_name: str, elf_file: str, owner: str = ""):
         """Flash a resource in board_config.json or custom config with given elf
@@ -770,8 +761,6 @@ class ResourceManager:
         target = self.get_target(resource_name).lower()
 
         command = [
-            "bash",
-            "-c",
             "openocd",
             "-s",
             ocdpath,
@@ -791,10 +780,7 @@ class ResourceManager:
             f"program {elf_file} verify; reset; exit",
         ]
 
-        with subprocess.Popen(command) as process:
-            process.wait()
-
-        return process.returncode == 0
+        return subprocess.run(command).returncode
 
     def clean_environment(self):
         """Erase all boards and delete all locks"""

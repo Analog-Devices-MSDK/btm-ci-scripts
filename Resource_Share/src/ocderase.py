@@ -60,6 +60,7 @@ Description: ocderase cli
 import resource_manager
 import argparse
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("resource", help="Resource name as listed in board config")
@@ -73,6 +74,7 @@ def main():
     owner = args.owner
 
     rm.resource_erase(resource_name=resource, owner=owner)
+
 
 if __name__ == "__main__":
     main()

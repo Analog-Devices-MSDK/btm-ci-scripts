@@ -85,5 +85,6 @@ def main():
 
     rm.resource_flash(resource_name=resource, elf_file=elf, owner=owner)
 
+
 if __name__ == "__main__":
     main()

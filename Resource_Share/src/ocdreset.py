@@ -78,5 +78,6 @@ def main():
 
     rm.resource_reset(resource_name=resource, owner=owner)
 
+
 if __name__ == "__main__":
     main()
