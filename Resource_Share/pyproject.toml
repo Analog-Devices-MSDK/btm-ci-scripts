@@ -7,7 +7,7 @@ packages = ["src/resource_manager", "src/resource_manager_cli.py",
 "src/ocdflash.py",
 "src/ocdopen.py",
 "src/ocdreset.py",
-"src/ocerase.py"]
+"src/ocderase.py"]
 
 [project]
 name = "resource_manager"
