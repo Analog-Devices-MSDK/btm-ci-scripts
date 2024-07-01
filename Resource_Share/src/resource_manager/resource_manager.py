@@ -478,7 +478,7 @@ class ResourceManager:
         Parameters
         ----------
         resource : str
-            Name of resource to get dap sn from 
+            Name of resource to get dap sn from
 
         Returns
         -------
@@ -742,7 +742,7 @@ class ResourceManager:
             "-f",
             "interface/cmsis-dap.cfg",
             "-f",
-            "target/{target.lower()}.cfg",
+            f"target/{target.lower()}.cfg",
             "-c",
             f"adapter serial {dapsn}",
             "-c",
@@ -753,26 +753,22 @@ class ResourceManager:
             f"tcl_port {tcl}",
         ]
 
-        first_command = common_command + [
-            "-c",
-            "init; reset halt; max32xxx mass_erase 0;",
-            "-c",
-            "exit",
-        ]
+        if target.lower() == "max32655":
+            command = common_command + [
+                "-c",
+                "init; reset halt; max32xxx mass_erase 0;",
+                "-c",
+                "exit",
+            ]
+        else:
+            command = common_command + [
+                "-c",
+                "init; reset halt; max32xxx mass_erase 0; max32xxx mass_erase 1;",
+                "-c",
+                "exit",
+            ]
 
-        returncode = subprocess.run(first_command, check=False).returncode
-
-        if target.lower() == "max32655" or returncode != 0:
-            return returncode
-
-        second_command = common_command + [
-            "-c",
-            "init; reset halt; max32xxx mass_erase 1;",
-            "-c",
-            "exit",
-        ]
-
-        return subprocess.run(second_command, check=False).returncode
+        return subprocess.run(command, check=False).returncode
 
     def resource_flash(self, resource_name: str, elf_file: str, owner: str = ""):
         """Flash a resource in board_config.json or custom config with given elf
