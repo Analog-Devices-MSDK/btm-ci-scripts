@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-#! /usr/bin/env python3
 ###############################################################################
 #
 #
@@ -58,25 +57,26 @@ Description: ocderase cli
 """
 
 
-import sys
-import subprocess
-import resource_manager
 import argparse
+from resource_manager import ResourceManager
 
 
 def main():
+    """MAIN"""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("resource", help="Resource name as listed in board config")
 
     parser.add_argument("owner", default="", nargs="?", help="Owner of resource")
     args = parser.parse_args()
 
-    rm = resource_manager.ResourceManager()
+    resource_manager = ResourceManager()
 
     resource = args.resource
     owner = args.owner
 
-    rm.resource_reset(resource_name=resource, owner=owner)
+    resource_manager.resource_reset(resource_name=resource, owner=owner)
+
 
 if __name__ == "__main__":
     main()

@@ -45,6 +45,7 @@
 """Resource manager command line interface."""
 import argparse
 import sys
+
 from resource_manager import ResourceManager
 
 VERSION = "1.0.2"

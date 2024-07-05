@@ -54,25 +54,27 @@ ocdopen.py
 
 Description: ocdopen cli
 """
+import argparse
 import os
 import subprocess
-import resource_manager
-import argparse
+
+from resource_manager import ResourceManager
 
 
 def main():
+    """MAIN"""
     parser = argparse.ArgumentParser()
     parser.add_argument("resource", help="Resource name as listed in board config")
     args = parser.parse_args()
 
-    rm = resource_manager.ResourceManager()
+    resource_manager = ResourceManager()
 
     resource = args.resource
 
     ocdpath = os.getenv("OPENOCD_PATH")
-    dapsn = rm.get_dapsn(resource)
-    gdb, telnet, tcl = rm.get_ocdports(resource)
-    target = rm.get_target(resource)
+    dapsn = resource_manager.get_dapsn(resource)
+    gdb, telnet, tcl = resource_manager.get_ocdports(resource)
+    target = resource_manager.get_target(resource)
 
     command = [
         "openocd",
@@ -91,10 +93,12 @@ def main():
         "-c",
         f"tcl_port {tcl}",
     ]
+
     try:
-        subprocess.run(command)
+        subprocess.run(command, check=False)
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == "__main__":
     main()
