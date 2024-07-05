@@ -57,8 +57,8 @@ Description: Simple example showing creation of a connection and getting packet 
 """
 
 
-import sys
 import os
+import sys
 import time
 from typing import Dict
 
@@ -240,7 +240,6 @@ def main():
     prev_rx = 100000
     retries = 3
 
-    
     while attens:
         i = attens[0]
         if prev_rx == i:
@@ -288,7 +287,7 @@ def main():
         prev_rx = i
         if retries == 0:
             break
-        
+
         slave.reset_connection_stats()
         master.reset_connection_stats()
     try:
