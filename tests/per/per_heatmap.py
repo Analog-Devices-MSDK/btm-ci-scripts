@@ -59,11 +59,16 @@ import logging
 import os
 import sys
 from typing import Tuple
+import json
 
 from ble_test_suite.controllers import RxSensitivityTestController
 from ble_test_suite.equipment.mc_rf_sw import MiniCircuitsRFSwitch
 from ble_test_suite.phy import rx_sensitivity as RxSens
 from resource_manager import ResourceManager
+from ble_test_suite.results import format_dataframe
+from ble_test_suite.utils import PlotId
+import matplotlib.pyplot as plt
+import numpy as np
 
 ENV_CI_CONFIG = "CI_CONFIG_DIR"
 CALIBRATION_FNAME = "rfphy_sw2atten_calibration.json"
@@ -134,6 +139,10 @@ def create_results_dir(results_dir):
 def main():
     args = _setup_ci()
     cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
+    with open(os.path.join(os.getenv(ENV_CI_CONFIG), 'per_dtm_settings.json'), 'r') as setting_file:
+        test_settings = json.load(setting_file)
+
+    
     rm = ResourceManager()
 
     master_info = (
@@ -155,10 +164,12 @@ def main():
     else:
         attenuation_stop = -100
 
-    test_settings = {
+    test_settings = test_settings['config']
+
+    user_setings = {
         "results_dir": args.results,
-        "calibration_file": cal_file,
         "num_packets": args.num_packets,
+        "calibration_file" :cal_file,
         "packet_lens": "37",
         "rx_input_powers": f"-20:{attenuation_stop}:{args.attenuation_step}",
         "phy": args.phy,
@@ -171,13 +182,46 @@ def main():
         "create_lineplot": {"per": True},
     }
 
+    test_settings = user_setings
+
     create_results_dir(args.results)
 
     cfg = RxSens.init_new_test(master_info, dut_info, test_setup=test_settings)
     ctrl = RxSensitivityTestController(cfg, hci_log_level=logging.WARN)
 
     ctrl.run_test()
+    
+    try:
+        df = ctrl.get_dataframe()
+        sens = []
+        for ch in np.unique(df.loc[:, 'CHANNEL']):
+            idx = np.where(np.greater_equal(
+                df.loc[df["CHANNEL"] == ch, "PER"].to_numpy(),
+                cfg.spec.sensitivity_per
+            ))[0][0]
+            sens.append(df.loc[idx, "RX_INPUT_POWER"])
+            
+        
+        spec_pwr = -80
+        sens = np.array(sens)
+        x_axis = np.array([*range(40)])
 
+        bad_idx = np.greater_equal(sens, spec_pwr)
+        good_idx = np.logical_not(bad_idx)
+
+        _, axes = plt.subplots()
+
+
+        axes.stem(x_axis[bad_idx], sens[bad_idx], bottom=spec_pwr, linefmt="-k", markerfmt="xr", basefmt="--b")
+        axes.stem(x_axis[good_idx], sens[good_idx], bottom=spec_pwr, linefmt="-k", markerfmt="og", basefmt="--b")
+
+        axes.set(xlabel="Channel", ylabel="RX Power (dBm)", title="Sensitivity")
+        plt.savefig(f"{args.results}/sensitivity_stem.png")
+
+    except:
+        print('Sensitivity bounds not present!')
+        
+    
     if not ctrl.results():
         sys.exit(-1)
 

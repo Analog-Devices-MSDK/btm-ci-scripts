@@ -67,7 +67,6 @@ from resource_manager import ResourceManager
 
 
 def main():
-    # pylint: disable=too-many-locals
     """MAIN"""
 
     if len(sys.argv) < 1:
@@ -79,13 +78,6 @@ def main():
     print(f"DUT: {dut_board}")
 
     resource_manager = ResourceManager()
-
-    try:
-        loss = resource_manager.get_item_value("rf_bench.cal.losses.2440")
-        loss = float(loss)
-    except KeyError:
-        print("Could not find cal data in config. Defaulting to 0")
-        loss = 0.0
 
     dut_hci_port = resource_manager.get_item_value(f"{dut_board}.hci_port")
 
@@ -126,6 +118,9 @@ def main():
         print("CRC rate too high!")
 
         exit_code += 1
+
+    # TODO: Add API call to store information
+
 
     sys.exit(exit_code)
 
