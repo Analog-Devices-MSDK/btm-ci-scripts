@@ -121,7 +121,6 @@ def main():
 
     # TODO: Add API call to store information
 
-
     sys.exit(exit_code)
 
 

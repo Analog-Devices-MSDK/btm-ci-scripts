@@ -57,7 +57,6 @@ Description: Basic test collecting advertising statistics
 """
 
 
-
 import sys
 import time
 

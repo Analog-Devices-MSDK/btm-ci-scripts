@@ -58,16 +58,13 @@ Description: Simple example showing creation of a connection and getting packet 
 
 
 import os
-import sys
+import shutil
 import time
-from typing import Dict, List
 import argparse
 import matplotlib.pyplot as plt
-import pandas as pd
-from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
-from ble_test_suite.results import Mask, Plot
-from ble_test_suite.utils.log_util import get_formatted_logger
+from rich import print
 from alive_progress import alive_bar
+from glob import glob
 
 # pylint: disable=import-error,wrong-import-position
 from max_ble_hci import BleHci
@@ -75,51 +72,48 @@ from max_ble_hci.data_params import DataPktStats
 from max_ble_hci.hci_packets import EventPacket
 from max_ble_hci.packet_codes import EventCode
 from resource_manager import ResourceManager
-from serial import Timeout
+from ble_test_suite.results.report_generator import ReportGenerator
 
 # pylint: enable=import-error,wrong-import-position
 
 
-def config_switches(resource_manager: ResourceManager, slave: str, master: str):
-    """Configure RF switches to connect DUTS
+def save_per_plot(slave, master, sample_rate, directory):
+    time_data = [x * sample_rate for x in range(len(slave))]
 
-    Parameters
-    ----------
-    resource_manager : ResourceManager
-        resource manager to access switch information
-    slave : str
-        slave resource
-    master : str
-        slave_resource
-    """
-    slave_sw_model, slave_sw_port = resource_manager.get_switch_config(slave)
-    master_sw_model, master_sw_port = resource_manager.get_switch_config(master)
-
-    assert (
-        slave_sw_model and slave_sw_port
-    ), "Slave must have the sw_model and sw_state attribute"
-    assert (
-        master_sw_model and master_sw_port
-    ), "Master must have the sw_model and sw_state attribute"
-    assert (
-        slave_sw_model != master_sw_model
-    ), "Boards must be on opposite switches to connect!"
-
-    with mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model) as sw_slave:
-        print("Configuring Slave Switch")
-        sw_slave.set_sw_state(slave_sw_port)
-
-    with mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model) as sw_master:
-        print("Configuring Master Switch")
-        sw_master.set_sw_state(master_sw_port)
+    pers_slave = []
+    pers_master = []
 
 
+    stat: DataPktStats
+
+    for i, stat in enumerate(slave):
+        try:
+            pers_slave.append(stat.per())
+            pers_master.append(master[i].per())
+        except ZeroDivisionError:
+            print('ZERO DIV')
+            pers_slave.append(100)
+            pers_master.append(100)
+
+    
+
+    filepath = f"{directory}/per.png"
+    
+    plt.plot(time_data, pers_slave, label="slave")
+    plt.plot(time_data, pers_master, label="master")
+    plt.ylim([0, 100])
+    plt.xlabel("time (sec)")
+    plt.ylabel("PER (%)")
+    plt.title("PER Vs. Time")
+    plt.legend()
+    plt.savefig(filepath)
+    plt.close()
+
+    return filepath
 
 def save_individual(data, sample_rate, label, directory) -> DataPktStats:
-    
-    time = [x * sample_rate for x in range(len(data))]
+    time_data = [x * sample_rate for x in range(len(data))]
 
-    pers = []
     crcs = []
     timeouts = []
     rx_ok = []
@@ -130,15 +124,8 @@ def save_individual(data, sample_rate, label, directory) -> DataPktStats:
     tx_isr = []
 
     stat: DataPktStats
-    cummulative_stats  = DataPktStats()
 
-    
     for stat in data:
-        try:
-            pers.append(stat.per())
-        except ZeroDivisionError:
-            pers.append(100)
-
         rx_ok.append(stat.rx_data)
         crcs.append(stat.rx_data_crc)
         timeouts.append(stat.rx_data_timeout)
@@ -149,83 +136,98 @@ def save_individual(data, sample_rate, label, directory) -> DataPktStats:
         rx_isr.append(stat.rx_isr)
         tx_isr.append(stat.tx_isr)
 
-        cummulative_stats.rx_data += stat.rx_data
-        cummulative_stats.rx_data_crc += stat.rx_data_crc
-        cummulative_stats.rx_data_timeout += stat.rx_data_timeout
-        cummulative_stats.tx_data += stat.tx_data
-        cummulative_stats.err_data += stat.err_data
-
-        ## SUM for average
-        cummulative_stats.rx_isr += stat.rx_isr
-        cummulative_stats.tx_isr += stat.tx_isr
-        cummulative_stats.rx_setup += stat.rx_setup
-        cummulative_stats.tx_setup += stat.tx_setup
-
-
-    # General PER
-    plt.plot(time, pers)
-    plt.xlabel('time (sec)')
-    plt.ylabel('PER (%)')
-    plt.title('PER Vs. Time')
-    plt.savefig(f'{directory}/{label}_per.png')
-    plt.close()
-
     # RX Packet stats
-    plt.plot(time, rx_ok, label='RX-OK')
-    plt.plot(time, crcs, label='RX-CRC')
-    plt.plot(time, timeouts, label='RX-Timeout')
-    plt.xlabel('time (sec)')
-    plt.ylabel('Packets (count)')
-    plt.title('RX Packet Stats')
+    plt.plot(time_data, rx_ok, label="RX-OK")
+    plt.plot(time_data, crcs, label="RX-CRC")
+    plt.plot(time_data, timeouts, label="RX-Timeout")
+    plt.xlabel("time (sec)")
+    plt.ylabel("Packets (count)")
+    plt.title(f"{label} RX Packet Stats")
     plt.legend()
-    plt.savefig(f'{directory}/{label}_rx_data.png')
+    plt.savefig(f"{directory}/{label}_rx_data.png")
     plt.close()
-
 
     # TX Packet Stats
-    plt.plot(time, tx_data)
-    plt.xlabel('time (sec)')
-    plt.ylabel('Packets (count)')
-    plt.title('Transmitted Packets Vs. Time')
-    plt.savefig(f'{directory}/{label}_tx_data.png')
+    plt.plot(time_data, tx_data)
+    plt.xlabel("time (sec)")
+    plt.ylabel("Packets (count)")
+    plt.title(f"{label} Transmitted Packets Vs. Time")
+    plt.savefig(f"{directory}/{label}_tx_data.png")
     plt.close()
 
     # ISR Timing
-    plt.plot(time, tx_isr, label='TX-ISR')
-    plt.plot(time, rx_isr, label='RX-ISR')
-    plt.xlabel('time (sec)')
-    plt.ylabel('ISR Times (s)')
-    plt.title('ISR Timing Vs. Time')
-    plt.savefig(f'{directory}/{label}_isr.png')
+    plt.plot(time_data, tx_isr, label="TX-ISR")
+    plt.plot(time_data, rx_isr, label="RX-ISR")
+    plt.xlabel("time (sec)")
+    plt.ylabel("ISR Times (usec)")
+    plt.title(f"{label} ISR Timing Vs. Time")
+    plt.legend()
+    plt.savefig(f"{directory}/{label}_isr.png")
     plt.close()
 
     # Setup Timing
-    plt.plot(time, tx_setup, label='TX-Setup')
-    plt.plot(time, rx_setup, label='RX-Setup')
-    plt.xlabel('time (sec)')
-    plt.ylabel('ISR Times (s)')
-    plt.title('ISR Timing Vs. Time')
-    plt.savefig(f'{directory}/{label}_setup.png')
+    plt.plot(time_data, tx_setup, label="TX-Setup")
+    plt.plot(time_data, rx_setup, label="RX-Setup")
+    plt.xlabel("time (sec)")
+    plt.ylabel("SetupTimes (usec)")
+    plt.title(f"{label} Setup Timing Vs. Time")
+    plt.legend()
+    plt.savefig(f"{directory}/{label}_setup.png")
     plt.close()
 
 
-    cummulative_stats.rx_isr /= len(data)
-    cummulative_stats.tx_isr /= len(data)
-    cummulative_stats.rx_setup /= len(data)
-    cummulative_stats.tx_setup /= len(data)
+def make_table(data: DataPktStats):
+    table = [["Stat", "Value"]]
+
+    for key, value in data.__dict__.items():
+        if isinstance(value, float):
+            table.append([key, round(value, 2)])
+        else:
+            table.append([key, value])
+
+    table.append(["PER", data.per()])
+
+    return table
 
 
-    return cummulative_stats
+def add_pdf(slave_overall, master_overall, directory, dropped_connections):
+    charts = glob(f"{directory}/*.png")
+
+    #make sure to add this as the first image
+    perchart = f'{directory}/per.png'
+    gen.add_image(perchart, img_dims=(8 * inch, 6 * inch))
     
-
-
-
-
-
     
-    
+    charts.remove(perchart)
+    gen = ReportGenerator(f"{directory}/connection_stability_report.pdf")
+    inch = gen.rlib.units.inch
+    for chart in charts:
+        gen.add_image(chart, img_dims=(8 * inch, 6 * inch))
 
-def save_results(slave:List[Dict[str:int]], master:List[Dict[str:int]], sample_rate, dropped_connections:int, phy: str, directory:str):
+    slave_table = make_table(slave_overall)
+    master_table = make_table(master_overall)
+
+    gen.new_page()
+    gen.add_table(
+        slave_table, col_widths=(gen.page_width - inch) / 2, caption="Slave Metrics"
+    )
+    gen.add_table(
+        master_table, col_widths=(gen.page_width - inch) / 2, caption="Master Metrics"
+    )
+
+    misc_table = [
+        ['Dropped Connections', dropped_connections]
+    ]
+    gen.add_table(
+        misc_table, col_widths=(gen.page_width - inch) / 2, caption="Master Metrics"
+    )
+
+    gen.build(doc_title="Connection Stability Report")
+
+
+def save_results(
+    slave, master, sample_rate, dropped_connections: int, phy: str, directory: str
+):
     """Store PER Results
 
     Parameters
@@ -233,38 +235,25 @@ def save_results(slave:List[Dict[str:int]], master:List[Dict[str:int]], sample_r
     results : Dict[str,list]
         Results from per sweep
     """
-
+    
     if not os.path.exists(directory):
         os.mkdir(directory)
+    else:
+        shutil.rmtree(directory)
+        os.mkdir(directory)
+
+    save_per_plot(slave, master, sample_rate=sample_rate, directory=directory)
+
+    save_individual(
+        data=slave, sample_rate=sample_rate, label=f"slave_{phy}", directory=directory
+    )
+    save_individual(
+        data=master, sample_rate=sample_rate, label=f"master_{phy}", directory=directory
+    )
 
 
 
-    slave_overall = save_individual(data=slave, sample_rate=sample_rate, label = f'slave_{phy}', directory=directory)
-    master_overall = save_individual(data=master, sample_rate=sample_rate, label = f'master_{phy}', directory=directory)
-
-
-
-    with open(f'{directory}/cummulative.txt', 'w') as stats_file:
-            stats_text = ['RX Overall\n----------------------\n']
-        
-            for key, value in slave_overall.__dict__.items():
-                stats_text.append(f'{key}:{value}')
-
-            stats_text.append('TX Overall\n----------------------\n')
-            for key, value in master_overall.__dict__.items():
-                stats_text.append(f'{key}:{value}')
-
-
-            stats_text.append(f'Dropped connections: {dropped_connections}')
-            stats_file.writelines(stats_text)
-
-
-
-
-def print_test_config(slave, master):
-    print("Using:")
-    print(f"\tSlave - {slave}")
-    print(f"\tMaster - {master}\n")
+    add_pdf(slave[-1], master[-1], directory, dropped_connections )
 
 
 reconnect = False
@@ -282,23 +271,30 @@ def hci_callback(packet):
         reconnect = True
 
 
-def config_cli(self):
+def config_cli():
     parser = argparse.ArgumentParser(
-                    prog='ProgramName',
-                    description='Evaluates connection perfomrance and stability over a long period of time',
-                    )
-    
-    parser.add_argument('master', help='Master board')
-    parser.add_argument('slave', help='Slave Board')
-    parser.add_argument('-r', "--results", help='Results directory')
-    parser.add_argument('-p', "--phy", default='1M', help='Connection PHY (1M, 2M, S2, S8)')
-    parser.add_argument('-d', "--duration",default=1800,help='Results directory')
-    parser.add_argument('-s', "--sample-rare", default=3,help='Sample rate in seconds. Minimum of 1 second')
+        description="Evaluates connection perfomrance and stability over a long period of time",
+    )
 
+    parser.add_argument("master", help="Master board")
+    parser.add_argument("slave", help="Slave Board")
+    parser.add_argument("-r", "--results", help="Results directory")
+    parser.add_argument(
+        "-p", "--phy", default="1M", help="Connection PHY (1M, 2M, S2, S8)"
+    )
+    parser.add_argument("-t", "--time", default=1800, help="Test time")
+    parser.add_argument(
+        "-d", "--directory", default="stability_results", help="Result Directory"
+    )
 
+    parser.add_argument(
+        "-s",
+        "--sample-rate",
+        default=1,
+        help="Sample rate in seconds. Minimum of 1 second",
+    )
 
     return parser.parse_args()
-
 
 
 def main():
@@ -311,23 +307,15 @@ def main():
     master_board: str = args.master
     slave_board: str = args.slave
 
-    print_test_config(slave = slave_board, master=master_board)
-
-    
-
     assert (
         master_board != slave_board
     ), f"Master must not be the same as slave, {master_board} = {slave_board}"
 
     resource_manager = ResourceManager()
 
-    try:
-        loss = resource_manager.get_item_value("rf_bench.cal.losses.2440")
-        loss = float(loss)
-    except KeyError:
-        print("Could not find cal data in config. Defaulting to 0")
-        loss = 0.0
-
+    sample_rate = args.sample_rate if args.sample_rate >= 1 else 1
+    iterations = int(int(args.time) / float(sample_rate))
+    assert isinstance(iterations, int)
 
     master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
     slave_hci_port = resource_manager.get_item_value(f"{slave_board}.hci_port")
@@ -344,7 +332,6 @@ def main():
         evt_callback=hci_callback,
         id_tag="slave",
     )
-    
 
     master_addr = 0x001234887733
     slave_addr = 0x111234887733
@@ -360,22 +347,14 @@ def main():
     master.init_connection(addr=slave_addr)
 
     print("Sleeping for initial connection")
-    time.sleep(3)
-
-
+    time.sleep(4)
 
     slave_cummulative = []
     master_cummulative = []
     total_dropped_connections = 0
 
-    sample_rate = args.sample_rate if sample_rate >= 1 else 1
-
-    iterations = args.sample_rate * args.duration
-
     with alive_bar(iterations) as bar:
-
-        for i in range(iterations):
-            time.sleep(args.sample_rate)
+        for _ in range(iterations):
             try:
                 slave_stats, _ = slave.get_conn_stats()
                 master_stats, _ = master.get_conn_stats()
@@ -384,7 +363,6 @@ def main():
             except TimeoutError:
                 break
 
-            
             if reconnect:
                 total_dropped_connections += 1
                 reconnect = False
@@ -392,27 +370,33 @@ def main():
                 master.init_connection(addr=slave_addr)
                 time.sleep(2)
 
-            
-            slave.reset_connection_stats()
-            master.reset_connection_stats()
+            # slave.reset_connection_stats()
+            # master.reset_connection_stats()
 
-            bar()    
-            
-        try:
-            master.disconnect()
-            slave.disconnect()
+            bar()
+            time.sleep(sample_rate)
 
-            master.reset()
-            slave.reset()
-        except TimeoutError:
-            pass
-        
+    try:
+        slave_stats, _ = slave.get_conn_stats()
+        master_stats, _ = master.get_conn_stats()
+        slave_cummulative.append(slave_stats)
+        master_cummulative.append(master_stats)
+        master.disconnect()
+        slave.disconnect()
+        master.reset()
+        slave.reset()
+    except TimeoutError:
+        pass
 
-
-
-    save_results(slave_cummulative, master_cummulative, total_dropped_connections, args.phy, args.directory)
-
-
+    print("[cyan]Plotting results. This may take some time[/cyan]")
+    save_results(
+        slave=slave_cummulative,
+        master=master_cummulative,
+        dropped_connections=total_dropped_connections,
+        phy=args.phy,
+        sample_rate=sample_rate,
+        directory=args.directory,
+    )
 
 
 if __name__ == "__main__":
