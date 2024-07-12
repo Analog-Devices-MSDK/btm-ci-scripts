@@ -336,7 +336,7 @@ def hci_callback(packet):
 
 def config_cli():
     parser = argparse.ArgumentParser(
-        description="Evaluates connection perfomrance and stability over a long period of time",
+        description="Evaluates conne perfomrance and stability over a long period of time",
     )
 
     parser.add_argument("central", help="Central board")
@@ -358,6 +358,22 @@ def config_cli():
     )
 
     return parser.parse_args()
+
+def connect(periph:BleHci, central:BleHci):
+    
+    central_addr = 0x001234887733
+    periph_addr = 0x111234887733
+
+    periph.reset()
+    central.reset()
+    central.set_adv_tx_power(0)
+    periph.set_adv_tx_power(0)
+    periph.set_address(periph_addr)
+    central.set_address(central_addr)
+
+    periph.start_advertising(connect=True)
+    central.init_connection(addr=periph_addr)
+    
 
 
 def main():
@@ -398,18 +414,7 @@ def main():
         id_tag="periph",
     )
 
-    central_addr = 0x001234887733
-    periph_addr = 0x111234887733
 
-    periph.reset()
-    central.reset()
-    central.set_adv_tx_power(0)
-    periph.set_adv_tx_power(0)
-    periph.set_address(periph_addr)
-    central.set_address(central_addr)
-
-    periph.start_advertising(connect=True)
-    central.init_connection(addr=periph_addr)
 
     periph_cummulative = []
     central_cummulative = []
@@ -429,6 +434,10 @@ def main():
         ),
     }
 
+    start_time = datetime.now()
+
+    connect(periph, central)
+
     # Preliminary read. Seems like the first read is always empty
     try:
         periph.get_conn_stats()
@@ -441,23 +450,28 @@ def main():
             try:
                 periph_stats, _ = periph.get_conn_stats()
                 periph_cummulative.append(periph_stats)
-            except TimeoutError:
+            except TimeoutError or TypeError:
                 misc["Timeouts"] += 1
                 periph_cummulative.append(DataPktStats())
 
             try:
                 central_stats, _ = central.get_conn_stats()
                 central_cummulative.append(central_stats)
-            except TimeoutError:
+            except TimeoutError or TypeError:
                 misc["Timeouts"] += 1
                 central_cummulative.append(DataPktStats())
 
             if reconnect:
                 misc["Dropped Connections"] += 1
-                reconnect = False
-                periph.start_advertising(connect=True)
-                central.init_connection(addr=periph_addr)
-                time.sleep(2)
+
+                print("Attempting recconnect")
+                try:
+                    connect(periph, central)
+                    reconnect = False
+                except TimeoutError:
+                    
+                    misc["Timeouts"] += 1
+
 
             bar()
             time.sleep(sample_rate)
@@ -473,6 +487,10 @@ def main():
         periph.reset()
     except TimeoutError:
         pass
+
+    misc['Start Time'] = start_time.strftime("H:M:S")
+    misc['Stop Time'] = datetime.now().strftime("H:M:S")
+
 
     print("[cyan]Plotting results. This may take some time[/cyan]")
     save_results(
