@@ -68,6 +68,7 @@ import subprocess
 import matplotlib.pyplot as plt
 from rich import print
 from typing import List
+
 # pylint: disable=import-error,wrong-import-position
 from alive_progress import alive_bar
 from ble_test_suite.results.report_generator import ReportGenerator
@@ -75,17 +76,26 @@ from max_ble_hci import BleHci
 from max_ble_hci.data_params import DataPktStats
 from max_ble_hci.hci_packets import EventPacket
 from max_ble_hci.packet_codes import EventCode
+from packaging import version
+import resource_manager
 from resource_manager import ResourceManager
 
 # pylint: enable=import-error,wrong-import-position
 
+if version.parse(resource_manager.__version__) < version.parse("1.1.1"):
+    raise RuntimeError("Resource manager of 1.1.1 or greater is required")
+
 
 def get_git_hash(path):
-
     try:
-        return subprocess.check_output(['git', f'-C {path}' 'rev-parse', 'HEAD']).decode('ascii').strip()
+        return (
+            subprocess.check_output(["git", f"-C {path}" "rev-parse", "HEAD"])
+            .decode("ascii")
+            .strip()
+        )
     except:
         return "Unknown"
+
 
 def save_per_plot(slave, master, sample_rate, directory):
     time_data = [x * sample_rate for x in range(len(slave))]
@@ -201,8 +211,8 @@ def make_table(data: DataPktStats):
         ["PER", round(data.per(), 2), "%"],
     ]
 
-def make_misc_table(misc_data:dict):
 
+def make_misc_table(misc_data: dict):
     misc_table = [["Metric", "Value"]]
 
     for key, value in misc_data.items():
@@ -213,19 +223,21 @@ def make_misc_table(misc_data:dict):
 
     return misc_table
 
+
 def make_version_table():
-    
     return [
-        ['Repo', 'Git Hash'],
-        ['MSDK', get_git_hash(os.getenv("MAXIM_PATH"))],
-        ['RF-PHY', get_git_hash(os.getenv("RF_PHY_PATH"))]
+        ["Repo", "Git Hash"],
+        ["MSDK", get_git_hash(os.getenv("MAXIM_PATH"))],
+        ["RF-PHY", get_git_hash(os.getenv("RF_PHY_PATH"))],
     ]
 
 
-
-
-
-def add_pdf(slave_overall:List[dict], master_overall:List[dict], directory:str, misc_data:dict):
+def add_pdf(
+    slave_overall: List[dict],
+    master_overall: List[dict],
+    directory: str,
+    misc_data: dict,
+):
     now = datetime.now()
     filepath_date = now.strftime("%m_%d_%y")
     gen = ReportGenerator(
@@ -244,26 +256,29 @@ def add_pdf(slave_overall:List[dict], master_overall:List[dict], directory:str, 
     for chart in charts:
         gen.add_image(chart, img_dims=(8 * inch, 6 * inch))
 
-
-
     gen.new_page()
     gen.add_table(
-        make_table(slave_overall), col_widths=(gen.page_width - inch) / 4, caption="Slave Metrics"
+        make_table(slave_overall),
+        col_widths=(gen.page_width - inch) / 4,
+        caption="Slave Metrics",
     )
     gen.add_table(
-        make_table(master_overall), col_widths=(gen.page_width - inch) / 4, caption="Master Metrics"
+        make_table(master_overall),
+        col_widths=(gen.page_width - inch) / 4,
+        caption="Master Metrics",
     )
-
 
     gen.add_table(
-        make_misc_table(misc_data), col_widths=(gen.page_width - inch) * 3/8, caption="Misc. Metrics"
+        make_misc_table(misc_data),
+        col_widths=(gen.page_width - inch) * 3 / 8,
+        caption="Misc. Metrics",
     )
 
-    
-    gen.add_table(make_version_table(), col_widths=(gen.page_width -  gen.rlib.units.inch) * 3/ 8, caption="Version Info")
-
-
-
+    gen.add_table(
+        make_version_table(),
+        col_widths=(gen.page_width - gen.rlib.units.inch) * 3 / 8,
+        caption="Version Info",
+    )
 
     date = now.strftime("%m/%d/%y")
     gen.build(doc_title=f"BLE Connection Stability Report {date}")
@@ -336,12 +351,13 @@ def config_cli():
 
     return parser.parse_args()
 
+
 def try_get_item_value(item_value, resource_manager: ResourceManager) -> str:
     try:
         return resource_manager.get_item_value(item_value)
     except:
         return "N/A"
-    
+
 
 def main():
     global reconnect
@@ -372,7 +388,7 @@ def main():
         evt_callback=hci_callback,
         id_tag="master",
     )
-    
+
     slave = BleHci(
         slave_hci_port,
         async_callback=hci_callback,
@@ -393,20 +409,21 @@ def main():
     slave.start_advertising(connect=True)
     master.init_connection(addr=slave_addr)
 
-
     slave_cummulative = []
     master_cummulative = []
 
-    
-
-    misc = {"Dropped Connections": 0, "Timeouts": 0,
-                "Master Target": try_get_item_value(f'{master_board}.target', resource_manager),
-                "Slave Target": try_get_item_value(f'{slave_board}.target', resource_manager),
-                "Master Package": try_get_item_value(f'{master_board}.package', resource_manager),
-                "Slave Package": try_get_item_value(f'{slave_board}.package', resource_manager),
-            }
-
-
+    misc = {
+        "Dropped Connections": 0,
+        "Timeouts": 0,
+        "Master Target": resource_manager.get_item_value(f"{master_board}.target"),
+        "Slave Target": resource_manager.get_item_value(f"{slave_board}.target"),
+        "Master Package": resource_manager.get_item_value(
+            f"{master_board}.package", "NULL"
+        ),
+        "Slave Package": resource_manager.get_item_value(
+            f"{slave_board}.package", "NULL"
+        ),
+    }
 
     # Preliminary read. Seems like the first read is always empty
     try:
@@ -414,7 +431,6 @@ def main():
         master.get_conn_stats()
     except:
         pass
-
 
     with alive_bar(iterations) as bar:
         for _ in range(iterations):

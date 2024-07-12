@@ -58,7 +58,6 @@ from typing import Dict, List, Set, Tuple
 # pylint: disable=import-error
 from tabulate import tabulate
 
-
 class ResourceManager:
     # pylint: disable=too-many-public-methods,dangerous-default-value
     """BTM-CI Resource Manager"""
@@ -66,7 +65,7 @@ class ResourceManager:
     ENV_RESOURCE_LOCK_DIR = "RESOURCE_LOCK_DIR"
     ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
     ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
-
+    
     def __init__(self, timeout=60, owner="", extra_resources: List[str] = []) -> None:
         # Initialize the resource file
         self.timeout = timeout
