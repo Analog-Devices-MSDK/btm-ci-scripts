@@ -57,32 +57,41 @@ Description: Simple example showing creation of a connection and getting packet 
 """
 
 
+import argparse
 import os
 import shutil
 import time
-import argparse
+from datetime import datetime
+from glob import glob
+import subprocess
+
 import matplotlib.pyplot as plt
 from rich import print
-from alive_progress import alive_bar
-from glob import glob
-
+from typing import List
 # pylint: disable=import-error,wrong-import-position
+from alive_progress import alive_bar
+from ble_test_suite.results.report_generator import ReportGenerator
 from max_ble_hci import BleHci
 from max_ble_hci.data_params import DataPktStats
 from max_ble_hci.hci_packets import EventPacket
 from max_ble_hci.packet_codes import EventCode
 from resource_manager import ResourceManager
-from ble_test_suite.results.report_generator import ReportGenerator
 
 # pylint: enable=import-error,wrong-import-position
 
+
+def get_git_hash(path):
+
+    try:
+        return subprocess.check_output(['git', f'-C {path}' 'rev-parse', 'HEAD']).decode('ascii').strip()
+    except:
+        return "Unknown"
 
 def save_per_plot(slave, master, sample_rate, directory):
     time_data = [x * sample_rate for x in range(len(slave))]
 
     pers_slave = []
     pers_master = []
-
 
     stat: DataPktStats
 
@@ -97,11 +106,9 @@ def save_per_plot(slave, master, sample_rate, directory):
         except ZeroDivisionError:
             pers_master.append(100)
 
-    
-
     filepath = f"{directory}/per.png"
-    
-    plt.plot(time_data, pers_slave, label="slave", linestyle='--')
+
+    plt.plot(time_data, pers_slave, label="slave", linestyle="--")
     plt.plot(time_data, pers_master, label="master")
     plt.ylim([0, 100])
     plt.xlabel("time (sec)")
@@ -112,6 +119,7 @@ def save_per_plot(slave, master, sample_rate, directory):
     plt.close()
 
     return filepath
+
 
 def save_individual(data, sample_rate, label, directory) -> DataPktStats:
     time_data = [x * sample_rate for x in range(len(data))]
@@ -179,59 +187,89 @@ def save_individual(data, sample_rate, label, directory) -> DataPktStats:
 
 
 def make_table(data: DataPktStats):
-    table = [["Stat", "Value"]]
+    return [
+        ["Stat", "Value", "Unit"],
+        ["RX OK", data.rx_data, "Count"],
+        ["RX CRC", data.rx_data_crc, "Count"],
+        ["RX Timeout", data.rx_data_timeout, "Count"],
+        ["TX OK", data.tx_data, "Count"],
+        ["Err Data", data.err_data, "Count"],
+        ["RX Setup", data.rx_setup, "usec"],
+        ["TX Setup", data.tx_setup, "usec"],
+        ["RX ISR", data.rx_isr, "usec"],
+        ["TX ISR", data.tx_isr, "usec"],
+        ["PER", round(data.per(), 2), "%"],
+    ]
 
-    for key, value in data.__dict__.items():
+def make_misc_table(misc_data:dict):
+
+    misc_table = [["Metric", "Value"]]
+
+    for key, value in misc_data.items():
         if isinstance(value, float):
-            table.append([key, round(value, 2)])
+            misc_table.append([key, round(value, 2)])
         else:
-            table.append([key, value])
+            misc_table.append([key, value])
 
-    table.append(["PER", round(data.per(), 2)])
+    return misc_table
 
-    return table
+def make_version_table():
+    
+    return [
+        ['Repo', 'Git Hash'],
+        ['MSDK', get_git_hash(os.getenv("MAXIM_PATH"))],
+        ['RF-PHY', get_git_hash(os.getenv("RF_PHY_PATH"))]
+    ]
 
 
-def add_pdf(slave_overall, master_overall, directory, dropped_connections):
-    gen = ReportGenerator(f"{directory}/connection_stability_report.pdf")
+
+
+
+def add_pdf(slave_overall:List[dict], master_overall:List[dict], directory:str, misc_data:dict):
+    now = datetime.now()
+    filepath_date = now.strftime("%m_%d_%y")
+    gen = ReportGenerator(
+        f"{directory}/connection_stability_report_{filepath_date}.pdf"
+    )
 
     charts = glob(f"{directory}/*.png")
 
     inch = gen.rlib.units.inch
 
-    #make sure to add this as the first image
-    perchart = f'{directory}/per.png'
+    # make sure to add this as the first image
+    perchart = f"{directory}/per.png"
     gen.add_image(perchart, img_dims=(8 * inch, 6 * inch))
-    
+
     charts.remove(perchart)
     for chart in charts:
         gen.add_image(chart, img_dims=(8 * inch, 6 * inch))
 
-    slave_table = make_table(slave_overall)
-    master_table = make_table(master_overall)
+
 
     gen.new_page()
     gen.add_table(
-        slave_table, col_widths=(gen.page_width - inch) / 2, caption="Slave Metrics"
+        make_table(slave_overall), col_widths=(gen.page_width - inch) / 4, caption="Slave Metrics"
     )
     gen.add_table(
-        master_table, col_widths=(gen.page_width - inch) / 2, caption="Master Metrics"
+        make_table(master_overall), col_widths=(gen.page_width - inch) / 4, caption="Master Metrics"
     )
 
-    misc_table = [
-        ['Metric', 'Value'],
-        ['Dropped Connections', dropped_connections]
-    ]
+
     gen.add_table(
-        misc_table, col_widths=(gen.page_width - inch) / 2, caption="Misc. Metrics"
+        make_misc_table(misc_data), col_widths=(gen.page_width - inch) * 3/8, caption="Misc. Metrics"
     )
 
-    gen.build(doc_title="Connection Stability Report")
+    
+    gen.add_table(make_version_table(), col_widths=(gen.page_width -  gen.rlib.units.inch) * 3/ 8, caption="Version Info")
 
 
-def save_results(
-    slave, master, sample_rate, dropped_connections: int, phy: str, directory: str
-):
+
+
+    date = now.strftime("%m/%d/%y")
+    gen.build(doc_title=f"BLE Connection Stability Report {date}")
+
+
+def save_results(slave, master, sample_rate, misc_data: dict, phy: str, directory: str):
     """Store PER Results
 
     Parameters
@@ -239,7 +277,7 @@ def save_results(
     results : Dict[str,list]
         Results from per sweep
     """
-    
+
     if not os.path.exists(directory):
         os.mkdir(directory)
     else:
@@ -255,9 +293,7 @@ def save_results(
         data=master, sample_rate=sample_rate, label=f"Master_{phy}", directory=directory
     )
 
-
-
-    add_pdf(slave[-1], master[-1], directory, dropped_connections )
+    add_pdf(slave[-1], master[-1], directory, misc_data)
 
 
 reconnect = False
@@ -300,6 +336,12 @@ def config_cli():
 
     return parser.parse_args()
 
+def try_get_item_value(item_value, resource_manager: ResourceManager) -> str:
+    try:
+        return resource_manager.get_item_value(item_value)
+    except:
+        return "N/A"
+    
 
 def main():
     global reconnect
@@ -330,6 +372,7 @@ def main():
         evt_callback=hci_callback,
         id_tag="master",
     )
+    
     slave = BleHci(
         slave_hci_port,
         async_callback=hci_callback,
@@ -350,12 +393,28 @@ def main():
     slave.start_advertising(connect=True)
     master.init_connection(addr=slave_addr)
 
-    # print("Sleeping for initial connection")
-    # time.sleep(1)
 
     slave_cummulative = []
     master_cummulative = []
-    total_dropped_connections = 0
+
+    
+
+    misc = {"Dropped Connections": 0, "Timeouts": 0,
+                "Master Target": try_get_item_value(f'{master_board}.target', resource_manager),
+                "Slave Target": try_get_item_value(f'{slave_board}.target', resource_manager),
+                "Master Package": try_get_item_value(f'{master_board}.package', resource_manager),
+                "Slave Package": try_get_item_value(f'{slave_board}.package', resource_manager),
+            }
+
+
+
+    # Preliminary read. Seems like the first read is always empty
+    try:
+        slave.get_conn_stats()
+        master.get_conn_stats()
+    except:
+        pass
+
 
     with alive_bar(iterations) as bar:
         for _ in range(iterations):
@@ -363,17 +422,18 @@ def main():
                 slave_stats, _ = slave.get_conn_stats()
                 slave_cummulative.append(slave_stats)
             except TimeoutError:
+                misc["Timeouts"] += 1
                 slave_cummulative.append(DataPktStats())
 
             try:
                 master_stats, _ = master.get_conn_stats()
                 master_cummulative.append(master_stats)
             except TimeoutError:
+                misc["Timeouts"] += 1
                 master_cummulative.append(DataPktStats())
-                
 
             if reconnect:
-                total_dropped_connections += 1
+                misc["Dropped Connections"] += 1
                 reconnect = False
                 slave.start_advertising(connect=True)
                 master.init_connection(addr=slave_addr)
@@ -401,7 +461,7 @@ def main():
     save_results(
         slave=slave_cummulative,
         master=master_cummulative,
-        dropped_connections=total_dropped_connections,
+        misc_data=misc,
         phy=args.phy,
         sample_rate=sample_rate,
         directory=args.directory,

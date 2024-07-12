@@ -55,20 +55,20 @@ Description: CI Oriented PER Heatmap Test
 
 """
 import argparse
+import json
 import logging
 import os
 import sys
 from typing import Tuple
-import json
 
+import matplotlib.pyplot as plt
+import numpy as np
 from ble_test_suite.controllers import RxSensitivityTestController
 from ble_test_suite.equipment.mc_rf_sw import MiniCircuitsRFSwitch
 from ble_test_suite.phy import rx_sensitivity as RxSens
-from resource_manager import ResourceManager
 from ble_test_suite.results import format_dataframe
 from ble_test_suite.utils import PlotId
-import matplotlib.pyplot as plt
-import numpy as np
+from resource_manager import ResourceManager
 
 ENV_CI_CONFIG = "CI_CONFIG_DIR"
 CALIBRATION_FNAME = "rfphy_sw2atten_calibration.json"

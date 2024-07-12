@@ -60,7 +60,6 @@ Description: Basic test collecting advertising statistics
 import sys
 import time
 
-
 # pylint: disable=import-error,wrong-import-position
 from max_ble_hci import BleHci
 from resource_manager import ResourceManager
