@@ -360,13 +360,6 @@ def config_cli():
     return parser.parse_args()
 
 
-def try_get_item_value(item_value, resource_manager: ResourceManager) -> str:
-    try:
-        return resource_manager.get_item_value(item_value)
-    except:
-        return "N/A"
-
-
 def main():
     global reconnect
     # pylint: disable=too-many-locals
