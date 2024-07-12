@@ -97,29 +97,29 @@ def get_git_hash(path):
         return "Unknown"
 
 
-def save_per_plot(slave, master, sample_rate, directory):
-    time_data = [x * sample_rate for x in range(len(slave))]
+def save_per_plot(periph, central, sample_rate, directory):
+    time_data = [x * sample_rate for x in range(len(periph))]
 
-    pers_slave = []
-    pers_master = []
+    pers_periph = []
+    pers_central = []
 
     stat: DataPktStats
 
-    for i, stat in enumerate(slave):
+    for i, stat in enumerate(periph):
         try:
-            pers_slave.append(stat.per())
+            pers_periph.append(stat.per())
         except ZeroDivisionError:
-            pers_slave.append(100)
+            pers_periph.append(100)
 
         try:
-            pers_master.append(master[i].per())
+            pers_central.append(central[i].per())
         except ZeroDivisionError:
-            pers_master.append(100)
+            pers_central.append(100)
 
     filepath = f"{directory}/per.png"
 
-    plt.plot(time_data, pers_slave, label="slave", linestyle="--")
-    plt.plot(time_data, pers_master, label="master")
+    plt.plot(time_data, pers_periph, label="peripheral", linestyle="--")
+    plt.plot(time_data, pers_central, label="central")
     plt.ylim([0, 100])
     plt.xlabel("time (sec)")
     plt.ylabel("PER (%)")
@@ -233,8 +233,8 @@ def make_version_table():
 
 
 def add_pdf(
-    slave_overall: List[dict],
-    master_overall: List[dict],
+    periph_overall: List[dict],
+    central_overall: List[dict],
     directory: str,
     misc_data: dict,
 ):
@@ -258,14 +258,14 @@ def add_pdf(
 
     gen.new_page()
     gen.add_table(
-        make_table(slave_overall),
+        make_table(periph_overall),
         col_widths=(gen.page_width - inch) / 4,
-        caption="Slave Metrics",
+        caption="Peripheral Metrics",
     )
     gen.add_table(
-        make_table(master_overall),
+        make_table(central_overall),
         col_widths=(gen.page_width - inch) / 4,
-        caption="Master Metrics",
+        caption="Central Metrics",
     )
 
     gen.add_table(
@@ -284,7 +284,9 @@ def add_pdf(
     gen.build(doc_title=f"BLE Connection Stability Report {date}")
 
 
-def save_results(slave, master, sample_rate, misc_data: dict, phy: str, directory: str):
+def save_results(
+    periph, central, sample_rate, misc_data: dict, phy: str, directory: str
+):
     """Store PER Results
 
     Parameters
@@ -299,16 +301,22 @@ def save_results(slave, master, sample_rate, misc_data: dict, phy: str, director
         shutil.rmtree(directory)
         os.mkdir(directory)
 
-    save_per_plot(slave, master, sample_rate=sample_rate, directory=directory)
+    save_per_plot(periph, central, sample_rate=sample_rate, directory=directory)
 
     save_individual(
-        data=slave, sample_rate=sample_rate, label=f"Slave_{phy}", directory=directory
+        data=periph,
+        sample_rate=sample_rate,
+        label=f"Peripheral_{phy}",
+        directory=directory,
     )
     save_individual(
-        data=master, sample_rate=sample_rate, label=f"Master_{phy}", directory=directory
+        data=central,
+        sample_rate=sample_rate,
+        label=f"Central_{phy}",
+        directory=directory,
     )
 
-    add_pdf(slave[-1], master[-1], directory, misc_data)
+    add_pdf(periph[-1], central[-1], directory, misc_data)
 
 
 reconnect = False
@@ -331,8 +339,8 @@ def config_cli():
         description="Evaluates connection perfomrance and stability over a long period of time",
     )
 
-    parser.add_argument("master", help="Master board")
-    parser.add_argument("slave", help="Slave Board")
+    parser.add_argument("central", help="Central board")
+    parser.add_argument("peripheral", help="Peripheral Board")
     parser.add_argument("-r", "--results", help="Results directory")
     parser.add_argument(
         "-p", "--phy", default="1M", help="Connection PHY (1M, 2M, S2, S8)"
@@ -366,12 +374,13 @@ def main():
 
     args = config_cli()
 
-    master_board: str = args.master
-    slave_board: str = args.slave
+    central_board: str = args.central
+    periph_board: str = args.peripheral
 
-    assert (
-        master_board != slave_board
-    ), f"Master must not be the same as slave, {master_board} = {slave_board}"
+    if central_board == periph_board:
+        raise ValueError(
+            f"Central must not be the same as peripheral, {central_board} = {periph_board}"
+        )
 
     resource_manager = ResourceManager()
 
@@ -379,104 +388,103 @@ def main():
     iterations = int(int(args.time) / float(sample_rate))
     assert isinstance(iterations, int)
 
-    master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
-    slave_hci_port = resource_manager.get_item_value(f"{slave_board}.hci_port")
+    central_hci_port = resource_manager.get_item_value(f"{central_board}.hci_port")
+    periph_hci_port = resource_manager.get_item_value(f"{periph_board}.hci_port")
 
-    master = BleHci(
-        master_hci_port,
+    central = BleHci(
+        central_hci_port,
         async_callback=hci_callback,
         evt_callback=hci_callback,
-        id_tag="master",
+        id_tag="central",
     )
 
-    slave = BleHci(
-        slave_hci_port,
+    periph = BleHci(
+        periph_hci_port,
         async_callback=hci_callback,
         evt_callback=hci_callback,
-        id_tag="slave",
+        id_tag="periph",
     )
 
-    master_addr = 0x001234887733
-    slave_addr = 0x111234887733
+    central_addr = 0x001234887733
+    periph_addr = 0x111234887733
 
-    slave.reset()
-    master.reset()
-    master.set_adv_tx_power(0)
-    slave.set_adv_tx_power(0)
-    slave.set_address(slave_addr)
-    master.set_address(master_addr)
+    periph.reset()
+    central.reset()
+    central.set_adv_tx_power(0)
+    periph.set_adv_tx_power(0)
+    periph.set_address(periph_addr)
+    central.set_address(central_addr)
 
-    slave.start_advertising(connect=True)
-    master.init_connection(addr=slave_addr)
+    periph.start_advertising(connect=True)
+    central.init_connection(addr=periph_addr)
 
-    slave_cummulative = []
-    master_cummulative = []
+    periph_cummulative = []
+    central_cummulative = []
 
     misc = {
         "Dropped Connections": 0,
         "Timeouts": 0,
-        "Master Target": resource_manager.get_item_value(f"{master_board}.target"),
-        "Slave Target": resource_manager.get_item_value(f"{slave_board}.target"),
-        "Master Package": resource_manager.get_item_value(
-            f"{master_board}.package", "NULL"
+        "Central Board": central_board,
+        "Peripheral Board": periph_board,
+        "Central Target": resource_manager.get_item_value(f"{central_board}.target"),
+        "Peripheral Target": resource_manager.get_item_value(f"{periph_board}.target"),
+        "Central Package": resource_manager.get_item_value(
+            f"{central_board}.package", "NULL"
         ),
-        "Slave Package": resource_manager.get_item_value(
-            f"{slave_board}.package", "NULL"
+        "Peripheral Package": resource_manager.get_item_value(
+            f"{periph_board}.package", "NULL"
         ),
     }
 
     # Preliminary read. Seems like the first read is always empty
     try:
-        slave.get_conn_stats()
-        master.get_conn_stats()
+        periph.get_conn_stats()
+        central.get_conn_stats()
     except:
         pass
 
     with alive_bar(iterations) as bar:
         for _ in range(iterations):
             try:
-                slave_stats, _ = slave.get_conn_stats()
-                slave_cummulative.append(slave_stats)
+                periph_stats, _ = periph.get_conn_stats()
+                periph_cummulative.append(periph_stats)
             except TimeoutError:
                 misc["Timeouts"] += 1
-                slave_cummulative.append(DataPktStats())
+                periph_cummulative.append(DataPktStats())
 
             try:
-                master_stats, _ = master.get_conn_stats()
-                master_cummulative.append(master_stats)
+                central_stats, _ = central.get_conn_stats()
+                central_cummulative.append(central_stats)
             except TimeoutError:
                 misc["Timeouts"] += 1
-                master_cummulative.append(DataPktStats())
+                central_cummulative.append(DataPktStats())
 
             if reconnect:
                 misc["Dropped Connections"] += 1
                 reconnect = False
-                slave.start_advertising(connect=True)
-                master.init_connection(addr=slave_addr)
+                periph.start_advertising(connect=True)
+                central.init_connection(addr=periph_addr)
                 time.sleep(2)
-
-            # slave.reset_connection_stats()
-            # master.reset_connection_stats()
 
             bar()
             time.sleep(sample_rate)
 
     try:
-        slave_stats, _ = slave.get_conn_stats()
-        master_stats, _ = master.get_conn_stats()
-        slave_cummulative.append(slave_stats)
-        master_cummulative.append(master_stats)
-        master.disconnect()
-        slave.disconnect()
-        master.reset()
-        slave.reset()
+        periph_stats, _ = periph.get_conn_stats()
+        central_stats, _ = central.get_conn_stats()
+        periph_cummulative.append(periph_stats)
+        central_cummulative.append(central_stats)
+        central.disconnect()
+        periph.disconnect()
+        central.reset()
+        periph.reset()
     except TimeoutError:
         pass
 
     print("[cyan]Plotting results. This may take some time[/cyan]")
     save_results(
-        slave=slave_cummulative,
-        master=master_cummulative,
+        periph=periph_cummulative,
+        central=central_cummulative,
         misc_data=misc,
         phy=args.phy,
         sample_rate=sample_rate,
