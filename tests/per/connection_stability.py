@@ -89,17 +89,19 @@ def save_per_plot(slave, master, sample_rate, directory):
     for i, stat in enumerate(slave):
         try:
             pers_slave.append(stat.per())
+        except ZeroDivisionError:
+            pers_slave.append(100)
+
+        try:
             pers_master.append(master[i].per())
         except ZeroDivisionError:
-            print('ZERO DIV')
-            pers_slave.append(100)
             pers_master.append(100)
 
     
 
     filepath = f"{directory}/per.png"
     
-    plt.plot(time_data, pers_slave, label="slave")
+    plt.plot(time_data, pers_slave, label="slave", linestyle='--')
     plt.plot(time_data, pers_master, label="master")
     plt.ylim([0, 100])
     plt.xlabel("time (sec)")
@@ -185,22 +187,23 @@ def make_table(data: DataPktStats):
         else:
             table.append([key, value])
 
-    table.append(["PER", data.per()])
+    table.append(["PER", round(data.per(), 2)])
 
     return table
 
 
 def add_pdf(slave_overall, master_overall, directory, dropped_connections):
+    gen = ReportGenerator(f"{directory}/connection_stability_report.pdf")
+
     charts = glob(f"{directory}/*.png")
+
+    inch = gen.rlib.units.inch
 
     #make sure to add this as the first image
     perchart = f'{directory}/per.png'
     gen.add_image(perchart, img_dims=(8 * inch, 6 * inch))
     
-    
     charts.remove(perchart)
-    gen = ReportGenerator(f"{directory}/connection_stability_report.pdf")
-    inch = gen.rlib.units.inch
     for chart in charts:
         gen.add_image(chart, img_dims=(8 * inch, 6 * inch))
 
@@ -216,10 +219,11 @@ def add_pdf(slave_overall, master_overall, directory, dropped_connections):
     )
 
     misc_table = [
+        ['Metric', 'Value'],
         ['Dropped Connections', dropped_connections]
     ]
     gen.add_table(
-        misc_table, col_widths=(gen.page_width - inch) / 2, caption="Master Metrics"
+        misc_table, col_widths=(gen.page_width - inch) / 2, caption="Misc. Metrics"
     )
 
     gen.build(doc_title="Connection Stability Report")
@@ -245,10 +249,10 @@ def save_results(
     save_per_plot(slave, master, sample_rate=sample_rate, directory=directory)
 
     save_individual(
-        data=slave, sample_rate=sample_rate, label=f"slave_{phy}", directory=directory
+        data=slave, sample_rate=sample_rate, label=f"Slave_{phy}", directory=directory
     )
     save_individual(
-        data=master, sample_rate=sample_rate, label=f"master_{phy}", directory=directory
+        data=master, sample_rate=sample_rate, label=f"Master_{phy}", directory=directory
     )
 
 
@@ -346,8 +350,8 @@ def main():
     slave.start_advertising(connect=True)
     master.init_connection(addr=slave_addr)
 
-    print("Sleeping for initial connection")
-    time.sleep(4)
+    # print("Sleeping for initial connection")
+    # time.sleep(1)
 
     slave_cummulative = []
     master_cummulative = []
@@ -357,11 +361,16 @@ def main():
         for _ in range(iterations):
             try:
                 slave_stats, _ = slave.get_conn_stats()
-                master_stats, _ = master.get_conn_stats()
                 slave_cummulative.append(slave_stats)
+            except TimeoutError:
+                slave_cummulative.append(DataPktStats())
+
+            try:
+                master_stats, _ = master.get_conn_stats()
                 master_cummulative.append(master_stats)
             except TimeoutError:
-                break
+                master_cummulative.append(DataPktStats())
+                
 
             if reconnect:
                 total_dropped_connections += 1
