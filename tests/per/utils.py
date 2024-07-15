@@ -24,7 +24,7 @@ def dict_to_table(data:dict):
 def get_git_hash(path):
     try:
         return (
-            subprocess.check_output(["git", f"-C {path}" "rev-parse", "HEAD"])
+            subprocess.check_output(["git", "-C", f"{path}", "rev-parse", "HEAD"])
             .decode("ascii")
             .strip()
         )

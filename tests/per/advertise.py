@@ -148,10 +148,10 @@ def add_pdf(resource, last_data:AdvPktStats, directory):
         ['RX ISR', last_data.rx_isr, 'usec'],
         ['TX ISR', last_data.tx_isr, 'usec'],
         ['TX Chain', last_data.tx_chain if last_data.tx_chain else 0, 'Count'],
-        ['Scan Request Rate', last_data.scan_request_rate(), '%'],
-        ['Scan Request CRC Rate', last_data.scan_request_rate(), '%'],
-        ['Scan Request Timeout Rate', last_data.scan_request_rate(), '%'],
-        ['Scan Request Fulfillment', last_data.scan_req_fulfillment(), '%']
+        ['Scan Request Rate', round(last_data.scan_request_rate(), 2), '%'],
+        ['Scan Request CRC Rate', round(last_data.scan_request_rate(), 2), '%'],
+        ['Scan Request Timeout Rate', round(last_data.scan_request_rate(),2), '%'],
+        ['Scan Request Fulfillment', round(last_data.scan_req_fulfillment(),2), '%']
     
     ]
 
@@ -179,7 +179,7 @@ def add_pdf(resource, last_data:AdvPktStats, directory):
 
     gen.add_table(
         make_version_table(),
-        col_widths=(gen.page_width - gen.rlib.units.inch) * 3 / 8,
+        col_widths=(gen.page_width - gen.rlib.units.inch) * 3 / 7,
         caption="Version Info",
     )
 
@@ -276,7 +276,22 @@ def compile_results(resource, sample_rate, results, directory):
     add_pdf(resource, results[-1], directory=directory)    
 
 
+class AdvTest():
 
+
+    def __init__(self, dut_board, sample_rate) -> None:
+        self.dut_board = dut_board
+
+        
+
+
+    def run(self):
+
+        pass
+
+    def connect(self):
+        pass
+    
 
 
 def main():
@@ -322,6 +337,8 @@ def main():
     try:
         stats,_ = dut.get_adv_stats()
         cummulative.append(stats)
+
+        dut.reset()
     except:
         pass
 
