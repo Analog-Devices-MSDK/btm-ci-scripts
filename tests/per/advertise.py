@@ -301,14 +301,19 @@ def main():
     dut = BleHci(dut_hci_port)
     
     dut.reset()
-    dut.start_advertising(connect=False, adv_name="adv-test")
+    dut.start_advertising(connect=True, adv_name="adv-test")
 
     cummulative = []
 
     with alive_bar(iterations) as bar:
         for _ in range(iterations):
-            stats, _ = dut.get_adv_stats()
-            cummulative.append(stats)
+
+            try:
+                stats, _ = dut.get_adv_stats()
+                cummulative.append(stats)
+            except:
+                cummulative.append(AdvPktStats())
+                
             bar()
 
             time.sleep(sample_rate)
