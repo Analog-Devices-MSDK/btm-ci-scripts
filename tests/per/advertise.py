@@ -186,8 +186,8 @@ class AdvTest:
             ["TX ISR", last_data.tx_isr, "usec"],
             ["TX Chain", last_data.tx_chain if last_data.tx_chain else 0, "Count"],
             ["Scan Request Rate", round(last_data.scan_request_rate(), 2), "%"],
-            ["Scan Request CRC Rate", round(last_data.scan_request_rate(), 2), "%"],
-            ["Scan Request Timeout Rate", round(last_data.scan_request_rate(), 2), "%"],
+            ["Scan Request CRC Rate", round(last_data.scan_request_crc_rate(), 2), "%"],
+            ["Scan Request Timeout Rate", round(last_data.scan_request_timeout_rate(), 2), "%"],
             [
                 "Scan Request Fulfillment",
                 round(last_data.scan_req_fulfillment(), 2),
@@ -272,6 +272,7 @@ class AdvTest:
         plt.xlabel("Time (sec)")
         plt.ylabel("Packet Count")
         plt.title("Scan Requests and Responses")
+        plt.legend()
         plt.savefig(f"{self.directory}/scan_req_resp.png")
 
         plt.close()
@@ -283,6 +284,7 @@ class AdvTest:
         plt.xlabel("time (sec)")
         plt.ylabel("Rate (%)")
         plt.title("Scan Request Metrics Vs. Time")
+        plt.legend()
         plt.savefig(f"{self.directory}/requets_metrics.png")
         plt.close()
 
@@ -292,6 +294,7 @@ class AdvTest:
         plt.xlabel("Time (sec)")
         plt.ylabel("ISR Time (usec)")
         plt.title("ISR Timing")
+        plt.legend()
         plt.savefig(f"{self.directory}/isr_timing.png")
         plt.close()
 
@@ -301,6 +304,7 @@ class AdvTest:
         plt.xlabel("Time (sec)")
         plt.ylabel("Setup Time (usec)")
         plt.title("Setup Timing")
+        plt.legend()
         plt.savefig(f"{self.directory}/setup_timing.png")
         plt.close()
 
