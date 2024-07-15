@@ -3,7 +3,6 @@ import shutil
 import subprocess
 
 
-
 def create_directory(directory):
     if not os.path.exists(directory):
         os.mkdir(directory)
@@ -11,16 +10,17 @@ def create_directory(directory):
         shutil.rmtree(directory)
         os.mkdir(directory)
 
-def dict_to_table(data:dict):
 
+def dict_to_table(data: dict):
     table = []
 
     for key, value in data.items():
-
         if isinstance(value, float):
-            table.append[key, round(value,2)]
+            table.append[key, round(value, 2)]
         else:
             table.append[key, value]
+
+
 def get_git_hash(path):
     try:
         return (
@@ -30,6 +30,8 @@ def get_git_hash(path):
         )
     except:
         return "Unknown"
+
+
 def make_version_table():
     return [
         ["Repo", "Git Hash"],

@@ -60,14 +60,14 @@ Description: Simple example showing creation of a connection and getting packet 
 import argparse
 import os
 import shutil
+import subprocess
 import time
 from datetime import datetime
 from glob import glob
-import subprocess
+from typing import List
 
 import matplotlib.pyplot as plt
-from rich import print
-from typing import List
+import resource_manager
 
 # pylint: disable=import-error,wrong-import-position
 from alive_progress import alive_bar
@@ -77,8 +77,8 @@ from max_ble_hci.data_params import DataPktStats
 from max_ble_hci.hci_packets import EventPacket
 from max_ble_hci.packet_codes import EventCode
 from packaging import version
-import resource_manager
 from resource_manager import ResourceManager
+from rich import print
 
 # pylint: enable=import-error,wrong-import-position
 
@@ -359,8 +359,8 @@ def config_cli():
 
     return parser.parse_args()
 
-def connect(periph:BleHci, central:BleHci):
-    
+
+def connect(periph: BleHci, central: BleHci):
     central_addr = 0x001234887733
     periph_addr = 0x111234887733
 
@@ -373,7 +373,6 @@ def connect(periph:BleHci, central:BleHci):
 
     periph.start_advertising(connect=True)
     central.init_connection(addr=periph_addr)
-    
 
 
 def main():
@@ -413,8 +412,6 @@ def main():
         evt_callback=hci_callback,
         id_tag="periph",
     )
-
-
 
     periph_cummulative = []
     central_cummulative = []
@@ -469,9 +466,7 @@ def main():
                     connect(periph, central)
                     reconnect = False
                 except TimeoutError:
-                    
                     misc["Timeouts"] += 1
-
 
             bar()
             time.sleep(sample_rate)
@@ -488,9 +483,8 @@ def main():
     except TimeoutError:
         pass
 
-    misc['Start Time'] = start_time.strftime("H:M:S")
-    misc['Stop Time'] = datetime.now().strftime("H:M:S")
-
+    misc["Start Time"] = start_time.strftime("H:M:S")
+    misc["Stop Time"] = datetime.now().strftime("H:M:S")
 
     print("[cyan]Plotting results. This may take some time[/cyan]")
     save_results(
