@@ -273,7 +273,8 @@ def add_pdf(
         col_widths=(gen.page_width - inch) * 3 / 8,
         caption="Misc. Metrics",
     )
-
+    
+    gen.new_page()
     gen.add_table(
         make_version_table(),
         col_widths=(gen.page_width - gen.rlib.units.inch) * 3 / 8,
@@ -460,8 +461,6 @@ def main():
 
             if reconnect:
                 misc["Dropped Connections"] += 1
-
-                print("Attempting recconnect")
                 try:
                     connect(periph, central)
                     reconnect = False
@@ -483,8 +482,8 @@ def main():
     except TimeoutError:
         pass
 
-    misc["Start Time"] = start_time.strftime("H:M:S")
-    misc["Stop Time"] = datetime.now().strftime("H:M:S")
+    misc["Start Time"] = start_time.strftime("%H:%M:%S")
+    misc["Stop Time"] = datetime.now().strftime("%H:%M:%S")
 
     print("[cyan]Plotting results. This may take some time[/cyan]")
     save_results(
