@@ -187,7 +187,11 @@ class AdvTest:
             ["TX Chain", last_data.tx_chain if last_data.tx_chain else 0, "Count"],
             ["Scan Request Rate", round(last_data.scan_request_rate(), 2), "%"],
             ["Scan Request CRC Rate", round(last_data.scan_request_crc_rate(), 2), "%"],
-            ["Scan Request Timeout Rate", round(last_data.scan_request_timeout_rate(), 2), "%"],
+            [
+                "Scan Request Timeout Rate",
+                round(last_data.scan_request_timeout_rate(), 2),
+                "%",
+            ],
             [
                 "Scan Request Fulfillment",
                 round(last_data.scan_req_fulfillment(), 2),
@@ -242,7 +246,7 @@ class AdvTest:
         timeout_rate = []
         fulfillment_rate = []
 
-        stat: AdvPktStats
+        stat: scan_requests
         for stat in self.results:
             tx_data.append(stat.tx_adv)
 
