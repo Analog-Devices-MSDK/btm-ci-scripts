@@ -91,7 +91,7 @@ def config_cli():
     )
 
     parser.add_argument("dut", help="Central board")
-    parser.add_argument("-r", "--results", help="Results directory")
+
     parser.add_argument("-t", "--time", default=1800, help="Test time")
     parser.add_argument(
         "-d", "--directory", default="advertisement_results", help="Result Directory"
