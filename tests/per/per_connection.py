@@ -98,12 +98,12 @@ def config_cli():
 
     parser.add_argument("central", help="Central board")
     parser.add_argument("peripheral", help="Peripheral Board")
-    parser.add_argument("-r", "--results", help="Results directory")
+    
     parser.add_argument(
         "-p", "--phy", default="1M", help="Connection PHY (1M, 2M, S2, S8)"
     )
     parser.add_argument(
-        "-d", "--directory", default="stability_results", help="Result Directory"
+        "-d", "--directory", default="connection_sensitivity", help="Result Directory"
     )
 
     parser.add_argument(
@@ -210,7 +210,8 @@ class SensitivityConnTest:
 
         plt.plot(df["attens"], df["slave"], label=f"Peripheral")
         plt.plot(df["attens"], df["master"], label=f"Central")
-        plt.plot(df["attens"], fail_bar)
+        plt.plot(df["attens"], fail_bar, color='red', linestyle='--')
+        plt.ylim([0, 100])
 
         plt.title("Central and Peripheral PER vs Attenuation")
         plt.xlabel(f"Received Power (dBm)")
@@ -219,42 +220,40 @@ class SensitivityConnTest:
         plt.savefig(sens_plot_path)
 
         now = datetime.now()
-        gen = ReportGenerator(f'connection_sensitivity_{now.strftime("%m_%d_%y")}.pdf')
+        gen = ReportGenerator(f'{self.directory}/connection_sensitivity_{now.strftime("%m_%d_%y")}.pdf')
         inch = gen.rlib.units.inch
 
         gen.new_page()
         gen.add_image(sens_plot_path, img_dims=(8 * inch, 6 * inch))
-
+        
+        
         below_spec_p = df[df["slave"] > 30.8]
         below_spec_c = df[df["master"] > 30.8]
 
-        print(below_spec_c)
-        print(below_spec_p)
 
-        # if len(below_spec_p) > 0:
+        if len(below_spec_p) > 0:
+            sens_point_periph = below_spec_p['attens'].iloc[0]
+        else:
+            sens_point_periph = float("-inf")
 
-        #     # sens_point_periph = below_spec_p.iloc[0]
-        # else:
-        #     sens_point_periph = float("-inf")
+        if len(below_spec_c) > 0:
+            sens_point_central = below_spec_c['attens'].iloc[0]
+        else:
+            sens_point_central = float("-inf")
 
-        # if len(below_spec_c) > 0:
-        #     sens_point_central = below_spec_c[0]
-        # else:
-        #     sens_point_central = float("-inf")
+        gen.new_page()
 
-        # result_table = [
-        #     ["Title", "Value", "Unit"],
-        #     ["Peripheral Sensitivity", round(sens_point_periph, 2), "dBm"],
-        #     [
-        #         "Central Sensitivity", round(sens_point_central, 2), "dBm"
-        #     ],
-        # ]
+        result_table = [
+            ["Title", "Value", "Unit"],
+            ["Peripheral Sensitivity", round(sens_point_periph, 2), "dBm"],
+            ["Central Sensitivity", round(sens_point_central, 2), "dBm"],
+        ]
 
-        # gen.add_table(
-        #     result_table,
-        #     col_widths=(gen.page_width - gen.rlib.units.inch) * 4,
-        #     caption="Misc Info",
-        # )
+        gen.add_table(
+            result_table,
+            col_widths=(gen.page_width - gen.rlib.units.inch) / 4,
+            caption="Sensitivity",
+        )
 
         misc_info_table = [
             ["", ""],
