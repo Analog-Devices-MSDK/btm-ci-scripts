@@ -64,6 +64,7 @@ from typing import Dict
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from alive_progress import alive_bar
 from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
 from ble_test_suite.results import Mask, Plot
 from ble_test_suite.utils.log_util import get_formatted_logger
@@ -98,14 +99,20 @@ def config_cli():
 
     parser.add_argument("central", help="Central board")
     parser.add_argument("peripheral", help="Peripheral Board")
-    
+
     parser.add_argument(
         "-p", "--phy", default="1M", help="Connection PHY (1M, 2M, S2, S8)"
     )
     parser.add_argument(
         "-d", "--directory", default="connection_sensitivity", help="Result Directory"
     )
-
+    parser.add_argument("-t", "--hold-time", default=1, help="Result Directory")
+    parser.add_argument(
+        "-a",
+        "--attens",
+        default="-20:-100:-2",
+        help="RX power range. Syntax:  start:stop:step. If no step, default step -2",
+    )
     parser.add_argument(
         "--local",
         action="store_true",
@@ -122,6 +129,8 @@ class SensitivityConnTest:
         central_board: str,
         phy: str,
         directory: str,
+        hold_time: int,
+        attens: list,
         local=True,
     ) -> None:
         self.periph_board = periph_board
@@ -130,6 +139,9 @@ class SensitivityConnTest:
         self.directory = directory
         self.periph: BleHci
         self.central: BleHci
+
+        self.hold_time = hold_time
+        self.attens = attens
 
         self.resource_manager = ResourceManager()
 
@@ -147,11 +159,10 @@ class SensitivityConnTest:
             f"{periph_board}.hci_port"
         )
 
-
-        self.loss = self.resource_manager.get_item_value("rf_bench.cal.losses.2440",default='0')
+        self.loss = self.resource_manager.get_item_value(
+            "rf_bench.cal.losses.2440", default="0"
+        )
         self.loss = float(self.loss)
-
-
 
         self.central = BleHci(
             central_hci_port,
@@ -169,6 +180,10 @@ class SensitivityConnTest:
         self.reconnect = False
         self.start_time = None
         self.stop_time = None
+        self.periph_timeouts = 0
+        self.central_timeouts = 0
+
+
 
     def connect(self):
         central_addr = 0x001234887733
@@ -210,7 +225,7 @@ class SensitivityConnTest:
 
         plt.plot(df["attens"], df["slave"], label=f"Peripheral")
         plt.plot(df["attens"], df["master"], label=f"Central")
-        plt.plot(df["attens"], fail_bar, color='red', linestyle='--')
+        plt.plot(df["attens"], fail_bar, color="red", linestyle="--")
         plt.ylim([0, 100])
 
         plt.title("Central and Peripheral PER vs Attenuation")
@@ -220,24 +235,24 @@ class SensitivityConnTest:
         plt.savefig(sens_plot_path)
 
         now = datetime.now()
-        gen = ReportGenerator(f'{self.directory}/connection_sensitivity_{now.strftime("%m_%d_%y")}.pdf')
+        gen = ReportGenerator(
+            f'{self.directory}/connection_sensitivity_{now.strftime("%m_%d_%y")}.pdf'
+        )
         inch = gen.rlib.units.inch
 
         gen.new_page()
         gen.add_image(sens_plot_path, img_dims=(8 * inch, 6 * inch))
-        
-        
+
         below_spec_p = df[df["slave"] > 30.8]
         below_spec_c = df[df["master"] > 30.8]
 
-
         if len(below_spec_p) > 0:
-            sens_point_periph = below_spec_p['attens'].iloc[0]
+            sens_point_periph = below_spec_p["attens"].iloc[0]
         else:
             sens_point_periph = float("-inf")
 
         if len(below_spec_c) > 0:
-            sens_point_central = below_spec_c['attens'].iloc[0]
+            sens_point_central = below_spec_c["attens"].iloc[0]
         else:
             sens_point_central = float("-inf")
 
@@ -275,6 +290,8 @@ class SensitivityConnTest:
                 "Peripheral Target",
                 self.resource_manager.get_item_value(f"{self.periph_board}.package"),
             ],
+            ['Central HCI Timeouts', self.central_timeouts],
+            ['Peripheral HCI Timeouts', self.periph_timeouts],
             ["Date", now.strftime("%m/%d/%y")],
             ["Stop Time", self.start_time.strftime("%H:%M:%S")],
             ["Stop Time", self.stop_time.strftime("%H:%M:%S")],
@@ -301,67 +318,57 @@ class SensitivityConnTest:
     def run(self):
         # could disable with local, but then you might as well use the stability test
         atten = mc_rcdat_6000.RCDAT6000()
-        attens = list(range(20, 100, 2))
 
         results = {"attens": [], "slave": [], "master": []}
         failed_per = False
         total_dropped_connections = 0
 
-        prev_rx = 100000
-        retries = 3
-
         self.start_time = datetime.now()
         self.connect()
 
-        while attens:
-            i = attens[0]
-            if prev_rx == i:
-                retries -= 1
+        atten_steps = len(self.attens)
+        
+        with alive_bar(atten_steps) as bar:
+            while self.attens:
+                i = self.attens[0]
+                calibrated_value = int(i + self.loss)
+                atten.set_attenuation(calibrated_value)
+                time.sleep(self.hold_time)
 
-            print(f"RX Power {-i} dBm")
-            calibrated_value = int(i + self.loss)
 
-            atten.set_attenuation(calibrated_value)
-
-            time.sleep(1)
-
-            try:
-                periph_stats, _ = self.periph.get_conn_stats()
-                central_stats, _ = self.central.get_conn_stats()
-            except:
-                break
-
-            if periph_stats.rx_data and central_stats.rx_data:
-                retries = 3
-                periph_per = periph_stats.per()
-                central_per = central_stats.per()
-
-                print("Slave - ", periph_per)
-                print("Master - ", central_per)
-
-                results["slave"].append(periph_per)
-                results["master"].append(central_per)
-                results["attens"].append(-i)
-                attens.pop(0)
-
-                if (periph_per >= 30 or central_per >= 30) and i < 70:
-                    failed_per = True
-                    print(f"Connection Failed PER TEST at {i}")
-                    print(f"Master: {central_per}, Slave: {periph_per}")
-
-            elif reconnect:
-                print("Attempting reconnect!")
                 try:
-                    self.connect()
-                    reconnect = False
-                    total_dropped_connections += 1
-                except:
-                    pass
+                    periph_stats, _ = self.periph.get_conn_stats()
+                except TimeoutError:
+                    self.periph_timeouts += 1
+                    continue
 
-            prev_rx = i
-            if retries == 0:
-                break
+                try:
+                    central_stats, _ = self.central.get_conn_stats()
+                except TimeoutError:
+                    self.central_timeouts += 1
+                    continue
 
+
+                if periph_stats.rx_data and central_stats.rx_data:
+                    periph_per = periph_stats.per()
+                    central_per = central_stats.per()
+
+                    results["slave"].append(periph_per)
+                    results["master"].append(central_per)
+                    results["attens"].append(-i)
+                
+                    if (periph_per >= 30.8 or central_per >= 30.8) and i < 70:
+                        failed_per = True
+                    self.attens.pop(0)
+                    bar()
+                elif reconnect:
+                    print("Attempting reconnect!")
+                    try:
+                        self.connect()
+                        reconnect = False
+                        total_dropped_connections += 1
+                    except:
+                        pass
 
             err = None
             try:
@@ -396,7 +403,6 @@ class SensitivityConnTest:
             print(packet)
             return
 
-
         event: EventPacket = packet
         if event.evt_code == EventCode.DICON_COMPLETE:
             self.reconnect = True
@@ -418,11 +424,29 @@ def main():
         central_board != periph_board
     ), f"Master must not be the same as slave, {central_board} = {periph_board}"
 
+    attens = args.attens.split(":")
+
+    attens = [int(x) for x in attens]
+
+    if len(attens) == 3:
+        start = attens[0]
+        stop = attens[1]
+        step = attens[2]
+        attens = list(range(start, stop, step))
+    elif len(attens) == 2:
+        start = attens[0]
+        stop = attens[1]
+        attens = list(range(start, stop, -2))
+    else:
+        raise ValueError(f"Invalid attenuation range {args.attens}")
+
     test = SensitivityConnTest(
         periph_board=periph_board,
         central_board=central_board,
         phy=args.phy,
         directory=results_dir,
+        hold_time=args.hold_time,
+        attens=attens,
         local=args.local,
     )
 
