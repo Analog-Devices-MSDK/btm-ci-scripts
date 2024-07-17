@@ -273,7 +273,7 @@ def add_pdf(
         col_widths=(gen.page_width - inch) * 3 / 8,
         caption="Misc. Metrics",
     )
-    
+
     gen.new_page()
     gen.add_table(
         make_version_table(),

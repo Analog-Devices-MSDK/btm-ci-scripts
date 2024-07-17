@@ -56,8 +56,8 @@ Description: Simple example showing creation of a connection and getting packet 
 
 """
 
-
 import os
+import argparse
 import sys
 import time
 from typing import Dict
@@ -67,80 +67,22 @@ import pandas as pd
 from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
 from ble_test_suite.results import Mask, Plot
 from ble_test_suite.utils.log_util import get_formatted_logger
+from ble_test_suite.results.report_generator import ReportGenerator
 
 # pylint: disable=import-error,wrong-import-position
+
 from max_ble_hci import BleHci
+from max_ble_hci.packet_codes import StatusCode
 from max_ble_hci.hci_packets import EventPacket
 from max_ble_hci.packet_codes import EventCode
+from max_ble_hci.data_params import EstablishConnParams
+from max_ble_hci.constants import PhyOption
 from resource_manager import ResourceManager
 from serial import Timeout
+from utils import config_switches, create_directory
+from datetime import datetime
 
 # pylint: enable=import-error,wrong-import-position
-
-
-def config_switches(resource_manager: ResourceManager, slave: str, master: str):
-    """Configure RF switches to connect DUTS
-
-    Parameters
-    ----------
-    resource_manager : ResourceManager
-        resource manager to access switch information
-    slave : str
-        slave resource
-    master : str
-        slave_resource
-    """
-    slave_sw_model, slave_sw_port = resource_manager.get_switch_config(slave)
-    master_sw_model, master_sw_port = resource_manager.get_switch_config(master)
-
-    assert (
-        slave_sw_model and slave_sw_port
-    ), "Slave must have the sw_model and sw_state attribute"
-    assert (
-        master_sw_model and master_sw_port
-    ), "Master must have the sw_model and sw_state attribute"
-    assert (
-        slave_sw_model != master_sw_model
-    ), "Boards must be on opposite switches to connect!"
-
-    with mc_rf_sw.MiniCircuitsRFSwitch(model=slave_sw_model) as sw_slave:
-        print("Configuring Slave Switch")
-        sw_slave.set_sw_state(slave_sw_port)
-
-    with mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model) as sw_master:
-        print("Configuring Master Switch")
-        sw_master.set_sw_state(master_sw_port)
-
-
-def save_results(slave, master, results: Dict[str, list], phy: str, directory):
-    """Store PER Results
-
-    Parameters
-    ----------
-    results : Dict[str,list]
-        Results from per sweep
-    """
-    # print(results)
-    if not os.path.exists(directory):
-        os.mkdir(directory)
-
-    df = pd.DataFrame(results)
-    plot_title = f"connection_per_{slave}_{master}_{phy}"
-
-    df.to_csv(f"{directory}/{plot_title}.csv", index=False)
-
-    fail_bar = [30] * len(results["attens"])
-
-    plt.plot(df["attens"], df["slave"], label=f"{slave}")
-    plt.plot(df["attens"], df["master"], label=f"{master}")
-    plt.plot(df["attens"], fail_bar)
-
-    plt.title(plot_title)
-    plt.xlabel(f"Received Power (dBm)")
-    plt.ylabel(f"PER %")
-    plt.legend()
-
-    plt.savefig(f"{directory}/{plot_title}.png")
 
 
 def print_test_config(slave, master):
@@ -149,162 +91,291 @@ def print_test_config(slave, master):
     print(f"\tMaster - {master}\n")
 
 
-reconnect = False
+def config_cli():
+    parser = argparse.ArgumentParser(
+        description="Evaluates connection sensitivity",
+    )
+
+    parser.add_argument("central", help="Central board")
+    parser.add_argument("peripheral", help="Peripheral Board")
+    parser.add_argument("-r", "--results", help="Results directory")
+    parser.add_argument(
+        "-p", "--phy", default="1M", help="Connection PHY (1M, 2M, S2, S8)"
+    )
+    parser.add_argument("-t", "--time", default=1800, help="Test time")
+    parser.add_argument(
+        "-d", "--directory", default="stability_results", help="Result Directory"
+    )
+
+    parser.add_argument(
+        "-s",
+        "--sample-rate",
+        default=1,
+        help="Sample rate in seconds. Minimum of 1 second",
+    )
+    parser.add_argument(
+        "--local",
+        action="store_true",
+        help="Conditionally skip code only used on CI machine",
+    )
+
+    return parser.parse_args()
 
 
-def hci_callback(packet):
-    if not isinstance(packet, EventPacket):
-        print(packet)
-        return
+class SensitivityConnTest:
+    def __init__(
+        self,
+        periph_board: str,
+        central_board: str,
+        phy: str,
+        directory: str,
+        local=True,
+    ) -> None:
+        self.periph_board = periph_board
+        self.central_board = central_board
+        self.phy = PhyOption.str_to_enum(phy)
+        self.directory = directory
 
-    global reconnect
+        self.periph: BleHci
+        self.central: BleHci
 
-    event: EventPacket = packet
-    if event.evt_code == EventCode.DICON_COMPLETE:
-        reconnect = True
+        resource_manager = ResourceManager()
+        if not local:
+            config_switches(
+                resource_manager=resource_manager,
+                slave=periph_board,
+                master=central_board,
+            )
+
+        central_hci_port = resource_manager.get_item_value(f"{central_board}.hci_port")
+        periph_hci_port = resource_manager.get_item_value(f"{periph_board}.hci_port")
+
+        try:
+            self.loss = resource_manager.get_item_value("rf_bench.cal.losses.2440")
+            self.loss = float(self.loss)
+        except KeyError:
+            print("Could not find cal data in config. Defaulting to 0")
+            self.loss = 0.0
+
+        self.central = BleHci(
+            central_hci_port,
+            async_callback=self.hci_callback,
+            evt_callback=self.hci_callback,
+            id_tag="central",
+        )
+        self.periph = BleHci(
+            periph_hci_port,
+            async_callback=self.hci_callback,
+            evt_callback=self.hci_callback,
+            id_tag="periph",
+        )
+
+        self.reconnect = False
+
+    def connect(self):
+        central_addr = 0x001234887733
+        periph_addr = 0x111234887733
+
+        self.periph.reset()
+        self.central.reset()
+        self.central.set_adv_tx_power(0)
+        self.periph.set_adv_tx_power(0)
+        self.periph.set_address(periph_addr)
+        self.central.set_address(central_addr)
+
+        self.periph.start_advertising(connect=True)
+        self.central.init_connection(addr=periph_addr)
+
+        # Default is 1M
+        if self.phy != PhyOption.PHY_1M:
+            err = self.periph.set_phy(tx_phys=self.phy, rx_phys=self.phy)
+            if err != StatusCode.SUCCESS:
+                print("Error setting phy!")
+
+    def save_results(self, results: Dict[str, list]):
+        """Store PER Results
+
+        Parameters
+        ----------
+        results : Dict[str,list]
+            Results from per sweep
+        """
+        create_directory(self.directory)
+
+        df = pd.DataFrame(results)
+
+        df.to_csv(f"{self.directory}/per_connection.csv", index=False)
+
+        fail_bar = [30] * len(results["attens"])
+
+        sens_plot_path = f"{self.directory}/per_connection.png"
+
+        plt.plot(df["attens"], df["slave"], label=f"Peripheral")
+        plt.plot(df["attens"], df["master"], label=f"Central")
+        plt.plot(df["attens"], fail_bar)
+
+        plt.title("Central and Peripheral PER vs Attenuation")
+        plt.xlabel(f"Received Power (dBm)")
+        plt.ylabel(f"PER %")
+        plt.legend()
+        plt.savefig(sens_plot_path)
+
+
+        now = datetime.now()
+        gen = ReportGenerator(f'connection_sensitivity_{now.strftime("%m_%d_%y")}.pdf')
+
+        gen.new_page()
+        gen.add_image(sens_plot_path)
+
+        below_spec_p =  df[df['slave'] > 30.8]
+        below_spec_c =  df[df['master'] > 30.8]
+
+        if len(below_spec_p) > 0:
+            sens_point_periph = below_spec_p[0]
+        else:
+            sens_point_periph = float('-inf')
+
+        if len(below_spec_c) > 0:
+            sens_point_central = below_spec_c[0]
+        else:
+            sens_point_central = float('-inf')
+
+        result_table = [
+            ['Title', 'Value' , "Unit"],
+            ['Peripheral Sensitivity', round(sens_point_periph,2), 'dBm']
+            ['Central Sensitivity', round(sens_point_central,2), 'dBm']
+
+        ]
+
+
+
+        gen.add_table(result_table)
+
+        gen.build(f"Connection Sensitivity {now.strftime('%m-%d-%y')}")
+
+
+
+    def run(self):
+        # could disable with local, but then you might as well use the stability test
+        atten = mc_rcdat_6000.RCDAT6000()
+        attens = list(range(20, 100, 2))
+
+        results = {"attens": [], "slave": [], "master": []}
+        failed_per = False
+        total_dropped_connections = 0
+
+        prev_rx = 100000
+        retries = 3
+
+        self.connect()
+
+        while attens:
+            i = attens[0]
+            if prev_rx == i:
+                retries -= 1
+
+            print(f"RX Power {-i} dBm")
+            calibrated_value = int(i + self.loss)
+
+            atten.set_attenuation(calibrated_value)
+
+            time.sleep(1)
+
+            try:
+                periph_stats, _ = self.periph.get_conn_stats()
+                central_stats, _ = self.central.get_conn_stats()
+            except TimeoutError:
+                break
+
+            if periph_stats.rx_data and central_stats.rx_data:
+                retries = 3
+                periph_per = periph_stats.per()
+                central_per = central_stats.per()
+
+                print("Slave - ", periph_per)
+                print("Master - ", central_per)
+
+                results["slave"].append(periph_per)
+                results["master"].append(central_per)
+                results["attens"].append(-i)
+                attens.pop(0)
+
+                if (periph_per >= 30 or central_per >= 30) and i < 70:
+                    failed_per = True
+                    print(f"Connection Failed PER TEST at {i}")
+                    print(f"Master: {central_per}, Slave: {periph_per}")
+
+            elif reconnect:
+                print("Attempting reconnect!")
+                try:
+                    self.connect()
+                    reconnect = False
+                    total_dropped_connections += 1
+                except:
+                    pass
+
+            prev_rx = i
+            if retries == 0:
+                break
+
+            self.periph.reset_connection_stats()
+            self.central.reset_connection_stats()
+
+        try:
+            self.central.disconnect()
+            self.periph.disconnect()
+
+            self.central.reset()
+            self.periph.reset()
+        except TimeoutError:
+            pass
+
+        self.save_results(results)
+
+        if failed_per:
+            return -1
+
+        return 0
+
+    def hci_callback(packet):
+        if not isinstance(packet, EventPacket):
+            print(packet)
+            return
+
+        global reconnect
+
+        event: EventPacket = packet
+        if event.evt_code == EventCode.DICON_COMPLETE:
+            reconnect = True
 
 
 def main():
-    global reconnect
     # pylint: disable=too-many-locals
     """MAIN"""
 
-    if len(sys.argv) < 3:
-        print(f"Expected 2 inputs. Got {len(sys.argv)}")
-        print("usage: <MASTER_BAORD> <SLAVE_BOARD> <RESULTS DIRECTORY")
-        sys.exit(-1)
+    args = config_cli()
 
-    master_board = sys.argv[1]
-    slave_board = sys.argv[2]
-    results_dir = sys.argv[3]
+    central_board = args.central
+    periph_board = args.peripheral
+    results_dir = args.directory
 
-    print_test_config(slave_board, master_board)
+    print_test_config(periph_board, central_board)
 
     assert (
-        master_board != slave_board
-    ), f"Master must not be the same as slave, {master_board} = {slave_board}"
+        central_board != periph_board
+    ), f"Master must not be the same as slave, {central_board} = {periph_board}"
 
-    resource_manager = ResourceManager()
-
-    try:
-        loss = resource_manager.get_item_value("rf_bench.cal.losses.2440")
-        loss = float(loss)
-    except KeyError:
-        print("Could not find cal data in config. Defaulting to 0")
-        loss = 0.0
-
-    # config_switches(resource_manager, slave_board, master_board)
-
-    master_hci_port = resource_manager.get_item_value(f"{master_board}.hci_port")
-    slave_hci_port = resource_manager.get_item_value(f"{slave_board}.hci_port")
-
-    time.sleep(1)
-    # master = BleHci(master_hci_port, log_level=logging.WARN,evt_callback=hci_callback)
-    # slave = BleHci(slave_hci_port, log_level=logging.WARN, evt_callback=hci_callback)
-    master = BleHci(
-        master_hci_port,
-        async_callback=hci_callback,
-        evt_callback=hci_callback,
-        id_tag="master",
+    test = SensitivityConnTest(
+        periph_board=periph_board,
+        central_board=central_board,
+        phy=args.phy,
+        directory=results_dir,
+        local=args.local,
     )
-    slave = BleHci(
-        slave_hci_port,
-        async_callback=hci_callback,
-        evt_callback=hci_callback,
-        id_tag="slave",
-    )
-    atten = mc_rcdat_6000.RCDAT6000()
 
-    master_addr = 0x001234887733
-    slave_addr = 0x111234887733
+    err = test.run()
 
-    slave.reset()
-    master.reset()
-    master.set_adv_tx_power(0)
-    slave.set_adv_tx_power(0)
-    slave.set_address(slave_addr)
-    master.set_address(master_addr)
-
-    slave.start_advertising(connect=True)
-    master.init_connection(addr=slave_addr)
-
-    print("Sleeping for initial connection")
-    time.sleep(3)
-
-    attens = list(range(20, 100, 2))
-
-    results = {"attens": [], "slave": [], "master": []}
-    failed_per = False
-    total_dropped_connections = 0
-
-    prev_rx = 100000
-    retries = 3
-
-    while attens:
-        i = attens[0]
-        if prev_rx == i:
-            retries -= 1
-
-        print(f"RX Power {-i} dBm")
-        calibrated_value = int(i + loss)
-
-        atten.set_attenuation(calibrated_value)
-
-        time.sleep(1)
-
-        try:
-            slave_stats, _ = slave.get_conn_stats()
-            master_stats, _ = master.get_conn_stats()
-        except TimeoutError:
-            break
-
-        if slave_stats.rx_data and master_stats.rx_data:
-            retries = 3
-            slave_per = slave_stats.per()
-            master_per = master_stats.per()
-
-            print("Slave - ", slave_per)
-            print("Master - ", master_per)
-
-            results["slave"].append(slave_per)
-            results["master"].append(master_per)
-            results["attens"].append(-i)
-            attens.pop(0)
-
-            if (slave_per >= 30 or master_per >= 30) and i < 70:
-                failed_per = True
-                print(f"Connection Failed PER TEST at {i}")
-                print(f"Master: {master_per}, Slave: {slave_per}")
-
-        elif reconnect:
-            print("Attempting reconnect!")
-            total_dropped_connections += 1
-            reconnect = False
-            slave.start_advertising(connect=True)
-            master.init_connection(addr=slave_addr)
-            time.sleep(2)
-
-        prev_rx = i
-        if retries == 0:
-            break
-
-        slave.reset_connection_stats()
-        master.reset_connection_stats()
-    try:
-        master.disconnect()
-        slave.disconnect()
-
-        master.reset()
-        slave.reset()
-    except TimeoutError:
-        pass
-
-    save_results(slave_board, master_board, results, "1M", results_dir)
-
-    print(f"Total Dropped Connections: {total_dropped_connections}")
-
-    if failed_per:
-        sys.exit(-1)
+    sys.exit(err)
 
 
 if __name__ == "__main__":
