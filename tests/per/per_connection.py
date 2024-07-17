@@ -102,17 +102,10 @@ def config_cli():
     parser.add_argument(
         "-p", "--phy", default="1M", help="Connection PHY (1M, 2M, S2, S8)"
     )
-    parser.add_argument("-t", "--time", default=1800, help="Test time")
     parser.add_argument(
         "-d", "--directory", default="stability_results", help="Result Directory"
     )
 
-    parser.add_argument(
-        "-s",
-        "--sample-rate",
-        default=1,
-        help="Sample rate in seconds. Minimum of 1 second",
-    )
     parser.add_argument(
         "--local",
         action="store_true",
@@ -154,12 +147,11 @@ class SensitivityConnTest:
             f"{periph_board}.hci_port"
         )
 
-        try:
-            self.loss = self.resource_manager.get_item_value("rf_bench.cal.losses.2440")
-            self.loss = float(self.loss)
-        except KeyError:
-            print("Could not find cal data in config. Defaulting to 0")
-            self.loss = 0.0
+
+        self.loss = self.resource_manager.get_item_value("rf_bench.cal.losses.2440",default='0')
+        self.loss = float(self.loss)
+
+
 
         self.central = BleHci(
             central_hci_port,
@@ -228,35 +220,41 @@ class SensitivityConnTest:
 
         now = datetime.now()
         gen = ReportGenerator(f'connection_sensitivity_{now.strftime("%m_%d_%y")}.pdf')
+        inch = gen.rlib.units.inch
 
         gen.new_page()
-        gen.add_image(sens_plot_path)
+        gen.add_image(sens_plot_path, img_dims=(8 * inch, 6 * inch))
 
         below_spec_p = df[df["slave"] > 30.8]
         below_spec_c = df[df["master"] > 30.8]
 
-        if len(below_spec_p) > 0:
-            sens_point_periph = below_spec_p[0]
-        else:
-            sens_point_periph = float("-inf")
+        print(below_spec_c)
+        print(below_spec_p)
 
-        if len(below_spec_c) > 0:
-            sens_point_central = below_spec_c[0]
-        else:
-            sens_point_central = float("-inf")
+        # if len(below_spec_p) > 0:
 
-        result_table = [
-            ["Title", "Value", "Unit"],
-            ["Peripheral Sensitivity", round(sens_point_periph, 2), "dBm"][
-                "Central Sensitivity", round(sens_point_central, 2), "dBm"
-            ],
-        ]
+        #     # sens_point_periph = below_spec_p.iloc[0]
+        # else:
+        #     sens_point_periph = float("-inf")
 
-        gen.add_table(
-            result_table,
-            col_widths=(gen.page_width - gen.rlib.units.inch) * 4,
-            caption="Misc Info",
-        )
+        # if len(below_spec_c) > 0:
+        #     sens_point_central = below_spec_c[0]
+        # else:
+        #     sens_point_central = float("-inf")
+
+        # result_table = [
+        #     ["Title", "Value", "Unit"],
+        #     ["Peripheral Sensitivity", round(sens_point_periph, 2), "dBm"],
+        #     [
+        #         "Central Sensitivity", round(sens_point_central, 2), "dBm"
+        #     ],
+        # ]
+
+        # gen.add_table(
+        #     result_table,
+        #     col_widths=(gen.page_width - gen.rlib.units.inch) * 4,
+        #     caption="Misc Info",
+        # )
 
         misc_info_table = [
             ["", ""],
@@ -331,7 +329,7 @@ class SensitivityConnTest:
             try:
                 periph_stats, _ = self.periph.get_conn_stats()
                 central_stats, _ = self.central.get_conn_stats()
-            except TimeoutError:
+            except:
                 break
 
             if periph_stats.rx_data and central_stats.rx_data:
@@ -365,9 +363,17 @@ class SensitivityConnTest:
             if retries == 0:
                 break
 
-            self.periph.reset_connection_stats()
-            self.central.reset_connection_stats()
 
+            err = None
+            try:
+                while err != StatusCode.SUCCESS:
+                    err = self.periph.reset_connection_stats()
+                err = None
+
+                while err != StatusCode.SUCCESS:
+                    err = self.central.reset_connection_stats()
+            except:
+                pass
         try:
             self.central.disconnect()
             self.periph.disconnect()
@@ -386,16 +392,15 @@ class SensitivityConnTest:
 
         return 0
 
-    def hci_callback(packet):
+    def hci_callback(self, packet):
         if not isinstance(packet, EventPacket):
             print(packet)
             return
 
-        global reconnect
 
         event: EventPacket = packet
         if event.evt_code == EventCode.DICON_COMPLETE:
-            reconnect = True
+            self.reconnect = True
 
 
 def main():
