@@ -79,7 +79,7 @@ from max_ble_hci.data_params import EstablishConnParams
 from max_ble_hci.constants import PhyOption
 from resource_manager import ResourceManager
 from serial import Timeout
-from utils import config_switches, create_directory
+from utils import config_switches, create_directory, make_version_table
 from datetime import datetime
 
 # pylint: enable=import-error,wrong-import-position
@@ -135,23 +135,27 @@ class SensitivityConnTest:
         self.central_board = central_board
         self.phy = PhyOption.str_to_enum(phy)
         self.directory = directory
-
         self.periph: BleHci
         self.central: BleHci
 
-        resource_manager = ResourceManager()
+        self.resource_manager = ResourceManager()
+
         if not local:
             config_switches(
-                resource_manager=resource_manager,
+                resource_manager=self.resource_manager,
                 slave=periph_board,
                 master=central_board,
             )
 
-        central_hci_port = resource_manager.get_item_value(f"{central_board}.hci_port")
-        periph_hci_port = resource_manager.get_item_value(f"{periph_board}.hci_port")
+        central_hci_port = self.resource_manager.get_item_value(
+            f"{central_board}.hci_port"
+        )
+        periph_hci_port = self.resource_manager.get_item_value(
+            f"{periph_board}.hci_port"
+        )
 
         try:
-            self.loss = resource_manager.get_item_value("rf_bench.cal.losses.2440")
+            self.loss = self.resource_manager.get_item_value("rf_bench.cal.losses.2440")
             self.loss = float(self.loss)
         except KeyError:
             print("Could not find cal data in config. Defaulting to 0")
@@ -171,6 +175,8 @@ class SensitivityConnTest:
         )
 
         self.reconnect = False
+        self.start_time = None
+        self.stop_time = None
 
     def connect(self):
         central_addr = 0x001234887733
@@ -220,40 +226,80 @@ class SensitivityConnTest:
         plt.legend()
         plt.savefig(sens_plot_path)
 
-
         now = datetime.now()
         gen = ReportGenerator(f'connection_sensitivity_{now.strftime("%m_%d_%y")}.pdf')
 
         gen.new_page()
         gen.add_image(sens_plot_path)
 
-        below_spec_p =  df[df['slave'] > 30.8]
-        below_spec_c =  df[df['master'] > 30.8]
+        below_spec_p = df[df["slave"] > 30.8]
+        below_spec_c = df[df["master"] > 30.8]
 
         if len(below_spec_p) > 0:
             sens_point_periph = below_spec_p[0]
         else:
-            sens_point_periph = float('-inf')
+            sens_point_periph = float("-inf")
 
         if len(below_spec_c) > 0:
             sens_point_central = below_spec_c[0]
         else:
-            sens_point_central = float('-inf')
+            sens_point_central = float("-inf")
 
         result_table = [
-            ['Title', 'Value' , "Unit"],
-            ['Peripheral Sensitivity', round(sens_point_periph,2), 'dBm']
-            ['Central Sensitivity', round(sens_point_central,2), 'dBm']
-
+            ["Title", "Value", "Unit"],
+            ["Peripheral Sensitivity", round(sens_point_periph, 2), "dBm"][
+                "Central Sensitivity", round(sens_point_central, 2), "dBm"
+            ],
         ]
 
+        gen.add_table(
+            result_table,
+            col_widths=(gen.page_width - gen.rlib.units.inch) * 4,
+            caption="Misc Info",
+        )
 
+        misc_info_table = [
+            ["", ""],
+            ["Central", self.central_board],
+            [
+                "Central Target",
+                self.resource_manager.get_item_value(f"{self.central_board}.target"),
+            ],
+            [
+                "Central Package",
+                self.resource_manager.get_item_value(f"{self.central_board}.package"),
+            ],
+            ["Peripheral", self.periph_board],
+            [
+                "Peripheral Target",
+                self.resource_manager.get_item_value(f"{self.periph_board}.target"),
+            ],
+            [
+                "Peripheral Target",
+                self.resource_manager.get_item_value(f"{self.periph_board}.package"),
+            ],
+            ["Date", now.strftime("%m/%d/%y")],
+            ["Stop Time", self.start_time.strftime("%H:%M:%S")],
+            ["Stop Time", self.stop_time.strftime("%H:%M:%S")],
+            [
+                "Total Time",
+                f"{int((self.stop_time - self.start_time).total_seconds())} s",
+            ],
+        ]
 
-        gen.add_table(result_table)
+        gen.add_table(
+            misc_info_table,
+            col_widths=(gen.page_width - gen.rlib.units.inch) * 3 / 8,
+            caption="Misc Info",
+        )
+
+        gen.add_table(
+            make_version_table(),
+            col_widths=(gen.page_width - gen.rlib.units.inch) * 3 / 7,
+            caption="Version Info",
+        )
 
         gen.build(f"Connection Sensitivity {now.strftime('%m-%d-%y')}")
-
-
 
     def run(self):
         # could disable with local, but then you might as well use the stability test
@@ -267,6 +313,7 @@ class SensitivityConnTest:
         prev_rx = 100000
         retries = 3
 
+        self.start_time = datetime.now()
         self.connect()
 
         while attens:
@@ -329,6 +376,8 @@ class SensitivityConnTest:
             self.periph.reset()
         except TimeoutError:
             pass
+
+        self.stop_time = datetime.now()
 
         self.save_results(results)
 
