@@ -57,6 +57,7 @@ Description: Simple example showing creation of a connection and getting packet 
 """
 
 import os
+import statistics
 import argparse
 import sys
 import time
@@ -73,7 +74,7 @@ from ble_test_suite.results.report_generator import ReportGenerator
 from max_ble_hci import BleHci
 from max_ble_hci.packet_codes import StatusCode
 from max_ble_hci.hci_packets import EventPacket
-from max_ble_hci.packet_codes import EventCode, EventMaskLE
+from max_ble_hci.packet_codes import EventCode, EventMaskLE, EventSubcode
 from max_ble_hci.constants import PhyOption
 from resource_manager import ResourceManager
 from utils import config_switches, create_directory, make_version_table
@@ -173,6 +174,7 @@ class SensitivityConnTest:
             id_tag="periph",
         )
 
+        self.is_connected = False
         self.reconnect = False
         self.start_time = None
         self.stop_time = None
@@ -184,34 +186,40 @@ class SensitivityConnTest:
         central_addr = 0x001234887733
         periph_addr = 0x111234887733
 
-        self.periph.reset()
-        self.central.reset()
+        status = self.periph.reset()
+        if status != StatusCode.SUCCESS:
+            print(f'Failed to reset device {status}')
         
+        status = self.central.reset()
+        if status != StatusCode.SUCCESS:
+            print(f'Failed to reset device {status}')
         self.central.set_adv_tx_power(0)
         self.periph.set_adv_tx_power(0)
-        
+
         self.periph.set_address(periph_addr)
         self.central.set_address(central_addr)
 
-        
-        self.periph.set_event_mask_le(EventMaskLE.CONNECTION_COMPLETE | EventMaskLE.PHY_UPDATE_COMPLETE)
+        self.periph.set_event_mask_le(
+            EventMaskLE.CONNECTION_COMPLETE | EventMaskLE.PHY_UPDATE_COMPLETE
+        )
 
         err = self.periph.set_default_phy(tx_phys=self.phy, rx_phys=self.phy)
         if err != StatusCode.SUCCESS:
-            print(f'Failed to set default PHY {err}')
+            print(f"Failed to set default PHY {err}")
         self.periph.start_advertising(connect=True)
 
-   
         err = self.central.set_default_phy(tx_phys=self.phy, rx_phys=self.phy)
         if err != StatusCode.SUCCESS:
-            print(f'Failed to set default PHY {err}')
+            print(f"Failed to set default PHY {err}")
 
-        self.central.init_connection(
-            addr=periph_addr
-        )
+        self.central.init_connection(addr=periph_addr)
 
-        time.sleep(10)
-
+        while not self.is_connected:
+            pass
+        
+        # Defaults to 1M
+        if self.phy != PhyOption.PHY_1M:
+            self.periph.set_phy(tx_phys=self.phy, rx_phys=self.phy)
 
     def save_results(self, results: Dict[str, list]):
         """Store PER Results
@@ -264,12 +272,17 @@ class SensitivityConnTest:
         else:
             sens_point_central = float("-inf")
 
-        gen.new_page()
+        avg_periph_per =  statistics.mean(results['slave'])
+        avg_central_per =  statistics.mean(results['master'])
 
+
+        gen.new_page()
         result_table = [
             ["Title", "Value", "Unit"],
-            ["Peripheral Sensitivity", round(sens_point_periph, 2), "dBm"],
-            ["Central Sensitivity", round(sens_point_central, 2), "dBm"],
+            ["Peripheral Sensitivity", -round(sens_point_periph, 2), "dBm"],
+            ["Central Sensitivity", -round(sens_point_central, 2), "dBm"],
+            ['Mean Central PER', round(avg_central_per, 2), '%'],
+            ['Mean Peripheral PER', round(avg_periph_per, 2), '%']
         ]
 
         gen.add_table(
@@ -301,6 +314,7 @@ class SensitivityConnTest:
             ["PHY", self.phy],
             ["Central HCI Timeouts", self.central_timeouts],
             ["Peripheral HCI Timeouts", self.periph_timeouts],
+            ['Disconnects', self.disconnects],
             ["Date", now.strftime("%m/%d/%y")],
             ["Stop Time", self.start_time.strftime("%H:%M:%S")],
             ["Stop Time", self.stop_time.strftime("%H:%M:%S")],
@@ -336,6 +350,7 @@ class SensitivityConnTest:
 
         atten_steps = len(self.attens)
 
+        retries = 4
         with alive_bar(atten_steps) as bar:
             while self.attens:
                 i = self.attens[0]
@@ -345,17 +360,26 @@ class SensitivityConnTest:
 
                 try:
                     periph_stats, _ = self.periph.get_conn_stats()
+                    self.periph.reset_connection_stats()
                 except TimeoutError:
+                    retries -= 1
                     self.periph_timeouts += 1
+                    if retries == 0:
+                        break
                     continue
 
                 try:
                     central_stats, _ = self.central.get_conn_stats()
+                    self.central.reset_connection_stats()
                 except TimeoutError:
+                    retries -= 1
                     self.central_timeouts += 1
+                    if retries == 0:
+                        break
                     continue
 
                 if periph_stats.rx_data and central_stats.rx_data:
+                    retries = 4
                     periph_per = periph_stats.per()
                     central_per = central_stats.per()
 
@@ -369,6 +393,9 @@ class SensitivityConnTest:
                     bar()
                 elif self.reconnect:
                     print("Attempting reconnect!")
+                    retries -= 1
+                    if retries == 0:
+                        break
                     try:
                         self.connect()
                         self.reconnect = False
@@ -388,13 +415,12 @@ class SensitivityConnTest:
                 pass
 
         try:
-            atten.set_attenuation(0)
-            self.central.disconnect()
-            self.periph.disconnect()
             self.central.reset()
             self.periph.reset()
         except TimeoutError:
             pass
+
+        atten.set_attenuation(0)
         self.stop_time = datetime.now()
 
         self.save_results(results)
@@ -405,14 +431,27 @@ class SensitivityConnTest:
         return 0
 
     def hci_callback(self, packet):
-        print(packet)
         if not isinstance(packet, EventPacket):
+            print(packet)
             return
 
         event: EventPacket = packet
-        if event.evt_code == EventCode.DICON_COMPLETE:
-            self.reconnect = True
 
+        if (
+            event.evt_code == EventCode.LE_META
+            and event.evt_subcode == EventSubcode.CONNECTION_CMPLT
+        ):
+            self.periph_connection_params = event.decode()
+            self.is_connected = True
+            self.reconnect = False
+
+        if event.evt_code == EventCode.DICON_COMPLETE:
+            print('Disconnect!')
+            self.reconnect = True
+            self.is_connected = False
+     
+
+        print(event.decode())
 
 def main():
     # pylint: disable=too-many-locals
