@@ -25,13 +25,13 @@ python3 per_heatmap.py $TESTER $DUT --phy S8 --channels $CHANNELS --results "$HE
 ADV_SAMPLE_RATE=1
 ADV_TEST_TIME_SEC=1800 
 ADV_RESULTS=advertise-results-$DATE
-python3 advertise.py $DUT -t $ADV_TEST_TIME_SEC -s $ADV_SAMPLE_RATE -d "$ADVERTISE_RESULTS"
+python3 advertise_perf.py $DUT -t $ADV_TEST_TIME_SEC -s $ADV_SAMPLE_RATE -d "$ADVERTISE_RESULTS"
 
 
 SCAN_SAMPLE_RATE=1
 SCAN_TEST_TIME_SEC=1800 
 SCAN_RESULTS=advertise-results-$DATE
-python3 scan.py $DUT -t $SCAN_TEST_TIME_SEC -s $SCAN_SAMPLE_RATE -d "$SCAN_RESULTS"
+python3 scan_perf.py $DUT -t $SCAN_TEST_TIME_SEC -s $SCAN_SAMPLE_RATE -d "$SCAN_RESULTS"
 
 
 # Connection      
@@ -39,7 +39,7 @@ PER_CONN_HOLD_TIME=10
 PER_CONN_ATTENS=-20:-2:-100
 PER_CONN_RESULTS=per-conn-$DATE
 
-python3 per_connection.py $TESTER $DUT
+python3 per_connection.py $TESTER $DUT -p 2M
 
 CONN_STAB_SAMPLE_RATE_SEC=1
 CONN_TEST_TIME_SEC=1800

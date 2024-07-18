@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 from resource_manager import ResourceManager
+from ble_test_suite.equipment import mc_rf_sw
 
 
 def create_directory(directory):
@@ -25,8 +26,8 @@ def dict_to_table(data: dict):
 def get_git_hash(path):
     try:
         return (
-            subprocess.run(["git", "-C", f"{path}", "rev-parse", "HEAD"])
-            .stdout.decode("ascii")
+            subprocess.check_output(["git", "-C", f"{path}", "rev-parse", "HEAD"])
+            .decode("ascii")
             .strip()
         )
     except:

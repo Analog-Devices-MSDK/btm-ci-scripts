@@ -65,9 +65,7 @@ from typing import Dict
 import matplotlib.pyplot as plt
 import pandas as pd
 from alive_progress import alive_bar
-from ble_test_suite.equipment import mc_rcdat_6000, mc_rf_sw
-from ble_test_suite.results import Mask, Plot
-from ble_test_suite.utils.log_util import get_formatted_logger
+from ble_test_suite.equipment import mc_rcdat_6000
 from ble_test_suite.results.report_generator import ReportGenerator
 
 # pylint: disable=import-error,wrong-import-position
@@ -75,11 +73,9 @@ from ble_test_suite.results.report_generator import ReportGenerator
 from max_ble_hci import BleHci
 from max_ble_hci.packet_codes import StatusCode
 from max_ble_hci.hci_packets import EventPacket
-from max_ble_hci.packet_codes import EventCode
-from max_ble_hci.data_params import EstablishConnParams
+from max_ble_hci.packet_codes import EventCode, EventMaskLE
 from max_ble_hci.constants import PhyOption
 from resource_manager import ResourceManager
-from serial import Timeout
 from utils import config_switches, create_directory, make_version_table
 from datetime import datetime
 
@@ -182,8 +178,7 @@ class SensitivityConnTest:
         self.stop_time = None
         self.periph_timeouts = 0
         self.central_timeouts = 0
-
-
+        self.disconnects = 0
 
     def connect(self):
         central_addr = 0x001234887733
@@ -191,19 +186,32 @@ class SensitivityConnTest:
 
         self.periph.reset()
         self.central.reset()
+        
         self.central.set_adv_tx_power(0)
         self.periph.set_adv_tx_power(0)
+        
         self.periph.set_address(periph_addr)
         self.central.set_address(central_addr)
 
-        self.periph.start_advertising(connect=True)
-        self.central.init_connection(addr=periph_addr)
+        
+        self.periph.set_event_mask_le(EventMaskLE.CONNECTION_COMPLETE | EventMaskLE.PHY_UPDATE_COMPLETE)
 
-        # Default is 1M
-        if self.phy != PhyOption.PHY_1M:
-            err = self.periph.set_phy(tx_phys=self.phy, rx_phys=self.phy)
-            if err != StatusCode.SUCCESS:
-                print("Error setting phy!")
+        err = self.periph.set_default_phy(tx_phys=self.phy, rx_phys=self.phy)
+        if err != StatusCode.SUCCESS:
+            print(f'Failed to set default PHY {err}')
+        self.periph.start_advertising(connect=True)
+
+   
+        err = self.central.set_default_phy(tx_phys=self.phy, rx_phys=self.phy)
+        if err != StatusCode.SUCCESS:
+            print(f'Failed to set default PHY {err}')
+
+        self.central.init_connection(
+            addr=periph_addr
+        )
+
+        time.sleep(10)
+
 
     def save_results(self, results: Dict[str, list]):
         """Store PER Results
@@ -229,8 +237,8 @@ class SensitivityConnTest:
         plt.ylim([0, 100])
 
         plt.title("Central and Peripheral PER vs Attenuation")
-        plt.xlabel(f"Received Power (dBm)")
-        plt.ylabel(f"PER %")
+        plt.xlabel("Received Power (dBm)")
+        plt.ylabel("PER %")
         plt.legend()
         plt.savefig(sens_plot_path)
 
@@ -290,8 +298,9 @@ class SensitivityConnTest:
                 "Peripheral Target",
                 self.resource_manager.get_item_value(f"{self.periph_board}.package"),
             ],
-            ['Central HCI Timeouts', self.central_timeouts],
-            ['Peripheral HCI Timeouts', self.periph_timeouts],
+            ["PHY", self.phy],
+            ["Central HCI Timeouts", self.central_timeouts],
+            ["Peripheral HCI Timeouts", self.periph_timeouts],
             ["Date", now.strftime("%m/%d/%y")],
             ["Stop Time", self.start_time.strftime("%H:%M:%S")],
             ["Stop Time", self.stop_time.strftime("%H:%M:%S")],
@@ -321,20 +330,18 @@ class SensitivityConnTest:
 
         results = {"attens": [], "slave": [], "master": []}
         failed_per = False
-        total_dropped_connections = 0
 
         self.start_time = datetime.now()
         self.connect()
 
         atten_steps = len(self.attens)
-        
+
         with alive_bar(atten_steps) as bar:
             while self.attens:
                 i = self.attens[0]
                 calibrated_value = int(i + self.loss)
                 atten.set_attenuation(calibrated_value)
                 time.sleep(self.hold_time)
-
 
                 try:
                     periph_stats, _ = self.periph.get_conn_stats()
@@ -348,7 +355,6 @@ class SensitivityConnTest:
                     self.central_timeouts += 1
                     continue
 
-
                 if periph_stats.rx_data and central_stats.rx_data:
                     periph_per = periph_stats.per()
                     central_per = central_stats.per()
@@ -356,17 +362,17 @@ class SensitivityConnTest:
                     results["slave"].append(periph_per)
                     results["master"].append(central_per)
                     results["attens"].append(-i)
-                
+
                     if (periph_per >= 30.8 or central_per >= 30.8) and i < 70:
                         failed_per = True
                     self.attens.pop(0)
                     bar()
-                elif reconnect:
+                elif self.reconnect:
                     print("Attempting reconnect!")
                     try:
                         self.connect()
-                        reconnect = False
-                        total_dropped_connections += 1
+                        self.reconnect = False
+                        self.disconnects += 1
                     except:
                         pass
 
@@ -380,15 +386,15 @@ class SensitivityConnTest:
                     err = self.central.reset_connection_stats()
             except:
                 pass
+
         try:
+            atten.set_attenuation(0)
             self.central.disconnect()
             self.periph.disconnect()
-
             self.central.reset()
             self.periph.reset()
         except TimeoutError:
             pass
-
         self.stop_time = datetime.now()
 
         self.save_results(results)
@@ -399,8 +405,8 @@ class SensitivityConnTest:
         return 0
 
     def hci_callback(self, packet):
+        print(packet)
         if not isinstance(packet, EventPacket):
-            print(packet)
             return
 
         event: EventPacket = packet
