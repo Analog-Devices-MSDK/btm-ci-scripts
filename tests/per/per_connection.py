@@ -214,9 +214,17 @@ class SensitivityConnTest:
 
         self.central.init_connection(addr=periph_addr)
 
-        while not self.is_connected:
+        now = datetime.now()
+        while not self.is_connected and (datetime.now() - now).total_seconds() < 10:
             pass
         
+        if not self.is_connected:
+            self.periph.reset()
+            self.central.reset()
+            print("Failed to connect!")
+            sys.exit(-1)
+
+
         # Defaults to 1M
         if self.phy != PhyOption.PHY_1M:
             self.periph.set_phy(tx_phys=self.phy, rx_phys=self.phy)
@@ -361,8 +369,9 @@ class SensitivityConnTest:
                 try:
                     periph_stats, _ = self.periph.get_conn_stats()
                     self.periph.reset_connection_stats()
+                    
                 except TimeoutError:
-                    retries -= 1
+                    # retries -= 1
                     self.periph_timeouts += 1
                     if retries == 0:
                         break
@@ -371,26 +380,32 @@ class SensitivityConnTest:
                 try:
                     central_stats, _ = self.central.get_conn_stats()
                     self.central.reset_connection_stats()
+                    
                 except TimeoutError:
-                    retries -= 1
+                    # retries -= 1
                     self.central_timeouts += 1
                     if retries == 0:
                         break
                     continue
-
+                except ValueError:
+                    # retries -= 1
+                    if retries == 0:
+                        break
+                    continue
                 if periph_stats.rx_data and central_stats.rx_data:
-                    retries = 4
+
                     periph_per = periph_stats.per()
                     central_per = central_stats.per()
 
                     results["slave"].append(periph_per)
                     results["master"].append(central_per)
-                    results["attens"].append(-i)
+                    results["attens"].append(i)
 
                     if (periph_per >= 30.8 or central_per >= 30.8) and i < 70:
                         failed_per = True
                     self.attens.pop(0)
                     bar()
+                    retries = 4 
                 elif self.reconnect:
                     print("Attempting reconnect!")
                     retries -= 1
@@ -402,7 +417,8 @@ class SensitivityConnTest:
                         self.disconnects += 1
                     except:
                         pass
-
+            
+            
             err = None
             try:
                 while err != StatusCode.SUCCESS:
@@ -450,8 +466,13 @@ class SensitivityConnTest:
             self.reconnect = True
             self.is_connected = False
      
+        dec = event.decode()
 
-        print(event.decode())
+        if dec is not None:
+            print(dec)
+        else:
+            print(event)
+        
 
 def main():
     # pylint: disable=too-many-locals
