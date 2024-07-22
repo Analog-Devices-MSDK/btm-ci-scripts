@@ -156,7 +156,7 @@ def main():
         except:
             pass
 
-        elapsed = (datetime.now() - start).total_seconds()
+        elapsed = round((datetime.now() - start).total_seconds(),2)
         print(f"Time Elapsed {elapsed}")
 
 
