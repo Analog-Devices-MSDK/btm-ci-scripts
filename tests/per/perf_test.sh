@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 
+# CONFIG
 export MAXIM_PATH=~/Workspace/msdk
 export RF_PATH=~/Workspace/msdk/Libraries/RF-PHY-closed
 
 TESTER=me18-1
 DUT=me17-2
-
 DATE=$(printf '%(%Y-%m-%d)T\n' -1)
+
+DO_DTM=1
+DO_NON_CONNECTED=1
+DO_CONNECTED=1
+
 
 # Build and Flash
 
@@ -25,8 +30,11 @@ make -C "$TESTER_EXAMPLE" -j
 (cd "$DUT_EXAMPLE" && ocdflash $DUT)
 (cd "$TESTER_EXAMPLE" && ocdflash $TESTER)
 
-# DTM
+echo TESTER $TESTER
+echo DUT $DUT
 
+# DTM
+if [[ $DO_DTM -ne 0 ]]; then
 if [[ $USER == "btm-ci" ]]; then
 
     CHANNELS=0,19,39
@@ -43,18 +51,19 @@ else
     CHANNEL=19
     PACKET_LEN=100
     DTM_TIME=30
-
-    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 1M | tee dtm_1m.out 
-    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 2M | tee dtm_2m.out
-    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S2 | tee dtm_s2.out
-    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S8 | tee dtm_s8.out
+    mkdir -p dtm_out    
+    python3 simple_dtm.py $TESTER $DUT -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 1M | tee dtm_out/dtm_1m.out 
+    python3 simple_dtm.py $TESTER $DUT -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 2M | tee dtm_out/dtm_2m.out
+    python3 simple_dtm.py $TESTER $DUT -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S2 | tee dtm_out/dtm_s2.out
+    python3 simple_dtm.py $TESTER $DUT -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S8 | tee dtm_out/dtm_s8.out
 
 fi
-
 ocdreset $DUT
 ocdreset $TESTER
+fi
 
 # Non connected
+if [[ $DO_NON_CONNECTED -ne 0 ]]; then
 ADV_SAMPLE_RATE=1
 ADV_TEST_TIME_SEC=1800
 ADV_RESULTS=advertise-results-$DATE
@@ -67,7 +76,13 @@ python3 scan_perf.py $DUT -t $SCAN_TEST_TIME_SEC -s $SCAN_SAMPLE_RATE -d "$SCAN_
 
 ocdreset $DUT
 ocdreset $TESTER
+
+fi
+
 # Connection
+
+if [[ $DO_CONNECTED -ne 0 ]]; then
+
 PER_CONN_HOLD_TIME=10
 PER_CONN_ATTENS=-20:-2:-100
 PER_CONN_RESULTS=per-conn-$DATE
@@ -88,3 +103,5 @@ python3 connnection_stability.py $TESTER $DUT -p S8 -t $CONN_TEST_TIME_SEC -s $C
 
 ocdreset $DUT
 ocdreset $TESTER
+
+fi
