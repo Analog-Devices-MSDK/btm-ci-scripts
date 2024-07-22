@@ -63,5 +63,6 @@ def main():
     sensor = CiTempSensor()
     print(sensor.read())
 
+
 if __name__ == "__main__":
     main()

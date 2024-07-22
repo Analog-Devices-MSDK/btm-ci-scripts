@@ -44,4 +44,5 @@
 ###############################################################################
 """Resource Manager for CI tools."""
 from .resource_manager import ResourceManager
-__version__ = '1.1.1'
+
+__version__ = "1.1.1"
