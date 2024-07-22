@@ -44,7 +44,7 @@ else
     PACKET_LEN=100
     DTM_TIME=30
 
-    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 1M | tee dtm_1m.out
+    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 1M | tee dtm_1m.out 
     python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 2M | tee dtm_2m.out
     python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S2 | tee dtm_s2.out
     python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S8 | tee dtm_s8.out
