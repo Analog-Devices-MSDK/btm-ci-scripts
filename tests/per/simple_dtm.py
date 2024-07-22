@@ -58,7 +58,6 @@ Description: Simple example showing creation of a connection and getting packet 
 
 
 import argparse
-import signal
 import time
 import sys
 from rich import print
@@ -71,12 +70,6 @@ from resource_manager import ResourceManager
 from datetime import datetime
 
 # pylint: enable=import-error,wrong-import-position
-
-
-def print_test_config(slave, master):
-    print("Using:")
-    print(f"\tSlave - {slave}")
-    print(f"\tMaster - {master}\n")
 
 
 def config_cli():
