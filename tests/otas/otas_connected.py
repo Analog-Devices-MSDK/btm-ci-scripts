@@ -63,7 +63,6 @@ import serial
 from resource_manager import ResourceManager
 
 
-
 BTN1 = 1
 BTN2 = 2
 
@@ -75,6 +74,7 @@ class BasicTester:
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
         self.serial_port.flush()
         # self.serial_port.write('echo off\n'.encode())
+
     def slow_write(self, data: bytes):
         """Write UART data at human typing speeds
 

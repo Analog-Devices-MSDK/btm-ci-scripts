@@ -58,7 +58,6 @@ from typing import Dict, List, Set, Tuple
 # pylint: disable=import-error
 from tabulate import tabulate
 
-
 class ResourceManager:
     # pylint: disable=too-many-public-methods,dangerous-default-value
     """BTM-CI Resource Manager"""
@@ -66,7 +65,7 @@ class ResourceManager:
     ENV_RESOURCE_LOCK_DIR = "RESOURCE_LOCK_DIR"
     ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
     ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
-
+    
     def __init__(self, timeout=60, owner="", extra_resources: List[str] = []) -> None:
         # Initialize the resource file
         self.timeout = timeout
@@ -521,7 +520,7 @@ class ResourceManager:
 
         return gdb, telnet, tcl
 
-    def get_item_value(self, item_name: str, delimiter=".") -> str:
+    def _get_item_value(self, item_name: str, delimiter=".") -> str:
         """Get value attached to json item
 
         Parameters
@@ -551,6 +550,28 @@ class ResourceManager:
 
         # whatever is at the end is the answer
         return ans
+
+    def get_item_value(self, item_name: str, default: str = "", delimiter=".") -> str:
+        """Get value attached to json item
+
+        Parameters
+        ----------
+        item_name : str
+           json item value
+        default : str, optional
+            default return if value not found, by default ""
+        delimiter : str, optional
+            Delimiter used to seperate query (ie '.' in item.subitem), by default "."
+
+        Returns
+        -------
+        str
+            Value found in json or default
+        """
+        try:
+            return self._get_item_value(item_name, delimiter=delimiter)
+        except KeyError:
+            return default
 
     def get_applicable_items(self, target: str = None, group: str = None) -> List[str]:
         """Get items that match criteria of group and target
