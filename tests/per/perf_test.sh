@@ -11,12 +11,12 @@ DATE=$(printf '%(%Y-%m-%d)T\n' -1)
 # Build and Flash
 
 TESTER_TARGET=$(resource_manager -g ${TESTER}.target)
-DUT_TARGET=$(resource_manager -g ${TESTER}.target)
+DUT_TARGET=$(resource_manager -g ${DUT}.target)
 
 make -C $RF_PATH/"$TESTER_TARGET"/build/gcc -j
 make -C $RF_PATH/"$DUT_TARGET"/build/gcc -j
 
-DUT_EXAMPLE=$MAXIM_PATH/Examples/"$TESTER_TARGET"/Bluetooth/BLE5_ctr
+DUT_EXAMPLE=$MAXIM_PATH/Examples/"$DUT_TARGET"/Bluetooth/BLE5_ctr
 TESTER_EXAMPLE=$MAXIM_PATH/Examples/"$TESTER_TARGET"/Bluetooth/BLE5_ctr
 
 make -C "$DUT_EXAMPLE" -j
@@ -26,15 +26,33 @@ make -C "$TESTER_EXAMPLE" -j
 (cd "$TESTER_EXAMPLE" && ocdflash $TESTER)
 
 # DTM
-CHANNELS=0,19,39
-NUM_PACKETS=1000
-NUM_PACKETS_CODED=100
-HEATMAP_RESULTS=heatmap-results-$DATE
 
-python3 per_heatmap.py $TESTER $DUT --phy 1M --channels $CHANNELS --results "$HEATMAP_RESULTS/per_1m" --num-packets $NUM_PACKETS
-python3 per_heatmap.py $TESTER $DUT --phy 2M --channels $CHANNELS --results "$HEATMAP_RESULTS/per_2m" --num-packets $NUM_PACKETS
-python3 per_heatmap.py $TESTER $DUT --phy S2 --channels $CHANNELS --results "$HEATMAP_RESULTS/per_s2" --num_packets $NUM_PACKETS_CODED
-python3 per_heatmap.py $TESTER $DUT --phy S8 --channels $CHANNELS --results "$HEATMAP_RESULTS/per_s8" --num_packets $NUM_PACKETS_CODED
+if [[ $USER == "btm-ci" ]]; then
+
+    CHANNELS=0,19,39
+    NUM_PACKETS=1000
+    NUM_PACKETS_CODED=100
+    HEATMAP_RESULTS=heatmap-results-$DATE
+
+    python3 per_heatmap.py $TESTER $DUT --phy 1M --channels $CHANNELS --results "$HEATMAP_RESULTS/per_1m" --num-packets $NUM_PACKETS
+    python3 per_heatmap.py $TESTER $DUT --phy 2M --channels $CHANNELS --results "$HEATMAP_RESULTS/per_2m" --num-packets $NUM_PACKETS
+    python3 per_heatmap.py $TESTER $DUT --phy S2 --channels $CHANNELS --results "$HEATMAP_RESULTS/per_s2" --num_packets $NUM_PACKETS_CODED
+    python3 per_heatmap.py $TESTER $DUT --phy S8 --channels $CHANNELS --results "$HEATMAP_RESULTS/per_s8" --num_packets $NUM_PACKETS_CODED
+
+else
+    CHANNEL=19
+    PACKET_LEN=100
+    DTM_TIME=30
+
+    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 1M | tee dtm_1m.out
+    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy 2M | tee dtm_2m.out
+    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S2 | tee dtm_s2.out
+    python3 simple_dtm.py -c $CHANNEL -pl $PACKET_LEN -t $DTM_TIME --phy S8 | tee dtm_s8.out
+
+fi
+
+ocdreset $DUT
+ocdreset $TESTER
 
 # Non connected
 ADV_SAMPLE_RATE=1
@@ -47,6 +65,8 @@ SCAN_TEST_TIME_SEC=1800
 SCAN_RESULTS=advertise-results-$DATE
 python3 scan_perf.py $DUT -t $SCAN_TEST_TIME_SEC -s $SCAN_SAMPLE_RATE -d "$SCAN_RESULTS"
 
+ocdreset $DUT
+ocdreset $TESTER
 # Connection
 PER_CONN_HOLD_TIME=10
 PER_CONN_ATTENS=-20:-2:-100
@@ -65,3 +85,6 @@ python3 connnection_stability.py $TESTER $DUT -p 1M -t $CONN_TEST_TIME_SEC -s $C
 python3 connnection_stability.py $TESTER $DUT -p 2M -t $CONN_TEST_TIME_SEC -s $CONN_STAB_SAMPLE_RATE_SEC -d "$CONN_STAB_RESULTS"
 python3 connnection_stability.py $TESTER $DUT -p S2 -t $CONN_TEST_TIME_SEC -s $CONN_STAB_SAMPLE_RATE_SEC -d "$CONN_STAB_RESULTS"
 python3 connnection_stability.py $TESTER $DUT -p S8 -t $CONN_TEST_TIME_SEC -s $CONN_STAB_SAMPLE_RATE_SEC -d "$CONN_STAB_RESULTS"
+
+ocdreset $DUT
+ocdreset $TESTER
