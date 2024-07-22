@@ -7,7 +7,9 @@ packages = ["src/resource_manager", "src/resource_manager_cli.py",
 "src/ocdflash.py",
 "src/ocdopen.py",
 "src/ocdreset.py",
-"src/ocderase.py"]
+"src/ocderase.py",
+"src/ci_temp.py"
+]
 
 [project]
 name = "resource_manager"
@@ -32,7 +34,7 @@ ocdopen = "ocdopen:main"
 ocdflash = "ocdflash:main"
 ocdreset = "ocdreset:main"
 ocderase = "ocderase:main"
-ci-temp= "ci-temp:main"
+citemp = "ci_temp:main"
 
 
 [project.urls]
