@@ -175,6 +175,8 @@ class SensitivityConnTest:
         self.periph_hci_failures = 0
         self.central_hci_failures = 0
         self.disconnects = 0
+        self.periph_sens = None
+        self.central_sens = None
 
     def connect(self):
         central_addr = 0x001234887733
@@ -338,6 +340,20 @@ class SensitivityConnTest:
 
         gen.build(f"Connection Sensitivity {now.strftime('%m-%d-%y')}")
 
+
+        self._update_db()
+
+
+
+    def _update_db(self):
+        if is_ci():
+            from ble_db import BleDB
+            db = BleDB()
+            if self.central_sens is not None:
+                db.add_sensitivity_conn(self.central_board, self.central_sens)
+            if self.periph_sens is not None:
+                db.add_sensitivity_conn(self.periph_board, self.periph_sens)
+
     def _force_reset_stats(self):
         err = None
         try:
@@ -408,8 +424,15 @@ class SensitivityConnTest:
                     results["master"].append(central_per)
                     results["attens"].append(i)
 
+                    if periph_per >= 30.8 and self.periph_sens is None:
+                        self.periph_sens = i
+                    
+                    if central_per >= 30.8 and self.central_sens is None:
+                        self.central_sens = i
+                
                     if (periph_per >= 30.8 or central_per >= 30.8) and i < 70:
                         failed_per = True
+
                     self.attens.pop(0)
                     bar()
                     retries = START_RETRIES

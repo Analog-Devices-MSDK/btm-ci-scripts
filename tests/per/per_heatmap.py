@@ -69,7 +69,9 @@ from ble_test_suite.phy import rx_sensitivity as RxSens
 from ble_test_suite.results import format_dataframe
 from ble_test_suite.utils import PlotId
 from resource_manager import ResourceManager
+
 from utils import is_ci
+from ble_db import BleDB
 
 ENV_CI_CONFIG = "CI_CONFIG_DIR"
 CALIBRATION_FNAME = "rfphy_sw2atten_calibration.json"
@@ -136,10 +138,9 @@ def create_results_dir(results_dir):
 
     os.mkdir
 
-
 def main():
     args = _setup_ci()
-    TMP_CAL_FILE = ".tmpcal"
+    
 
     cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
 
@@ -209,6 +210,13 @@ def main():
             sens.append(df.loc[idx, "RX_INPUT_POWER"])
 
         spec_pwr = -80
+
+        #store sensitivity data in database
+        if len(sens) == 40 and is_ci():
+            db = BleDB()
+            db.add_sensitivity_dtm(args.dut, sens)
+
+
         sens = np.array(sens)
         x_axis = np.array([*range(40)])
 
