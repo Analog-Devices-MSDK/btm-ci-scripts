@@ -32,6 +32,8 @@ ocdopen = "ocdopen:main"
 ocdflash = "ocdflash:main"
 ocdreset = "ocdreset:main"
 ocderase = "ocderase:main"
+ci-temp= "ci-temp:main"
+
 
 [project.urls]
 Homepage = "https://github.com/Analog-Devices-MSDK/btm-ci-scripts"
