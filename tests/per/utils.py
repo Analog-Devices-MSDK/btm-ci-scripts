@@ -74,3 +74,9 @@ def config_switches(resource_manager: ResourceManager, slave: str, master: str):
     with mc_rf_sw.MiniCircuitsRFSwitch(model=master_sw_model) as sw_master:
         print("Configuring Master Switch")
         sw_master.set_sw_state(master_sw_port)
+
+
+def is_ci() -> bool:
+    import socket
+
+    return socket.gethostname() == "wall-e"

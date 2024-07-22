@@ -69,6 +69,7 @@ from ble_test_suite.phy import rx_sensitivity as RxSens
 from ble_test_suite.results import format_dataframe
 from ble_test_suite.utils import PlotId
 from resource_manager import ResourceManager
+from utils import is_ci
 
 ENV_CI_CONFIG = "CI_CONFIG_DIR"
 CALIBRATION_FNAME = "rfphy_sw2atten_calibration.json"
@@ -138,7 +139,10 @@ def create_results_dir(results_dir):
 
 def main():
     args = _setup_ci()
+    TMP_CAL_FILE = ".tmpcal"
+
     cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
+
     with open(
         os.path.join(os.getenv(ENV_CI_CONFIG), "per_dtm_settings.json"), "r"
     ) as setting_file:

@@ -62,7 +62,7 @@ import argparse
 import sys
 import time
 from typing import Dict
-
+from rich import print
 import matplotlib.pyplot as plt
 import pandas as pd
 from alive_progress import alive_bar
@@ -77,7 +77,7 @@ from max_ble_hci.hci_packets import EventPacket
 from max_ble_hci.packet_codes import EventCode, EventMaskLE, EventSubcode
 from max_ble_hci.constants import PhyOption
 from resource_manager import ResourceManager
-from utils import config_switches, create_directory, make_version_table
+from utils import config_switches, create_directory, make_version_table, is_ci
 from datetime import datetime
 
 # pylint: enable=import-error,wrong-import-position
@@ -110,11 +110,6 @@ def config_cli():
         default="-20:-100:-2",
         help="RX power range. Syntax:  start:stop:step. If no step, default step -2",
     )
-    parser.add_argument(
-        "--local",
-        action="store_true",
-        help="Conditionally skip code only used on CI machine",
-    )
 
     return parser.parse_args()
 
@@ -128,7 +123,6 @@ class SensitivityConnTest:
         directory: str,
         hold_time: int,
         attens: list,
-        local=True,
     ) -> None:
         self.periph_board = periph_board
         self.central_board = central_board
@@ -142,7 +136,7 @@ class SensitivityConnTest:
 
         self.resource_manager = ResourceManager()
 
-        if not local:
+        if is_ci():
             config_switches(
                 resource_manager=self.resource_manager,
                 slave=periph_board,
@@ -178,8 +172,8 @@ class SensitivityConnTest:
         self.reconnect = False
         self.start_time = None
         self.stop_time = None
-        self.periph_timeouts = 0
-        self.central_timeouts = 0
+        self.periph_hci_failures = 0
+        self.central_hci_failures = 0
         self.disconnects = 0
 
     def connect(self):
@@ -188,11 +182,11 @@ class SensitivityConnTest:
 
         status = self.periph.reset()
         if status != StatusCode.SUCCESS:
-            print(f'Failed to reset device {status}')
-        
+            print(f"Failed to reset device {status}")
+
         status = self.central.reset()
         if status != StatusCode.SUCCESS:
-            print(f'Failed to reset device {status}')
+            print(f"Failed to reset device {status}")
         self.central.set_adv_tx_power(0)
         self.periph.set_adv_tx_power(0)
 
@@ -217,13 +211,12 @@ class SensitivityConnTest:
         now = datetime.now()
         while not self.is_connected and (datetime.now() - now).total_seconds() < 10:
             pass
-        
+
         if not self.is_connected:
             self.periph.reset()
             self.central.reset()
             print("Failed to connect!")
             sys.exit(-1)
-
 
         # Defaults to 1M
         if self.phy != PhyOption.PHY_1M:
@@ -280,17 +273,16 @@ class SensitivityConnTest:
         else:
             sens_point_central = float("-inf")
 
-        avg_periph_per =  statistics.mean(results['slave'])
-        avg_central_per =  statistics.mean(results['master'])
-
+        avg_periph_per = statistics.mean(results["slave"])
+        avg_central_per = statistics.mean(results["master"])
 
         gen.new_page()
         result_table = [
             ["Title", "Value", "Unit"],
             ["Peripheral Sensitivity", -round(sens_point_periph, 2), "dBm"],
             ["Central Sensitivity", -round(sens_point_central, 2), "dBm"],
-            ['Mean Central PER', round(avg_central_per, 2), '%'],
-            ['Mean Peripheral PER', round(avg_periph_per, 2), '%']
+            ["Mean Central PER", round(avg_central_per, 2), "%"],
+            ["Mean Peripheral PER", round(avg_periph_per, 2), "%"],
         ]
 
         gen.add_table(
@@ -320,9 +312,9 @@ class SensitivityConnTest:
                 self.resource_manager.get_item_value(f"{self.periph_board}.package"),
             ],
             ["PHY", self.phy],
-            ["Central HCI Timeouts", self.central_timeouts],
-            ["Peripheral HCI Timeouts", self.periph_timeouts],
-            ['Disconnects', self.disconnects],
+            ["Central HCI Timeouts", self.central_hci_failures],
+            ["Peripheral HCI Timeouts", self.periph_hci_failures],
+            ["Disconnects", self.disconnects],
             ["Date", now.strftime("%m/%d/%y")],
             ["Stop Time", self.start_time.strftime("%H:%M:%S")],
             ["Stop Time", self.stop_time.strftime("%H:%M:%S")],
@@ -346,6 +338,18 @@ class SensitivityConnTest:
 
         gen.build(f"Connection Sensitivity {now.strftime('%m-%d-%y')}")
 
+    def _force_reset_stats(self):
+        err = None
+        try:
+            while err != StatusCode.SUCCESS:
+                err = self.periph.reset_connection_stats()
+            err = None
+
+            while err != StatusCode.SUCCESS:
+                err = self.central.reset_connection_stats()
+        except:
+            pass
+
     def run(self):
         # could disable with local, but then you might as well use the stability test
         atten = mc_rcdat_6000.RCDAT6000()
@@ -358,7 +362,8 @@ class SensitivityConnTest:
 
         atten_steps = len(self.attens)
 
-        retries = 4
+        START_RETRIES = 15
+        retries = START_RETRIES
         with alive_bar(atten_steps) as bar:
             while self.attens:
                 i = self.attens[0]
@@ -369,31 +374,33 @@ class SensitivityConnTest:
                 try:
                     periph_stats, _ = self.periph.get_conn_stats()
                     self.periph.reset_connection_stats()
-                    
-                except TimeoutError:
-                    # retries -= 1
-                    self.periph_timeouts += 1
-                    if retries == 0:
-                        break
-                    continue
 
-                try:
-                    central_stats, _ = self.central.get_conn_stats()
-                    self.central.reset_connection_stats()
-                    
                 except TimeoutError:
-                    # retries -= 1
-                    self.central_timeouts += 1
+                    retries -= 1
+                    self.periph_hci_failures += 1
                     if retries == 0:
                         break
                     continue
                 except ValueError:
-                    # retries -= 1
+                    # partial return indicates assertion triggered
+                    print("[red]ASSERTION Triggered![/red]")
+                    break
+                try:
+                    central_stats, _ = self.central.get_conn_stats()
+                    self.central.reset_connection_stats()
+
+                except TimeoutError:
+                    retries -= 1
+                    self.central_hci_failures += 1
                     if retries == 0:
                         break
                     continue
-                if periph_stats.rx_data and central_stats.rx_data:
+                except ValueError:
+                    # partial return indicates assertion triggered
+                    print("[red]ASSERTION Triggered![/red]")
+                    break
 
+                if periph_stats.rx_data and central_stats.rx_data:
                     periph_per = periph_stats.per()
                     central_per = central_stats.per()
 
@@ -405,7 +412,7 @@ class SensitivityConnTest:
                         failed_per = True
                     self.attens.pop(0)
                     bar()
-                    retries = 4 
+                    retries = START_RETRIES
                 elif self.reconnect:
                     print("Attempting reconnect!")
                     retries -= 1
@@ -417,18 +424,10 @@ class SensitivityConnTest:
                         self.disconnects += 1
                     except:
                         pass
-            
-            
-            err = None
-            try:
-                while err != StatusCode.SUCCESS:
-                    err = self.periph.reset_connection_stats()
-                err = None
 
-                while err != StatusCode.SUCCESS:
-                    err = self.central.reset_connection_stats()
-            except:
-                pass
+                self._force_reset_stats()
+
+        self.stop_time = datetime.now()
 
         try:
             self.central.reset()
@@ -437,7 +436,6 @@ class SensitivityConnTest:
             pass
 
         atten.set_attenuation(0)
-        self.stop_time = datetime.now()
 
         self.save_results(results)
 
@@ -462,17 +460,17 @@ class SensitivityConnTest:
             self.reconnect = False
 
         if event.evt_code == EventCode.DICON_COMPLETE:
-            print('Disconnect!')
+            print("Disconnect!")
             self.reconnect = True
             self.is_connected = False
-     
+
         dec = event.decode()
 
         if dec is not None:
             print(dec)
         else:
             print(event)
-        
+
 
 def main():
     # pylint: disable=too-many-locals
@@ -513,7 +511,6 @@ def main():
         directory=results_dir,
         hold_time=args.hold_time,
         attens=attens,
-        local=args.local,
     )
 
     err = test.run()
