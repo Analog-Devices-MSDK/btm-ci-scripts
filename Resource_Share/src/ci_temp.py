@@ -55,12 +55,27 @@ ci-temp.py
 Description: Print out temperature on CI
 
 """
-
-from resource_manager.ci_temp_sensor import CiTempSensor
+import argparse
+from resource_manager.ci_temp_sensor import CiTempSensor, TempUnit
 
 
 def main():
-    sensor = CiTempSensor()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-u", "--unit", default="c", help="Temp unit reported in (c, f, k)"
+    )
+    args = parser.parse_args()
+
+    unit_str = args.unit.lower()
+
+    if unit_str == "f":
+        unit = TempUnit.FARENHEIT
+    elif unit_str == "k":
+        unit = TempUnit.KELVIN
+    else:
+        unit = TempUnit.CELSIUS
+
+    sensor = CiTempSensor(unit=unit)
     print(sensor.read())
 
 
