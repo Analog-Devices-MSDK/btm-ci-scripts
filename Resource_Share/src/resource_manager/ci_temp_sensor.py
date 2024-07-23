@@ -1,5 +1,12 @@
 import serial
 from .resource_manager import ResourceManager
+from enum import Enum
+
+
+class TempUnit(Enum):
+    CELSIUS = 0
+    FARENHEIT = 1
+    KELVIN = 2
 
 
 class CiTempSensor:
@@ -19,7 +26,15 @@ class CiTempSensor:
         )
         self.port = serial.Serial(sensor_port, baudrate=sensor_baud)
 
-    def read(self) -> float:
+    @staticmethod
+    def celsius_to_farenheit(celsius):
+        return (celsius * 9 / 5) + 32
+
+    @staticmethod
+    def celsius_to_kelvin(celsius):
+        return celsius + 273.15
+
+    def read(self, unit: TempUnit = TempUnit.CELSIUS) -> float:
         """Get temperature in celsius
 
         Returns
@@ -29,10 +44,19 @@ class CiTempSensor:
         """
         # try it a few times sometimes that data is only partially in the buffer
         for _ in range(3):
-            data = self.port.readline().decode("utf-8").strip()
+            temp = self.port.readline().decode("utf-8").strip()
             try:
-                data = float(data)
-                return data
+                temp = float(temp)
+
+                if unit == TempUnit.CELSIUS:
+                    return temp
+
+                if unit == TempUnit.FARENHEIT:
+                    return self.celsius_to_farenheit(temp)
+
+                if unit == TempUnit.KELVIN:
+                    return self.celsius_to_kelvin(temp)
+
             except:
                 continue
 
