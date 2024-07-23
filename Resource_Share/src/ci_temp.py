@@ -75,8 +75,8 @@ def main():
     else:
         unit = TempUnit.CELSIUS
 
-    sensor = CiTempSensor(unit=unit)
-    print(sensor.read())
+    sensor = CiTempSensor()
+    print(sensor.read(unit=unit))
 
 
 if __name__ == "__main__":
