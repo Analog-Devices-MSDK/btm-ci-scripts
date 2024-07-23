@@ -57,77 +57,112 @@ Description: Simple example showing creation of a connection and getting packet 
 """
 
 
-import sys
+import argparse
 import time
-
+import sys
+from rich import print
 
 # pylint: disable=import-error,wrong-import-position
+
 from max_ble_hci import BleHci
+from max_ble_hci.constants import PhyOption
 from resource_manager import ResourceManager
+from datetime import datetime
+from alive_progress import alive_bar
+
+# pylint: enable=import-error,wrong-import-position
+
+
+def config_cli():
+    parser = argparse.ArgumentParser(
+        description="Form basic DTM test to show minimum viability",
+    )
+
+    parser.add_argument("central", help="Central board")
+    parser.add_argument("peripheral", help="Peripheral Board")
+
+    parser.add_argument("-c", "--channel", default="0", help="RF Channel")
+    parser.add_argument("--phy", default="1M", help="Connection PHY (1M, 2M, S2, S8)")
+
+    parser.add_argument(
+        "-pl", "--packet-length", default=0, help="Packet length 0 - 255"
+    )
+    parser.add_argument(
+        "-t",
+        "--time",
+        default=0,
+        help="Time to run program. If 0, until CTRL-C Entered",
+    )
+
+    return parser.parse_args()
 
 
 def main():
     # pylint: disable=too-many-locals
     """MAIN"""
 
-    if len(sys.argv) < 1:
-        print(f"Expected 2 inputs. Got {len(sys.argv)}")
-        print("usage: <MASTER_BAORD> <SLAVE_BOARD> <RESULTS DIRECTORY")
-        sys.exit(-1)
+    args = config_cli()
 
-    dut_board = sys.argv[1]
-    print(f"DUT: {dut_board}")
+    central_board = args.central
+    periph_board = args.peripheral
 
-    resource_manager = ResourceManager()
+    rmanager = ResourceManager()
+    central_hci_port = rmanager.get_item_value(f"{central_board}.hci_port")
+    periph_hci_port = rmanager.get_item_value(f"{periph_board}.hci_port")
 
-    try:
-        loss = resource_manager.get_item_value("rf_bench.cal.losses.2440")
-        loss = float(loss)
-    except KeyError:
-        print("Could not find cal data in config. Defaulting to 0")
-        loss = 0.0
+    central = BleHci(
+        central_hci_port,
+        id_tag="central",
+    )
+    periph = BleHci(
+        periph_hci_port,
+        id_tag="periph",
+    )
 
-    dut_hci_port = resource_manager.get_item_value(f"{dut_board}.hci_port")
+    print(f"PHY {args.phy}")
 
-    time.sleep(1)
+    channel = int(args.channel)
+    phy = PhyOption.str_to_enum(args.phy)
+    duration = int(args.time)
 
-    dut = BleHci(dut_hci_port)
+    central.reset()
+    periph.reset()
 
-    dut.reset()
+    periph.rx_test(channel=channel, phy=phy)
+    central.tx_test(channel=channel, phy=phy, packet_len=int(args.packet_length))
 
-    dut.enable_scanning(True)
+    start = datetime.now()
 
-    scan_time = 10
-    print(f"Advertising for {scan_time} seconds")
-    time.sleep(scan_time)
+    sleep_time = 5
 
-    stats = dut.get_scan_stats()
+    while (
+        duration and (datetime.now() - start).total_seconds() <= duration
+    ) or not duration:
+        try:
+            stats_tx, _ = central.get_test_stats()
+            stats_rx, _ = periph.get_test_stats()
 
-    print(stats)
+            print(f"Received: {stats_rx.rx_data}")
+            print(f"Timeouts: {stats_rx.rx_data_timeout}")
+            print(f"CRC {stats_rx.rx_data_crc}")
+            print(f"PER: {round(stats_rx.per(stats_tx.tx_data),2)}%")
 
-    scan_resp_rate = stats.scan_response_rate()
-    scan_resp_timeout_rate = stats.scan_response_timeout_rate()
-    scan_resp_crc_rate = stats.scan_response_crc_rate()
+            central.reset_test_stats()
+            periph.reset_test_stats()
 
-    resp_rate_min = 5
-    resp_crc_rate_max = 15
-    resp_timeout_rate_max = 60
+            time.sleep(sleep_time)
+        except KeyboardInterrupt:
+            try:
+                central.reset()
+                periph.reset()
+            except:
+                pass
+            sys.exit(0)
+        except:
+            pass
 
-    exit_code = 0
-    if scan_resp_rate < resp_rate_min:
-        print("Response rate too low!")
-        exit_code += 1
-
-    if scan_resp_timeout_rate > resp_timeout_rate_max:
-        print("Timeout rate too high!!")
-        exit_code += 1
-
-    if scan_resp_crc_rate > resp_crc_rate_max:
-        print("CRC rate too high!")
-
-        exit_code += 1
-
-    sys.exit(exit_code)
+        elapsed = (datetime.now() - start).total_seconds()
+        print(f"Completion {100 * round(elapsed/duration,2)} %")
 
 
 if __name__ == "__main__":

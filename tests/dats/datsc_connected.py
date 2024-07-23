@@ -61,9 +61,6 @@ import serial
 from resource_manager import ResourceManager
 
 
-# sys.path.append(RESOURCE_SHARE_DIR)
-from resource_manager import ResourceManager
-
 class BasicTester:
     def __init__(self, portname: str) -> None:
         self.portname = portname
