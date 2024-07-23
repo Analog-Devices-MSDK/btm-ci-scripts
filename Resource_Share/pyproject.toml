@@ -7,11 +7,13 @@ packages = ["src/resource_manager", "src/resource_manager_cli.py",
 "src/ocdflash.py",
 "src/ocdopen.py",
 "src/ocdreset.py",
-"src/ocderase.py"]
+"src/ocderase.py",
+"src/ci_temp.py"
+]
 
 [project]
 name = "resource_manager"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
     "tabulate>=0.9.0"
 ]
@@ -32,6 +34,8 @@ ocdopen = "ocdopen:main"
 ocdflash = "ocdflash:main"
 ocdreset = "ocdreset:main"
 ocderase = "ocderase:main"
+citemp = "ci_temp:main"
+
 
 [project.urls]
 Homepage = "https://github.com/Analog-Devices-MSDK/btm-ci-scripts"

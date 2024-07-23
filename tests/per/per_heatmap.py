@@ -138,9 +138,9 @@ def create_results_dir(results_dir):
 
     os.mkdir
 
+
 def main():
     args = _setup_ci()
-    
 
     cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
 
@@ -211,11 +211,10 @@ def main():
 
         spec_pwr = -80
 
-        #store sensitivity data in database
+        # store sensitivity data in database
         if len(sens) == 40 and is_ci():
             db = BleDB()
             db.add_sensitivity_dtm(args.dut, sens)
-
 
         sens = np.array(sens)
         x_axis = np.array([*range(40)])
