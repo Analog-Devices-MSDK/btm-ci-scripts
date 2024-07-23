@@ -27,5 +27,5 @@ class CiTempSensor:
         float
             Temperature
         """
-        data = self.port.read_all()
+        data = self.port.read_all().decode('utf-8')
         return float(data.split("\n")[-1].strip())
