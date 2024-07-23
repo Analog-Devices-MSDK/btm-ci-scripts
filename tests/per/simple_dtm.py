@@ -69,6 +69,7 @@ from max_ble_hci.constants import PhyOption
 from resource_manager import ResourceManager
 from datetime import datetime
 from alive_progress import alive_bar
+
 # pylint: enable=import-error,wrong-import-position
 
 
@@ -118,10 +119,7 @@ def main():
         id_tag="periph",
     )
 
-    
-    print(f'PHY {args.phy}')
-
-
+    print(f"PHY {args.phy}")
 
     channel = int(args.channel)
     phy = PhyOption.str_to_enum(args.phy)
@@ -136,7 +134,7 @@ def main():
     start = datetime.now()
 
     sleep_time = 5
-  
+
     while (
         duration and (datetime.now() - start).total_seconds() <= duration
     ) or not duration:
@@ -162,9 +160,7 @@ def main():
             sys.exit(0)
         except:
             pass
-        
 
-        
         elapsed = (datetime.now() - start).total_seconds()
         print(f"Completion {100 * round(elapsed/duration,2)} %")
 

@@ -27,6 +27,13 @@ class CiTempSensor:
         float
             Temperature
         """
-        data = self.port.readline()
-        print(data)
-        return float(data.split("\n")[-1].strip())
+        # try it a few times sometimes that data is only partially in the buffer
+        for _ in range(3):
+            data = self.port.readline().decode("utf-8").strip()
+            try:
+                data = float(data)
+                return data
+            except:
+                continue
+
+        return float("NaN")
