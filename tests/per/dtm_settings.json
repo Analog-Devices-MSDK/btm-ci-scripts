@@ -1,0 +1,99 @@
+{
+    "test_name" : "RX_SENSITIVITY",
+    "test_conditions" : {
+        "dut_chip_name" : "",
+        "dut_die_name" : "",
+        "package" : "",
+        "pcb" : "",
+        "temperature" : ""
+    },
+    "config" : {
+        "paths" : {
+            "results_dir" : "",
+            "checkpoint_path" : ""
+        },
+        "equipment" : {
+            "dut" : "",
+            "dut_port" : "",
+            "master" : "",
+            "master_port" : ""
+        },
+        "settings" : {
+            "num_packets" : "100",
+            "packet_lens" : "37",
+            "channels" : "0",
+            "tx_power_out" : "",
+            "rx_input_powers" : "-80:-100:2",
+            "log_level" : "",
+            "payload_pattern" : "",
+            "phy" : "",
+            "whitening" : "",
+            "master_arbfile" : ""
+        },
+        "test_specifications" : {
+            "sensitivity_per" : "",
+            "sensitivity_power" : "-70.8",
+            "margin" : "2"
+        },
+        "results" : {
+            "sweep_key" : "",
+            "create_heatmap" : {
+                "per" : true
+            },
+            "create_masked_heatmap" : {
+                "per" : ""
+            },
+            "create_surface_plot" : {
+                "per" : ""
+            },
+            "create_masked_surface_plot" : {
+                "per" : ""
+            },
+            "create_lineplot" : {
+                "per" : true
+            }
+        }
+    },
+    "cmw_settings" : {
+        "signal_instance" : "",
+        "meas_scenario" : "",
+        "meas_master" : "",
+        "meas_rx_connector" : "",
+        "meas_rf_converter" : "",
+        "sig_rx_connector" : "",
+        "sig_tx_connector" : "",
+        "sig_rx_converter" : "",
+        "sig_tx_converter" : "",
+        "use_sig_flex_scenario" : "",
+        "flex_bb_board" : "",
+        "freq_source" : "",
+        "burst_type" : "",
+        "operating_mode" : "",
+        "expected_nominal_power" : "",
+        "enable_auto_ranging" : "",
+        "hardware_interface" : "",
+        "communication_protocol" : "",
+        "port_baud_rate" : "",
+        "port_stop_bits" : "",
+        "port_parity" : "",
+        "port_protocol" : "",
+        "enable_dut_reset" : "",
+        "use_dirty_tx" : "",
+        "dtx_mode" : "",
+        "dtx_drift_rate" : "",
+        "dtx_mod_idx" : "",
+        "dtx_freq_offset" : "",
+        "dtx_symbol_timing_err" : "",
+        "dtx_enable_drift" : ""
+    },
+    "calibration" : {
+        "tx_path" : {
+            "attenuators" : "12201130066",
+            "losses" : {
+                "2402.0" : -14.10,
+                "2440.0" : -14.28,
+                "2480.0" : -14.31
+            }
+        }
+    }
+}
