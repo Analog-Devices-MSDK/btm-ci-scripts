@@ -103,7 +103,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"RF Route", None))
         self.refreshButton.setText(QCoreApplication.translate("MainWindow", u"Refresh", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Output", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Input", None))

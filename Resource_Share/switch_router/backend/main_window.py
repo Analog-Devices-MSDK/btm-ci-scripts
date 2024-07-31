@@ -45,14 +45,8 @@ class MainWindow(QMainWindow):
     
     def _connect_switch(self):
         
-        if self.ssh is None:
-            print('ssh is none')
-            return
-        elif  self.resource_inputs is None:
-            print('inputs none')
-            return 
-        elif self.resource_outputs is None:
-            print('outputs none')
+        if self.ssh is None or self.resource_inputs is None or self.resource_outputs is None:
+            self._show_basic_msg_box('Cannot set switches!')
             return
 
 
@@ -63,22 +57,19 @@ class MainWindow(QMainWindow):
         set_out_cmd = f"mcrfsw {self.MODEL_OUT} -s {self.resource_outputs[output]}"
     
         try:
-            _, stdout, _ = self.ssh.exec_command(f'{set_in_cmd} && {set_out_cmd}')
+            _, _, _ = self.ssh.exec_command(f'{set_in_cmd} && {set_out_cmd}')
             self._read_switches()
-        except:
-            print('Failed to connect switches')
+        except:        
+            self._show_basic_msg_box('Cannot read switches!')
+            
         
     def _read_switches(self):
         
-        if self.ssh is None:
-            print('ssh is none')
+        if self.ssh is None or self.resource_inputs is None or self.resource_outputs is None:
+            self._show_basic_msg_box('Cannot read switches!')
             return
-        elif  self.resource_inputs is None:
-            print('inputs none')
-            return 
-        elif self.resource_outputs is None:
-            print('outputs none')
-            return
+
+
         get_in_cmd = f"mcrfsw {self.MODEL_IN} -g "
         get_out_cmd = f"mcrfsw {self.MODEL_OUT} -g"
     
@@ -103,7 +94,7 @@ class MainWindow(QMainWindow):
                     self.ui.currentOutput.setText(f'Input: {resource}')
 
         except:
-            print('Failed to read switch state')
+            self._show_basic_msg_box('Failed to read switch state from remote!')
         
     
 
@@ -118,7 +109,7 @@ class MainWindow(QMainWindow):
             self._read_switches()
         except:
             self.showLoginPopup()
-            print('failed auto login. falling back')
+            
                   
         
     def showEvent(self, event: PySide6.QtGui.QShowEvent) -> None:
@@ -193,3 +184,11 @@ class MainWindow(QMainWindow):
         if self.ssh is not None:
             self.ssh.close()
         return super().closeEvent(event)
+    
+    def _show_basic_msg_box(self, msg): 
+        """
+        Display a basic message box with a given message
+        """
+        msg_box = QMessageBox()
+        msg_box.setText(msg)
+        msg_box.exec()
