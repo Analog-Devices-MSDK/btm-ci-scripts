@@ -84,11 +84,14 @@ class Ui_MainWindow(object):
 
         self.currentInput = QLabel(self.frame)
         self.currentInput.setObjectName(u"currentInput")
+        self.currentInput.setLayoutDirection(Qt.LeftToRight)
+        self.currentInput.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_2.addWidget(self.currentInput, 2, 2, 1, 1)
 
         self.currentOutput = QLabel(self.frame)
         self.currentOutput.setObjectName(u"currentOutput")
+        self.currentOutput.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_2.addWidget(self.currentOutput, 3, 2, 1, 1)
 
