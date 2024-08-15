@@ -33,6 +33,7 @@ on:
     branches: ["main"]
 env:
   TEST_DIR: tests
+  MAX32655: max32655_board_B38
 
 jobs:
   ActionTest:
@@ -49,13 +50,13 @@ jobs:
           fetch-depth: 0
 
       
-      - name: Find Board
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
-        id: boardGet
-        with:
-          target: |
-            MAX32655
-          group: APP
+      # - name: Find Board
+      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
+      #   id: boardGet
+      #   with:
+      #     target: |
+      #       MAX32655
+      #     group: APP
 
 
       - name: Lock
@@ -90,9 +91,9 @@ jobs:
 
 
 
-      - name: TestUnlock
+      - name: Unlock
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.1
         with:
           all_owned: true
           lock: false
