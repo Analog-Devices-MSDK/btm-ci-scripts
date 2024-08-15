@@ -48,16 +48,7 @@ jobs:
           repository: analogdevicesinc/msdk
           ref: main
           fetch-depth: 0
-
-      
-      # - name: Find Board
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
-      #   id: boardGet
-      #   with:
-      #     target: |
-      #       MAX32655
-      #     group: APP
-
+      - uses: actions/checkout@v4
 
       - name: Lock
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1.1
@@ -65,13 +56,6 @@ jobs:
           boards: |
             ${{ env.MAX32655 }}
           lock: true
-
-      # - name: Build Hello World
-      #   uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@v1.1
-      #   with:
-      #     path: Examples/MAX32655/Hello_World
-      #     distclean: true
-      #     supress_output: true
 
       - name: Flash
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1.1
@@ -88,8 +72,6 @@ jobs:
           cd tests
           python3 hello_world_test.py
           exit $?
-
-
 
       - name: Unlock
         if: always()
