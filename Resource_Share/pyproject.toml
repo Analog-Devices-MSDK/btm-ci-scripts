@@ -10,7 +10,7 @@ packages = ["src/resource_manager", "src/resource_manager_cli.py",
 "src/ocderase.py",
 "src/ci_temp.py",
 "src/switch_router/backend/*",
-"src/switch_router/main.py"
+"src/switch_router/sw_route.py"
 ]
 
 [project]
@@ -37,7 +37,7 @@ ocdflash = "ocdflash:main"
 ocdreset = "ocdreset:main"
 ocderase = "ocderase:main"
 citemp = "ci_temp:main"
-swroute = "sw_router/sw_route:main"
+swroute = "sw_route:main"
 
 [project.urls]
 Homepage = "https://github.com/Analog-Devices-MSDK/btm-ci-scripts"

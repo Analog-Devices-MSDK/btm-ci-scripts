@@ -1,8 +1,7 @@
-from typing import Callable
 from .popup_ui import Ui_login_popup
 from PySide6.QtWidgets import QWidget, QMainWindow
 from PySide6.QtCore import QObject, QRect, Signal, Qt
-from PySide6.QtGui import QShowEvent
+
 
 class PopupSignals(QObject):
     close = Signal()
@@ -13,9 +12,7 @@ class LoginPopup(QWidget):
         QWidget.__init__(self)
         self.ui = Ui_login_popup()
         self.ui.setupUi(self)
-        # self.xOffset = (parent.width() - self.width()) // 2
-        # self.yOffset = (parent.height() - self.height()) // 2
-        # self.basePos = parent.pos()
+        
         self.signals = PopupSignals()
         self.signals.close.connect(close_cb)
         self.signals.dataEntered.connect(changed_cb)
