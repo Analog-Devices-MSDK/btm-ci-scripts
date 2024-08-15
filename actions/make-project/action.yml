@@ -16,7 +16,7 @@ inputs:
   suppress_output:
     description: 'Used to suppress console unless an error is encountered.'
     required: false
-    default: 'false'
+    default: 'true'
 runs:
   using: 'node20'
   main: 'index.js'
