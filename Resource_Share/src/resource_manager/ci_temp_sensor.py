@@ -24,7 +24,7 @@ class CiTempSensor:
         sensor_baud = self.resource_manager.get_item_value(
             f"{self.TEMPSENSOR_NAME}.baudrate"
         )
-        self.port = serial.Serial(sensor_port, baudrate=sensor_baud)
+        self.port = serial.Serial(sensor_port, baudrate=sensor_baud, timeout=1)
 
     @staticmethod
     def celsius_to_farenheit(celsius):
@@ -56,7 +56,8 @@ class CiTempSensor:
 
                 if unit == TempUnit.KELVIN:
                     return self.celsius_to_kelvin(temp)
-
+            except TimeoutError:
+                print("[red]Timeout Occured![/red]")
             except:
                 continue
 

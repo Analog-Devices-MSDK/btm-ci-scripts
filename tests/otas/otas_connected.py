@@ -61,13 +61,8 @@ import serial
 
 from resource_manager import ResourceManager
 
-<<<<<<< HEAD
-=======
-
->>>>>>> b387792888c883a9e2fcf672638a0aa3578fabef
 BTN1 = 1
 BTN2 = 2
-
 
 class BasicTester:
     def __init__(self, portname: str) -> None:
