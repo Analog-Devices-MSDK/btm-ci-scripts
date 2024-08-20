@@ -100,6 +100,14 @@ def _setup_ci():
         "--results", type=str, default="results", help="Results directory."
     )
     parser.add_argument("--num-packets", type=int, default=1000, help="Num packets.")
+    parser.add_argument("--no-cal", action="store_true", help="Num packets.")
+    parser.add_argument(
+        "-s",
+        "--settings",
+        default="",
+        help="Optional settings file will default to environment vars if left empty",
+    )
+    parser.add_argument("--local", action='store_true',help='Set env to be local (i.e. do not configure switches)')
 
     return parser.parse_args()
 
@@ -142,11 +150,19 @@ def create_results_dir(results_dir):
 def main():
     args = _setup_ci()
 
-    cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
+    if args.no_cal:
 
-    with open(
-        os.path.join(os.getenv(ENV_CI_CONFIG), "per_dtm_settings.json"), "r"
-    ) as setting_file:
+        cal_file = None
+
+    else:
+        cal_file = os.path.join(os.getenv(ENV_CI_CONFIG), CALIBRATION_FNAME)
+
+    if args.settings != "":
+        settings_path = args.settings
+    else:
+        settings_path = os.path.join(os.getenv(ENV_CI_CONFIG), "per_dtm_settings.json")
+
+    with open(settings_path, "r") as setting_file:
         test_settings = json.load(setting_file)
 
     rm = ResourceManager()
@@ -161,7 +177,10 @@ def main():
     )
     print(master_info)
     print(dut_info)
-    cfg_switches(rm, (args.master, args.dut))
+
+
+    if not args.local:
+        cfg_switches(rm, (args.master, args.dut))
 
     print(args.phy)
 
@@ -171,11 +190,10 @@ def main():
         attenuation_stop = -100
 
     test_settings = test_settings["config"]
-
+    
     user_setings = {
         "results_dir": args.results,
         "num_packets": args.num_packets,
-        "calibration_file": cal_file,
         "packet_lens": "37",
         "rx_input_powers": f"-20:{attenuation_stop}:{args.attenuation_step}",
         "phy": args.phy,
@@ -187,6 +205,17 @@ def main():
         "create_masked_surface_plot": {"per": False},
         "create_lineplot": {"per": True},
     }
+
+    if not args.no_cal:
+        user_setings["calibration_file"] = cal_file
+    else:
+        
+        
+        user_setings['calibration_dict'] = {'tx_path':{
+            "attenuators" : ['12208030083'],
+            'losses' : 0
+        }}
+
 
     test_settings = user_setings
 
@@ -200,7 +229,11 @@ def main():
     try:
         df = ctrl.get_dataframe()
         sens = []
-        for ch in np.unique(df.loc[:, "CHANNEL"]):
+        channels = np.unique(df.loc[:, "CHANNEL"])
+
+        for ch in channels:
+
+
             idx = np.where(
                 np.greater_equal(
                     df.loc[df["CHANNEL"] == ch, "PER"].to_numpy(),
@@ -208,44 +241,51 @@ def main():
                 )
             )[0][0]
             sens.append(df.loc[idx, "RX_INPUT_POWER"])
+            
+    except:
+        print("Sensitivity bounds not present!")
 
-        spec_pwr = -80
 
+
+
+    if len(sens) == len(channels):
         # store sensitivity data in database
         if len(sens) == 40 and is_ci():
             db = BleDB()
             db.add_sensitivity_dtm(args.dut, sens)
 
         sens = np.array(sens)
-        x_axis = np.array([*range(40)])
+        x_axis = channels
 
+        spec_pwr = -70.8
         bad_idx = np.greater_equal(sens, spec_pwr)
+    
         good_idx = np.logical_not(bad_idx)
 
         _, axes = plt.subplots()
 
-        axes.stem(
-            x_axis[bad_idx],
-            sens[bad_idx],
-            bottom=spec_pwr,
-            linefmt="-k",
-            markerfmt="xr",
-            basefmt="--b",
-        )
-        axes.stem(
-            x_axis[good_idx],
-            sens[good_idx],
-            bottom=spec_pwr,
-            linefmt="-k",
-            markerfmt="og",
-            basefmt="--b",
-        )
+        if bad_idx.any():
+            axes.stem(
+                x_axis[bad_idx],
+                sens[bad_idx],
+                bottom=spec_pwr,
+                linefmt="-k",
+                markerfmt="xr",
+                basefmt="--b",
+            )
+        if good_idx.any():
+            axes.stem(
+                x_axis[good_idx],
+                sens[good_idx],
+                bottom=spec_pwr,
+                linefmt="-k",
+                markerfmt="og",
+                basefmt="--b",
+            )
 
         axes.set(xlabel="Channel", ylabel="RX Power (dBm)", title="Sensitivity")
         plt.savefig(f"{args.results}/sensitivity_stem.png")
 
-    except:
-        print("Sensitivity bounds not present!")
 
     if not ctrl.results():
         sys.exit(-1)
