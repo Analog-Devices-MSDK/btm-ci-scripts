@@ -60,6 +60,7 @@ from resource_manager.ci_temp_sensor import CiTempSensor, TempUnit
 
 
 def main():
+    """MAIN"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-u", "--unit", default="c", help="Temp unit reported in (c, f, k)"

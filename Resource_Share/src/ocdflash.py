@@ -62,6 +62,7 @@ from resource_manager import ResourceManager
 from rich.prompt import Prompt
 from rich import print
 from pathlib import Path
+import socket
 
 
 def is_elf(file_path):
@@ -115,7 +116,10 @@ def main():
         target_str = resource_manager.get_target(resource).lower()
         elf = f"build/{target_str}.elf"
 
-    if not os.path.exists(elf):
+    # Probably a better way.
+    # This will block workflows if the path is messed up. So just bypass feature on CI machine
+    hostname = socket.gethostname()
+    if hostname != "wall-e" and not os.path.exists(elf):
         elf = ""
         elf_files = find_elf_files()
         for file in elf_files:
