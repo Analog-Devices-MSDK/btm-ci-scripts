@@ -21,6 +21,7 @@ printf '%s\n' \
     "OPENOCD_PATH=$OPENOCD_PATH" \
     "TEST_DIR=$TEST_DIR" \
     "CI_CONFIG_DIR=$CI_CONFIG_DIR" \
+    "CI_PHYTEST_CFG_DIR=$CI_PHYTEST_CFG_DIR" \
     "BLE_DB_PATH=$BLE_DB_PATH" \
     "PATH=$PATH"\
     >.env

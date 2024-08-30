@@ -62,8 +62,7 @@ from ble_test_suite.controllers import MasterController
 from ble_test_suite.equipment import MiniCircuitsRFSwitch
 from resource_manager import ResourceManager
 
-# DEF_CFG = os.path.join(os.getenv("CI_PHYTEST_CFG_DIR"), "phyTest_master.json")
-DEF_CFG = os.path.join(os.getenv("CI_CONFIG_DIR"), "phy_test_cfgs", "ci_cfgs", "phyTest_master.json")
+DEF_CFG = os.path.join(os.getenv("CI_PHYTEST_CFG_DIR"), "phyTest_master.json")
 
 def configure_switches(rm: ResourceManager, devs: Tuple[str]) -> None:
     """Configure the RF switches to connect equipment.
@@ -125,6 +124,13 @@ if __name__ == "__main__":
         type=str,
         default=None,
         help="Test-level configuration directory path."
+    )
+    parser.add_argument(
+        "-r", "--results",
+        dest="results_dir",
+        type=str,
+        default=None,
+        help="Results directory override."
     )
     parser.add_argument(
         "-c", "--checkpoint",
@@ -231,12 +237,18 @@ if __name__ == "__main__":
         with open(cfg, "r", encoding="utf-8") as cfile:
             cfg = json.load(cfile)
         cfg["test_config_directory"] = args.cfg_directory
+        if args.results_dir is not None:
+            cfg["results_directory"] = args.results_dir
         if test_conditions is not None:
             cfg["test_conditions"] = test_conditions
-    elif test_conditions is not None:
+    elif test_conditions is not None and not from_ckp:
         with open(cfg, "r", encoding='utf-8') as cfile:
             cfg = json.load(cfile)
         cfg["test_conditions"].update(test_conditions)
+    elif args.results_dir is not None and not from_ckp:
+        with open(cfg, "r", encoding='utf-8') as cfile:
+            cfg = json.load(cfile)
+        cfg["results_directory"] = args.results_dir
 
 
     ctrl = MasterController(
