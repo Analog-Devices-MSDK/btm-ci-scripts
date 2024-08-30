@@ -686,18 +686,15 @@ class ResourceManager:
         upper = 10**3 - 1
         return str(random.randint(lower, upper))
 
-    def _is_port_in_use(self, port: str):
+    def _is_port_in_use(self, port: str) -> bool:
         import socket
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
-                # Bind to the port
                 s.bind(("localhost", int(port)))
             except OSError:
-                # Port is in use
                 return True
             else:
-                # Port is not in use
                 return False
 
     def _is_ocd_capable(self, resource):
