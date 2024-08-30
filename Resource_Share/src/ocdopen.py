@@ -67,7 +67,7 @@ def main():
     parser.add_argument("resource", help="Resource name as listed in board config")
     args = parser.parse_args()
 
-    resource_manager = ResourceManager()
+    resource_manager = ResourceManager(autoocd=True)
 
     resource = args.resource
 

@@ -188,7 +188,7 @@ def main():
     unlock_resources = set(args.unlock)
 
     resource_manager = ResourceManager(
-        timeout=int(args.timeout), extra_resources=args.resources
+        timeout=int(args.timeout), extra_resources=args.resources, autoocd=True
     )
 
     if args.clean_env:

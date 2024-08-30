@@ -54,6 +54,7 @@ import os
 import subprocess
 from datetime import datetime
 from typing import Dict, List, Set, Tuple
+import random
 
 # pylint: disable=import-error
 from tabulate import tabulate
@@ -67,11 +68,14 @@ class ResourceManager:
     ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
     ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
 
-    def __init__(self, timeout=60, owner="", extra_resources: List[str] = []) -> None:
+    def __init__(
+        self, timeout=60, owner="", extra_resources: List[str] = [], autoocd=False
+    ) -> None:
         # Initialize the resource file
         self.timeout = timeout
         self.resources = self._add_base_config()
         self.owner = owner
+        self.autoocd = autoocd
         self._add_custom_config(extra_resources)
         self._add_resources_path()
         self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
@@ -680,6 +684,11 @@ class ResourceManager:
 
         return model, port
 
+    def _generate_3digit_str(self) -> str:
+        lower = 10 ** (2)
+        upper = 10**3 - 1
+        return str(random.randint(lower, upper))
+
     def _is_ocd_capable(self, resource):
         if resource not in self.resources:
             return False
@@ -687,8 +696,17 @@ class ResourceManager:
         info = self.resources[resource]
         if "dap_sn" not in info:
             return False
-        if "ocdports" not in info:
+
+        if "ocdports" not in info and not self.autoocd:
             return False
+
+        rand_digits = self._generate_3digit_str()
+
+        self.resources[resource]["ocdports"] = {
+            "gdb": f"3{rand_digits}",
+            "tcl": f"4{rand_digits}",
+            "telnet": f"5{rand_digits}",
+        }
 
         return True
 

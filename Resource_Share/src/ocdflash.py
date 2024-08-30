@@ -55,8 +55,41 @@ ocdflash.py
 Description: ocdflash cli
 
 """
+import os
+import sys
 import argparse
 from resource_manager import ResourceManager
+from rich.prompt import Prompt
+from rich import print
+from pathlib import Path
+
+
+def is_elf(file_path):
+    """Check if a file is an ELF file by reading its magic number."""
+    try:
+        with open(file_path, "rb") as f:
+            magic = f.read(4)
+            return magic == b"\x7fELF"
+    except Exception as e:
+        print(f"Error reading {file_path}: {e}")
+        return False
+
+
+def find_elf_files(directory="."):
+    """Find ELF files in the current directory and one level below using pathlib."""
+    elf_files = []
+
+    current_dir = Path(directory)
+
+    for file in current_dir.iterdir():
+        if file.is_file() and is_elf(file):
+            elf_files.append(str(file))
+
+    for file in current_dir.glob("*/*"):
+        if file.is_file() and is_elf(file):
+            elf_files.append(str(file))
+
+    return elf_files
 
 
 def main():
@@ -72,7 +105,7 @@ def main():
 
     args = parser.parse_args()
 
-    resource_manager = ResourceManager()
+    resource_manager = ResourceManager(autoocd=True)
 
     resource = args.resource
     elf = args.elf
@@ -81,6 +114,19 @@ def main():
     if elf == "":
         target_str = resource_manager.get_target(resource).lower()
         elf = f"build/{target_str}.elf"
+
+    if not os.path.exists(elf):
+        elf = ""
+        elf_files = find_elf_files()
+        for file in elf_files:
+            this_elf = Prompt.ask(f"Is this the file {file} (y/n)?", default="y")
+            if this_elf in ("y", "Y"):
+                elf = file
+                break
+
+    if not os.path.exists(elf):
+        print("[red]No elf file given and could not be determined![/red]")
+        sys.exit(-1)
 
     resource_manager.resource_flash(resource_name=resource, elf_file=elf, owner=owner)
 
