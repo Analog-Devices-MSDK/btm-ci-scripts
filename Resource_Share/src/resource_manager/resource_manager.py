@@ -51,10 +51,10 @@ Description: BTM-CI Resource Manager
 import glob
 import json
 import os
+import random
 import subprocess
 from datetime import datetime
 from typing import Dict, List, Set, Tuple
-import random
 
 # pylint: disable=import-error
 from tabulate import tabulate

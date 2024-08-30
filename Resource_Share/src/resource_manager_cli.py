@@ -44,10 +44,13 @@
 ###############################################################################
 """Resource manager command line interface."""
 import argparse
-import sys
 import os
+import sys
 from typing import Dict
+#pylint: disable=redefined-builtin
 from rich import print
+#pylint: enable=redefined-builtin
+
 from resource_manager import ResourceManager
 
 VERSION = "1.0.2"
@@ -185,10 +188,10 @@ def config_cli() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def get_purgable(resource_manager: ResourceManager) -> Dict[str, str]:
-    SERIAL_DEV_PATHS = "/dev/serial/by-id/"
-    if os.path.exists(SERIAL_DEV_PATHS):
-        serial_devs = os.listdir(SERIAL_DEV_PATHS)
+def _get_purgable(resource_manager: ResourceManager) -> Dict[str, str]:
+    serial_dev_path = "/dev/serial/by-id/"
+    if os.path.exists(serial_dev_path):
+        serial_devs = os.listdir(serial_dev_path)
     else:
         serial_devs = []
 
@@ -286,11 +289,10 @@ def main():
         )
 
     if args.purgable:
-        purgable = get_purgable(resource_manager)
+        purgable = _get_purgable(resource_manager)
         print("[red]Purgable reosources[/red]")
         for key, value in purgable.items():
             print(key, value)
-            pass
 
     sys.exit(0)
 

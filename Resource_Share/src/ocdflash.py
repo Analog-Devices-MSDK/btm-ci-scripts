@@ -55,24 +55,30 @@ ocdflash.py
 Description: ocdflash cli
 
 """
-import os
-import sys
 import argparse
-from resource_manager import ResourceManager
-from rich.prompt import Prompt
-from rich import print
-from pathlib import Path
+
+# pylint: disable=redefined-builtin,import-error
+import os
 import socket
+import sys
+from pathlib import Path
+
+from rich import print
+from rich.prompt import Prompt
+
+from resource_manager import ResourceManager
+
+# pylint: enable=redefined-builtin,import-error
 
 
 def is_elf(file_path):
     """Check if a file is an ELF file by reading its magic number."""
     try:
-        with open(file_path, "rb") as f:
-            magic = f.read(4)
+        with open(file_path, "rb") as file:
+            magic = file.read(4)
             return magic == b"\x7fELF"
-    except Exception as e:
-        print(f"Error reading {file_path}: {e}")
+    except IOError:
+        print(f"Error reading {file_path}")
         return False
 
 
