@@ -112,7 +112,7 @@ def main():
 
     args = parser.parse_args()
 
-    resource_manager = ResourceManager(autoocd=True)
+    resource_manager = ResourceManager()
 
     resource = args.resource
     elf = args.elf

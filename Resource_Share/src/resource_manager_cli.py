@@ -47,9 +47,11 @@ import argparse
 import os
 import sys
 from typing import Dict
-#pylint: disable=redefined-builtin
+
+# pylint: disable=redefined-builtin
 from rich import print
-#pylint: enable=redefined-builtin
+
+# pylint: enable=redefined-builtin
 
 from resource_manager import ResourceManager
 
@@ -227,7 +229,7 @@ def main():
     unlock_resources = set(args.unlock)
 
     resource_manager = ResourceManager(
-        timeout=int(args.timeout), extra_resources=args.resources, autoocd=True
+        timeout=int(args.timeout), extra_resources=args.resources
     )
 
     if args.clean_env:

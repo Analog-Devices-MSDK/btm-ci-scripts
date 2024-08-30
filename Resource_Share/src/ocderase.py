@@ -71,7 +71,7 @@ def main():
     parser.add_argument("owner", default="", nargs="?", help="Owner of resource")
     args = parser.parse_args()
 
-    resource_manager = ResourceManager(autoocd=True)
+    resource_manager = ResourceManager()
 
     resource = args.resource
     owner = args.owner

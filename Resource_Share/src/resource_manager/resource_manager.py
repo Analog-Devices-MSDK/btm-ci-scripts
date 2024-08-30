@@ -68,14 +68,11 @@ class ResourceManager:
     ENV_CI_BOARD_CONFIG = "CI_BOARD_CONFIG"
     ENV_CI_BOARD_CONFIG_CUSTOM = "CI_BOARD_CONFIG_CUSTOM"
 
-    def __init__(
-        self, timeout=60, owner="", extra_resources: List[str] = [], autoocd=False
-    ) -> None:
+    def __init__(self, timeout=60, owner="", extra_resources: List[str] = []) -> None:
         # Initialize the resource file
         self.timeout = timeout
         self.resources = self._add_base_config()
         self.owner = owner
-        self.autoocd = autoocd
         self._add_custom_config(extra_resources)
         self._add_resources_path()
         self.resource_lock_dir = os.environ.get(self.ENV_RESOURCE_LOCK_DIR)
@@ -689,6 +686,20 @@ class ResourceManager:
         upper = 10**3 - 1
         return str(random.randint(lower, upper))
 
+    def _is_port_in_use(self, port: str):
+        import socket
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                # Bind to the port
+                s.bind(("localhost", int(port)))
+            except OSError:
+                # Port is in use
+                return True
+            else:
+                # Port is not in use
+                return False
+
     def _is_ocd_capable(self, resource):
         if resource not in self.resources:
             return False
@@ -697,10 +708,21 @@ class ResourceManager:
         if "dap_sn" not in info:
             return False
 
-        if "ocdports" not in info and not self.autoocd:
-            return False
-
         rand_digits = self._generate_3digit_str()
+
+        gdb = f"3{rand_digits}"
+        tcl = f"4{rand_digits}"
+        telnet = f"5{rand_digits}"
+
+        while (
+            self._is_port_in_use(gdb)
+            or self._is_port_in_use(tcl)
+            or self._is_port_in_use(telnet)
+        ):
+            rand_digits = self._generate_3digit_str()
+            gdb = f"3{rand_digits}"
+            tcl = f"4{rand_digits}"
+            telnet = f"5{rand_digits}"
 
         self.resources[resource]["ocdports"] = {
             "gdb": f"3{rand_digits}",

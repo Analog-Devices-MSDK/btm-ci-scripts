@@ -67,11 +67,13 @@ def main():
     parser.add_argument("resource", help="Resource name as listed in board config")
     args = parser.parse_args()
 
-    resource_manager = ResourceManager(autoocd=True)
+    resource_manager = ResourceManager()
 
     resource = args.resource
 
     ocdpath = os.getenv("OPENOCD_PATH")
+
+    resource_manager._is_ocd_capable(resource)
     dapsn = resource_manager.get_dapsn(resource)
     gdb, telnet, tcl = resource_manager.get_ocdports(resource)
     target = resource_manager.get_target(resource)
