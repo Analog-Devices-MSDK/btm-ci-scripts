@@ -48,6 +48,7 @@ resource_manager.py
 Description: BTM-CI Resource Manager
 
 """
+import socket
 import glob
 import json
 import os
@@ -687,23 +688,25 @@ class ResourceManager:
         return str(random.randint(lower, upper))
 
     def _is_port_in_use(self, port: str) -> bool:
-        import socket
-
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             try:
-                s.bind(("localhost", int(port)))
+                sock.bind(("localhost", int(port)))
             except OSError:
                 return True
-            else:
-                return False
-    
+
+            return False
+
     def _is_ocd_capable(self, resource):
         if resource not in self.resources:
             return False
 
         info = self.resources[resource]
+        print(info)
         if "dap_sn" not in info:
             return False
+
+        if "ocdports" in info:
+            return True
 
         rand_digits = self._generate_3digit_str()
 
