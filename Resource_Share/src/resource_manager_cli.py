@@ -44,7 +44,14 @@
 ###############################################################################
 """Resource manager command line interface."""
 import argparse
+import os
 import sys
+from typing import Dict
+
+# pylint: disable=redefined-builtin
+from rich import print
+
+# pylint: enable=redefined-builtin
 
 from resource_manager import ResourceManager
 
@@ -173,7 +180,41 @@ def config_cli() -> argparse.Namespace:
         help="Set value for resource in config (ex: max32655_board1.dap_sn=3)",
     )
 
+    parser.add_argument(
+        "-p",
+        "--purgable",
+        action="store_true",
+        help="Display purgable resources",
+    )
+
     return parser.parse_args()
+
+
+def _get_purgable(resource_manager: ResourceManager) -> Dict[str, str]:
+    serial_dev_path = "/dev/serial/by-id/"
+    if os.path.exists(serial_dev_path):
+        serial_devs = os.listdir(serial_dev_path)
+    else:
+        serial_devs = []
+
+    purgable = {}
+
+    resource: str
+    values: dict
+    for resource, values in resource_manager.resources.items():
+        cport = values.get("console_port")
+        cport = os.path.basename(cport)
+        if cport and cport not in serial_devs:
+            purgable[resource] = "Console port not detected"
+            continue
+
+        hciport = values.get("hci_port")
+        hciport = os.path.basename(hciport)
+        if hciport and hciport not in serial_devs:
+            if resource not in purgable:
+                purgable[resource] = "HCI port not detected"
+
+    return purgable
 
 
 def main():
@@ -248,6 +289,12 @@ def main():
         resource_manager.print_applicable_items(
             target=args.find_board[0], group=args.find_board[1]
         )
+
+    if args.purgable:
+        purgable = _get_purgable(resource_manager)
+        print("[red]Purgable reosources[/red]")
+        for key, value in purgable.items():
+            print(key, value)
 
     sys.exit(0)
 

@@ -56,7 +56,47 @@ Description: ocdflash cli
 
 """
 import argparse
+
+# pylint: disable=redefined-builtin,import-error
+import os
+import socket
+import sys
+from pathlib import Path
+
+from rich import print
+from rich.prompt import Prompt
+
 from resource_manager import ResourceManager
+
+# pylint: enable=redefined-builtin,import-error
+
+
+def is_elf(file_path):
+    """Check if a file is an ELF file by reading its magic number."""
+    try:
+        with open(file_path, "rb") as file:
+            magic = file.read(4)
+            return magic == b"\x7fELF"
+    except IOError:
+        print(f"Error reading {file_path}")
+        return False
+
+
+def find_elf_files(directory="."):
+    """Find ELF files in the current directory and one level below using pathlib."""
+    elf_files = []
+
+    current_dir = Path(directory)
+
+    for file in current_dir.iterdir():
+        if file.is_file() and is_elf(file):
+            elf_files.append(str(file))
+
+    for file in current_dir.glob("*/*"):
+        if file.is_file() and is_elf(file):
+            elf_files.append(str(file))
+
+    return elf_files
 
 
 def main():
@@ -81,6 +121,22 @@ def main():
     if elf == "":
         target_str = resource_manager.get_target(resource).lower()
         elf = f"build/{target_str}.elf"
+
+    # Probably a better way.
+    # This will block workflows if the path is messed up. So just bypass feature on CI machine
+    hostname = socket.gethostname()
+    if hostname != "wall-e" and not os.path.exists(elf):
+        elf = ""
+        elf_files = find_elf_files()
+        for file in elf_files:
+            this_elf = Prompt.ask(f"Is this the file {file} (y/n)?", default="y")
+            if this_elf in ("y", "Y"):
+                elf = file
+                break
+
+    if not os.path.exists(elf):
+        print("[red]No elf file given and could not be determined![/red]")
+        sys.exit(-1)
 
     resource_manager.resource_flash(resource_name=resource, elf_file=elf, owner=owner)
 

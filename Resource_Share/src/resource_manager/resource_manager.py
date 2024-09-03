@@ -51,6 +51,7 @@ Description: BTM-CI Resource Manager
 import glob
 import json
 import os
+import random
 import subprocess
 from datetime import datetime
 from typing import Dict, List, Set, Tuple
@@ -680,6 +681,22 @@ class ResourceManager:
 
         return model, port
 
+    def _generate_3digit_str(self) -> str:
+        lower = 10 ** (2)
+        upper = 10**3 - 1
+        return str(random.randint(lower, upper))
+
+    def _is_port_in_use(self, port: str) -> bool:
+        import socket
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("localhost", int(port)))
+            except OSError:
+                return True
+            else:
+                return False
+    
     def _is_ocd_capable(self, resource):
         if resource not in self.resources:
             return False
@@ -687,8 +704,28 @@ class ResourceManager:
         info = self.resources[resource]
         if "dap_sn" not in info:
             return False
-        if "ocdports" not in info:
-            return False
+
+        rand_digits = self._generate_3digit_str()
+
+        gdb = f"3{rand_digits}"
+        tcl = f"4{rand_digits}"
+        telnet = f"5{rand_digits}"
+
+        while (
+            self._is_port_in_use(gdb)
+            or self._is_port_in_use(tcl)
+            or self._is_port_in_use(telnet)
+        ):
+            rand_digits = self._generate_3digit_str()
+            gdb = f"3{rand_digits}"
+            tcl = f"4{rand_digits}"
+            telnet = f"6{rand_digits}"
+
+        self.resources[resource]["ocdports"] = {
+            "gdb": f"3{rand_digits}",
+            "tcl": f"4{rand_digits}",
+            "telnet": f"5{rand_digits}",
+        }
 
         return True
 
