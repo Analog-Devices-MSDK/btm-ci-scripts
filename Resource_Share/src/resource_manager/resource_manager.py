@@ -696,7 +696,7 @@ class ResourceManager:
                 return True
             else:
                 return False
-
+    
     def _is_ocd_capable(self, resource):
         if resource not in self.resources:
             return False
@@ -719,7 +719,7 @@ class ResourceManager:
             rand_digits = self._generate_3digit_str()
             gdb = f"3{rand_digits}"
             tcl = f"4{rand_digits}"
-            telnet = f"5{rand_digits}"
+            telnet = f"6{rand_digits}"
 
         self.resources[resource]["ocdports"] = {
             "gdb": f"3{rand_digits}",
