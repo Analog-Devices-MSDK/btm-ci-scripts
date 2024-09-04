@@ -1,7 +1,7 @@
 const Core = require('@actions/core');
 const { spawn } = require('child_process');
 const path = require('path');
-const fs = require('fs')
+const fs = require('node:fs')
 const { procSuccess, procFail, findTargetDirectory } = require('../common');
 
 const cleanProject = function (projectPath, distclean, suppress) {
@@ -81,7 +81,12 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         });
         makeCmd.on('close', code => {
             if (logfile !== null) {
-                fs.writeFileSync(logfile, logOut);
+                try {
+                    fs.writeFileSync(logfile, logOut);
+                } catch (err) {
+                    console.log("Error writing logfile.");
+                    console.error(err);
+                }
             }
             logOut = `${logOut}Process exited with code ${code}`;
             if (!suppress || code != 0) {
