@@ -701,7 +701,6 @@ class ResourceManager:
             return False
 
         info = self.resources[resource]
-        print(info)
         if "dap_sn" not in info:
             return False
 

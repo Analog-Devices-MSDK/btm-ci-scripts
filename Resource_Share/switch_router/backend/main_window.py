@@ -44,7 +44,6 @@ class MainWindow(QMainWindow):
         self._attempt_login()
 
     def _connect_switch(self):
-
         if (
             self.ssh is None
             or self.resource_inputs is None
@@ -66,7 +65,6 @@ class MainWindow(QMainWindow):
             self._show_basic_msg_box("Cannot read switches!")
 
     def _read_switches(self):
-
         if (
             self.ssh is None
             or self.resource_inputs is None
@@ -93,7 +91,6 @@ class MainWindow(QMainWindow):
 
             self.ui.currentOutput.setText(f"Output: Unknown")
             for resource, state in self.resource_outputs.items():
-
                 if int(state) == output_read:
                     self.ui.currentOutput.setText(f"Input: {resource}")
 
