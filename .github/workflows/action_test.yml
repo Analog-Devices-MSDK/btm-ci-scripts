@@ -96,6 +96,7 @@ jobs:
       # #----------------------------------------------------------------------------------------------
       # Test makeProject action
       - name: TestMake
+        id: make_logs
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@actions-update
         with:
           project: BLE5_ctr
@@ -104,11 +105,17 @@ jobs:
           msdk_path: ${{ github.workspace }}
           create_buildlog: true
       # #----------------------------------------------------------------------------------------------
+      # Test makeProject output
+      - name: TestMake_output
+        run: |
+          echo "LOG DIR -- ${{ steps.make_logs.outputs.log_directory }}"
+          ls ${{ steps.make_logs.outputs.log_directory }}
+      # #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@actions-update
         with:
-          board: |
+          boards: |
             max32655_board1
           project: |
             BLE5_ctr

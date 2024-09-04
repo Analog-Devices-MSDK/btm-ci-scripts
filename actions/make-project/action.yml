@@ -29,6 +29,9 @@ inputs:
     description: 'Used to create a build logfile.'
     required: false
     default: 'false'
+outputs:
+  log_directory:
+    description: 'Logfile save directory path'
 runs:
   using: 'node20'
   main: 'index.js'
