@@ -131,7 +131,7 @@ const main = async function () {
                 logPath = path.join(logDir, `build-log-${i}.txt`)
             }
             let buildPath = PROJECT_DIRS[i];
-            await makeProject(buildPath, DISTCLEAN_FLAG, build_flags, suppress=SUPPRESS_FLAG, logfile=logPath).then(
+            await makeProject(buildPath, DISTCLEAN_FLAG, build_flags, board="", suppress=SUPPRESS_FLAG, logfile=logPath).then(
                 (success) => procSuccess(success, "Build"),
                 (error) => {
                     retVal --;
@@ -162,7 +162,7 @@ const main = async function () {
                 logPath = path.join(logDir, `build-log-${i}.txt`)
             }
             let buildPath = findTargetDirectory(path.join(MSDK_PATH, "Examples", TARGETS[i]), PROJECT_DIRS[i])
-            await makeProject(buildPath, DISTCLEAN_FLAG, build_flags, suppress=SUPPRESS_FLAG, logfile=logPath).then(
+            await makeProject(buildPath, DISTCLEAN_FLAG, build_flags, board="", suppress=SUPPRESS_FLAG, logfile=logPath).then(
                 (success) => procSuccess(success, "Build"),
                 (error) => {
                     retVal--;
