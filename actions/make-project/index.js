@@ -18,8 +18,6 @@ const cleanProject = function (projectPath, distclean, suppress) {
             cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
             cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         }
-        // cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
-        // cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         cleanCmd.on('error', error => {
             if (suppress) {
                 logOut = `${logOut}${dumpOut}`
@@ -54,8 +52,7 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
             procFail(error, 'Clean', false);
         }
     );
-    console.log(suppress)
-    console.log(logfile)
+
     let logOut = '';
     let dumpOut = '';
     return new Promise((resolve, reject) => {
@@ -70,8 +67,6 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
             makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
             makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         }
-        // makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
-        // makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         makeCmd.on('error', error => {
             if (suppress) {
                 logOut = `${logOut}${dumpOut}`
@@ -80,14 +75,12 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         });
         makeCmd.on('close', code => {
             if (logfile !== null) {
-                console.log("here")
                 if (suppress && code === 0) {
                     logOut = `${logOut}${dumpOut}`
                 }
                 try {
                     fs.writeFileSync(logfile, logOut);
                 } catch (err) {
-                    console.log("Error writing logfile.");
                     console.error(err);
                 }
             }
@@ -158,7 +151,6 @@ const main = async function () {
         for (let i = 0; i < TARGETS.length; i++) {
             let logPath = null;
             if (USE_LOGFILE) {
-                console.log("use log")
                 logPath = path.join(logDir, `build-log-${i}.txt`)
             }
             let buildPath = findTargetDirectory(path.join(MSDK_PATH, "Examples", TARGETS[i]), PROJECT_DIRS[i])

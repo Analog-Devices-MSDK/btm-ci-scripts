@@ -68,7 +68,7 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test findBoard
       - name: TestFind
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@actions-update
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@main
         id: boardGet
         with:
           target: |
@@ -87,7 +87,7 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> lock action
       - name: TestLock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@actions-update
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           boards: |
             max32655_board1
@@ -97,9 +97,11 @@ jobs:
       # Test makeProject action
       - name: TestMake
         id: make_logs
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@actions-update
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@main
         with:
-          project: ${{ github.workspace }}/Examples/MAX32655/Bluetooth/BLE5_ctr
+          project: BLE5_ctr
+          targets: |
+            MAX32655
           msdk_path: ${{ github.workspace }}
           create_buildlog: true
       # #----------------------------------------------------------------------------------------------
@@ -111,7 +113,7 @@ jobs:
       # #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@actions-update
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
         with:
           boards: |
             max32655_board1
@@ -122,14 +124,14 @@ jobs:
       # # #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@actions-update
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@main
         with:
           board: |
             max32655_board1
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
       - name: TestErase
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@actions-update
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
         with:
           board: |
             max32655_board1
@@ -137,7 +139,7 @@ jobs:
       # Test lockBoard --> unlock action
       - name: TestUnlock
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@actions-update
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           all_owned: true
           lock: false
