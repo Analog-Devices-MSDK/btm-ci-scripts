@@ -110,7 +110,8 @@ jobs:
         with:
           board: |
             max32655_board1
-          project: BLE5_ctr
+          project: |
+            BLE5_ctr
           msdk_path: ${{ github.workspace }}
           build: true
       # # #----------------------------------------------------------------------------------------------
