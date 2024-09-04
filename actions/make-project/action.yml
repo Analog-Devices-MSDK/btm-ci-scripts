@@ -1,10 +1,18 @@
 name: makeProject
 description: 'Build a project with make'
 inputs:
-  path:
-    description: 'Path to the project'
+  project:
+    description: 'Path to the project or project directory name'
     required: false
     default: '.'
+  targets:
+    description: 'Targets to build projects for'
+    required: false
+    default: ""
+  msdk_path:
+    description: 'Path to MSDK installation'
+    required: false
+    default: "."
   distclean:
     description: 'Perform distclean before building?'
     required: false
@@ -15,6 +23,10 @@ inputs:
     default: ''
   suppress_output:
     description: 'Used to suppress console unless an error is encountered.'
+    required: false
+    default: 'false'
+  create_buildlog:
+    description: 'Used to create a build logfile.'
     required: false
     default: 'false'
 runs:

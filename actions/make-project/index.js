@@ -1,12 +1,16 @@
 const Core = require('@actions/core');
 const { spawn } = require('child_process');
-const { procSuccess, procFail } = require('../common');
+const path = require('path');
+const fs = require('fs')
+const { procSuccess, procFail, findTargetDirectory } = require('../common');
 
-const BUILD_PATH = Core.getInput('path');
+const PROJECT_DIRS = Core.getMultilineInput('project');
+const TARGETS = Core.getInput('targets', { required: false });
+const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
 const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
-
+const USE_LOGFILE = Core.getBooleanInput('create_buildlog', { required: false });
 
 
 const cleanProject = function (projectPath, distclean, suppress) {
@@ -14,24 +18,28 @@ const cleanProject = function (projectPath, distclean, suppress) {
     
     return new Promise((resolve, reject) => {
         let logOut = '';
-        let dumpOut = '';
+        // let dumpOut = '';
         const cleanCmd = spawn('make', ['-C', projectPath, cleanOpt]);
-        if (suppress) {
-            cleanCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
-            cleanCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
-        } else {
-            cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
-            cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
-        }
+        // if (suppress) {
+        //     cleanCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+        //     cleanCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+        // } else {
+            // cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+            // cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        // }
+        cleanCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        cleanCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         cleanCmd.on('error', error => {
-            if (suppress) {
-                logOut = `${logOut}${dumpOut}`
-            }
+            // if (suppress) {
+            //     logOut = `${logOut}${dumpOut}`
+            // }
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         cleanCmd.on('close', code => {
             logOut = `${logOut}Process exited with code ${code}`;
-            console.log(logOut);
+            if (!suppress || code != 0) {
+                console.log(logOut);
+            }
             if (code != 0) reject(code);
             else {
                 resolve(code);
@@ -41,7 +49,7 @@ const cleanProject = function (projectPath, distclean, suppress) {
 
 }
 
-const makeProject = async function (projectPath, distclean, build_flags, board="", suppress=true) {
+const makeProject = async function (projectPath, distclean, build_flags, board="", suppress=true, logfile=null) {
     let makeArgs = ['-j', '-C', projectPath];
     makeArgs.push(...build_flags);
     
@@ -65,22 +73,29 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
             reject(retVal);
         }
         const makeCmd = spawn('make', makeArgs);
-        if (suppress) {
-            makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
-            makeCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
-        } else {
-            makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
-            makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
-        }
+        // if (suppress) {
+        //     makeCmd.stdout.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+        //     makeCmd.stderr.on('data', data => { dumpOut = `${dumpOut}${data.toString()}` });
+        // } else {
+        //     makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        //     makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        // }
+        makeCmd.stdout.on('data', data => { logOut = `${logOut}${data.toString()}` });
+        makeCmd.stderr.on('data', data => { logOut = `${logOut}${data.toString()}` });
         makeCmd.on('error', error => {
-            if (suppress) {
-                logOut = `${logOut}${dumpOut}`
-            }
+            // if (suppress) {
+            //     logOut = `${logOut}${dumpOut}`
+            // }
             logOut = `${logOut}ERROR: ${error.message}`;
         });
         makeCmd.on('close', code => {
+            if (logfile !== null) {
+                fs.writeFileSync(logfile, logOut);
+            }
             logOut = `${logOut}Process exited with code ${code}`;
-            console.log(logOut);
+            if (!suppress || code != 0) {
+                console.log(logOut);
+            }
             if (code != 0) reject(code);
             else {
                 resolve(code);
@@ -92,17 +107,64 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
 const main = async function () {
     let build_flags = [];
     let retVal = 0;
+    let logDir = "";
+    if (USE_LOGFILE) {
+        logDir = "build-logs";
+        fs.mkdir(logDir);
+    }
     for (var i=0; i<BUILD_FLAGS.length; i++) {
         build_flags.push(...BUILD_FLAGS[i].split(" "))
     }
-    await makeProject(BUILD_PATH, DISTCLEAN_FLAG, SUPPRESS_FLAG).then(
-        (success) => procSuccess(success, "Build"),
-        (error) => {
-            retVal --;
-            procFail(error, 'Build', false);
-            Core.setFailed(`Build ${projPath} failed.`)
+    if (TARGETS.length === 0) {
+        for (let i = 0; i < PROJECT_DIRS.length; i++) {
+            let logPath = null;
+            if (USE_LOGFILE) {
+                logPath = path.join(logDir, `build-log-${i}.txt`)
+            }
+            let buildPath = PROJECT_DIRS[i];
+            await makeProject(buildPath, DISTCLEAN_FLAG, build_flags, suppress=SUPPRESS_FLAG, logfile=logPath).then(
+                (success) => procSuccess(success, "Build"),
+                (error) => {
+                    retVal --;
+                    procFail(error, 'Build', false);
+                    Core.setFailed(`Build ${buildPath} failed.`)
+                }
+            );
         }
-    );
+    } else {
+        if (PROJECT_DIRS.length === 1 && TARGETS.length > 1) {
+            for (let i = 0; i < TARGETS.length; i++) {
+                PROJECT_DIRS[i] == PROJECT_DIRS[0];
+            }
+        } else if (PROJECT_DIRS.length > 1 && TARGETS.length === 1) {
+            for (let i = 0; i < PROJECT_DIRS.length; i++) {
+                TARGETS[i] = TARGETS[0]
+            }
+        } else if (PROJECT_DIRS.length !== TARGETS.length) {
+            console.log("Length of project list must be 1 or the same as length of targets list.");
+            throw new Error(
+                "!! ERROR: Mismatched parameter lengths. Unclear which projects to build. !!"
+            );
+        }
+        for (let i = 0; i < TARGETS.length; i++) {
+            let logPath = null;
+            if (USE_LOGFILE) {
+                logPath = path.join(logDir, `build-log-${i}.txt`)
+            }
+            let buildPath = findTargetDirectory(path.join(MSDK_PATH, "Examples", TARGETS[i]), PROJECT_DIRS[i])
+            await makeProject(buildPath, DISTCLEAN_FLAG, build_flags, suppress=SUPPRESS_FLAG, logfile=logPath).then(
+                (success) => procSuccess(success, "Build"),
+                (error) => {
+                    retVal--;
+                    procFail(error, "Build", false);
+                    Core.setFailed(`Build ${buildPath} failed.`)
+                }
+            );
+        }
+    }
+    
+    Core.setOutput("log_directory", logDir)
+
     if (retVal < 0) {
         return;
     }

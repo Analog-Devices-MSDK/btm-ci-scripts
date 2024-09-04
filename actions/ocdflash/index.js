@@ -7,7 +7,7 @@ const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists, findTarg
 const { makeProject } = require('../make-project');
 const { Cipher } = require('crypto');
 
-const BOARD_IDS = Core.getMultilineInput('board');
+const BOARD_IDS = Core.getMultilineInput('boards');
 const PROJECT_DIRS = Core.getMultilineInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });

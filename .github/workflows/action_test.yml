@@ -94,6 +94,16 @@ jobs:
             max32655_board2
           lock: true
       # #----------------------------------------------------------------------------------------------
+      # Test makeProject action
+      - name: TestMake
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@actions-update
+        with:
+          project: BLE5_ctr
+          targets: |
+            MAX32655
+          msdk_path: ${{ github.workspace }}
+          create_buildlog: true
+      # #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
