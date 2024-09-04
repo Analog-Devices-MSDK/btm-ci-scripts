@@ -110,7 +110,12 @@ const main = async function () {
     let logDir = "";
     if (USE_LOGFILE) {
         logDir = "build-logs";
-        fs.mkdir(logDir);
+        fs.mkdir(logDir, (err) => {
+            if (err) {
+                console.error(err)
+                throw err
+            }
+        });
     }
     for (var i=0; i<BUILD_FLAGS.length; i++) {
         build_flags.push(...BUILD_FLAGS[i].split(" "))
