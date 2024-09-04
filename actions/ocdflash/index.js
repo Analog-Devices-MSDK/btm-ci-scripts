@@ -93,7 +93,7 @@ const main = async function () {
         let app_board = app_boards[i] 
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
-            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).then(
+            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, board=app_board, suppress=SUPPRESS_FLAG).then(
                 (success) => procSuccess(success, 'Build'),
                 (error) => {
                     retVal--;

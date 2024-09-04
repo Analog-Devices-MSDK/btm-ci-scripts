@@ -4,15 +4,6 @@ const path = require('path');
 const fs = require('fs')
 const { procSuccess, procFail, findTargetDirectory } = require('../common');
 
-const PROJECT_DIRS = Core.getMultilineInput('project');
-const TARGETS = Core.getMultilineInput('targets', { required: false });
-const MSDK_PATH = Core.getInput('msdk_path', { required: false });
-const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
-const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
-const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
-const USE_LOGFILE = Core.getBooleanInput('create_buildlog', { required: false });
-
-
 const cleanProject = function (projectPath, distclean, suppress) {
     let cleanOpt = distclean ? 'distclean' : 'clean';
     
@@ -105,6 +96,13 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
 }
 
 const main = async function () {
+    const PROJECT_DIRS = Core.getMultilineInput('project');
+    const TARGETS = Core.getMultilineInput('targets', { required: false });
+    const MSDK_PATH = Core.getInput('msdk_path', { required: false });
+    const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
+    const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
+    const SUPPRESS_FLAG = Core.getBooleanInput('suppress_output', { required: false });
+    const USE_LOGFILE = Core.getBooleanInput('create_buildlog', { required: false });
     let build_flags = [];
     let retVal = 0;
     let logDir = "";
