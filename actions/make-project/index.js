@@ -81,6 +81,7 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
         });
         makeCmd.on('close', code => {
             if (logfile !== null) {
+                console.log("here")
                 try {
                     fs.writeFileSync(logfile, logOut);
                 } catch (err) {
@@ -157,6 +158,7 @@ const main = async function () {
         for (let i = 0; i < TARGETS.length; i++) {
             let logPath = null;
             if (USE_LOGFILE) {
+                console.log("use log")
                 logPath = path.join(logDir, `build-log-${i}.txt`)
             }
             let buildPath = findTargetDirectory(path.join(MSDK_PATH, "Examples", TARGETS[i]), PROJECT_DIRS[i])
