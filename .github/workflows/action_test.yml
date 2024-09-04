@@ -99,9 +99,7 @@ jobs:
         id: make_logs
         uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@actions-update
         with:
-          project: BLE5_ctr
-          targets: |
-            MAX32655
+          project: ${{ github.workspace }}/Examples/MAX32655/Bluetooth/BLE5_ctr
           msdk_path: ${{ github.workspace }}
           create_buildlog: true
       # #----------------------------------------------------------------------------------------------
