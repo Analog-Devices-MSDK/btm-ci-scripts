@@ -54,7 +54,8 @@ const makeProject = async function (projectPath, distclean, build_flags, board="
             procFail(error, 'Clean', false);
         }
     );
-    
+    console.log(suppress)
+    console.log(logfile)
     let logOut = '';
     let dumpOut = '';
     return new Promise((resolve, reject) => {
