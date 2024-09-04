@@ -5,7 +5,7 @@ const fs = require('fs')
 const { procSuccess, procFail, findTargetDirectory } = require('../common');
 
 const PROJECT_DIRS = Core.getMultilineInput('project');
-const TARGETS = Core.getInput('targets', { required: false });
+const TARGETS = Core.getMultilineInput('targets', { required: false });
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const DISTCLEAN_FLAG = Core.getBooleanInput('distclean', { required: false });
 const BUILD_FLAGS = Core.getMultilineInput('build_flags', { required: false });
