@@ -1,7 +1,7 @@
 name: OCDFlash
 description: 'Flash a board using OpenOCD'
 inputs:
-  board:
+  boards:
     description: 'ID of the board to flash'
     required: true
   project:
