@@ -162,8 +162,9 @@ class BasicTester:
             os.mkdir(folder)
         full_path = os.path.join(folder, path)
 
-        with open(full_path, "w") as console_out_file:
-            console_out_file.write(self.console_output)
+        with open(full_path, "w", encoding="utf-8") as console_out_file:
+            # Make sure we can decode to utf-8, otherwise we might get a corrupted text file
+            console_out_file.write(self.console_output[1:].encode('utf-8', 'replace').decode('utf-8', 'replace'))
 
 
 class ClientTester(BasicTester):
