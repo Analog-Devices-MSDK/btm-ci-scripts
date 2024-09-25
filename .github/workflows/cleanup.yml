@@ -1,0 +1,16 @@
+name: Weekly Cleanup
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Runs every Sunday at 00:00 UTC
+  workflow_dispatch:  # Allows you to manually trigger the workflow if needed
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Cleanup
+        run: |
+          chmod +x ./envsetup/cleanup.sh
