@@ -248,7 +248,7 @@ def main():
         sys.exit(0)
     
     if args.lock_all:
-        for resource in resources:
+        for resource in resource_manager.resources:
             resource_manager.lock_resource(resource, owner='ADMIN')
             
 
