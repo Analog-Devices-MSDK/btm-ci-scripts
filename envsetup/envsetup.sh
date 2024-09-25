@@ -7,7 +7,7 @@ is_not_running_as_root() {
 
 if is_not_running_as_root; then
     echo "Script must be ran using sudo!"
-    exit -1
+    exit 255
 fi
 
 source /home/btm-ci/.bashrc
