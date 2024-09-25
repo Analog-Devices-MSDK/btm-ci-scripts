@@ -20,7 +20,7 @@ export RESOURCE_FILES="$CI_BOARD_CONFIG:my_extra_config.json"
 
 ## Resource Manager
 
-Resource manager handles locking/unlock boards, monitoring usage, and getting information about the boards. OpenOCD utils are also included. It is already installled on WALLE, but is very useful for development on your local machine. For instructions on installation and usage of these tools please looke [here](Resource_Share/README.md)
+Resource manager handles locking/unlock boards, monitoring usage, and getting information about the boards. OpenOCD utils are also included. It is already installled on WALLE, but is very useful for development on your local machine. For instructions on installation and usage of these tools please look [here](Resource_Share/README.md)
 
 ## Getting the environment variables loaded for GitHub Workflows
 
