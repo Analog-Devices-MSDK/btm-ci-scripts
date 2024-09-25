@@ -31,7 +31,6 @@ for i in {0..3}; do
     cp .env /home/btm-ci/Workspace/btm-ci-github-runner$i
     (cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh stop)
     (cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh start)
-    
 done
 
 cp .env /home/btm-ci/Workspace/adi-msdk-github-runner0

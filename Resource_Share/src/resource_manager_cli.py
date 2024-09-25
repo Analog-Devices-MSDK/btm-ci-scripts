@@ -95,11 +95,15 @@ def config_cli() -> argparse.Namespace:
         nargs="*",
         help="Name of board to unlock per boards_config.json",
     )
-
+    parser.add_argument(
+        "--lock-all",
+        action="store_true",
+        help="Unlock all resources in lock directory",
+    )
     parser.add_argument(
         "--unlock-all",
         action="store_true",
-        help="Unlock all resources in lock directory",
+        help="Lock all resources. Only meant for admin purposes",
     )
     parser.add_argument(
         "-uo",
@@ -242,6 +246,11 @@ def main():
         print("Unlocking all resources!")
         resource_manager.unlock_all_resources()
         sys.exit(0)
+    
+    if args.lock_all:
+        for resource in resources:
+            resource_manager.lock_resource(resource, owner='ADMIN')
+            
 
     if lock_resources:
         print(f"Attempting to lock resources {lock_resources}")
