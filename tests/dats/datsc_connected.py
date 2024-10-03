@@ -79,7 +79,8 @@ class BasicTester:
             Data to write out
         """
         for byte in data:
-            self.serial_port.write(byte)
+     		# Make sure what we're writing is in the correct format
+            self.serial_port.write(byte.to_bytes(1, 'little'))
             time.sleep(0.1)
 
     def test_secure_connection(self) -> bool:
@@ -153,8 +154,9 @@ class BasicTester:
             os.mkdir(folder)
         full_path = os.path.join(folder, path)
 
-        with open(full_path, "w") as console_out_file:
-            console_out_file.write(self.console_output)
+        with open(full_path, "w", encoding="utf-8") as console_out_file:
+            # Make sure we can decode to utf-8, otherwise we might get a corrupted text file
+            console_out_file.write(self.console_output[1:].encode('utf-8', 'replace').decode('utf-8', 'replace'))
 
 
 class ClientTester(BasicTester):
@@ -326,7 +328,7 @@ class ClientTester(BasicTester):
                 print(self.console_output)
                 return True
 
-            if (datetime.now() - start).total_seconds() > 20:
+            if (datetime.now() - start).total_seconds() > 30:
                 print("\nTIMEOUT!!")
                 return False
 
@@ -351,6 +353,7 @@ def _client_thread(
 
     test_results_client["pairing"] = client.test_secure_connection()
     if not test_results_client["pairing"]:
+        client.save_console_output(f"datc_console_out_{board}.txt")
         return test_results_client
 
     test_results_client["speed"] = client.speed_test()
@@ -405,7 +408,7 @@ def _print_results(name, report):
 def main():
     global kill_server
     if len(sys.argv) < 3:
-        print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
+        print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv) - 1}")
 
         for arg in sys.argv[1:]:
             print(arg)
@@ -437,7 +440,7 @@ def main():
         target=_client_thread,
         args=(
             client_port,
-            server_board,
+            client_board,
             resource_manager,
             owner,
         ),
@@ -446,7 +449,7 @@ def main():
         target=_server_thread,
         args=(
             server_port,
-            client_board,
+            server_board,
             resource_manager,
             owner,
         ),
