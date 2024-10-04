@@ -68,7 +68,7 @@ class BasicTester:
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=0)
         self.serial_port.flush()
 
-        self._wait_until_idle()
+        # self._wait_until_idle()
 
     def _wait_until_idle(self):
         start = datetime.now()
@@ -101,7 +101,8 @@ class BasicTester:
         
         # Give the target device time to respond to the command
         time.sleep(0.5)
-
+    
+            
     def test_secure_connection(self) -> bool:
         """Generic secure connection test for pairing
 
@@ -117,59 +118,40 @@ class BasicTester:
         """
 
         start = datetime.now()
-        time_extended = False
         while True:
+            # self.slow_write("Please work\n".encode("utf-8"))
             try:
                 new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                     "utf-8"
                 )
             except UnicodeDecodeError:
                 new_text = ""
+
             self.console_output += new_text
+            # print(new_text, flush=True, end="")
 
-            print(new_text, end="")
 
-            # wait until you see the term passkey, so we can enter the pin
+
             if "passkey" in new_text:
                 time.sleep(1)
-
                 self.slow_write("pin 1 1234\n".encode("utf-8"))
-                break
-
-            if "Connection encrypted" in new_text:
-                return True
-
-            if not time_extended and "Connection opened" in new_text:
-                time_extended = True
                 start = datetime.now()
 
-            if (datetime.now() - start).total_seconds() > 30:
-                print("TIMEOUT!!")
-                return False
-
-        start = datetime.now()
-        while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
-            self.console_output += new_text
-            print(new_text, end="")
-
-            # wait for pairing process to go through and see if it passed or failed
-            if "Pairing failed" in new_text:
-                print("Pairing failed")
-                return False
-
-            if (
-                "Pairing completed successfully" in new_text
-                or "Connection encrypted" in new_text
-            ):
-                print("Pairing success")
+            if "Pairing completed successfully" in new_text or "Connection encrypted" in new_text:
                 return True
-
-            if (datetime.now() - start).total_seconds() > 30:
-                print("TIMEOUT!!")
+            
+            if "Pairing failed" in new_text:
                 return False
+
+            
+            if (datetime.now() - start).total_seconds() > 10:
+                print(self.console_output)
+                print("\n===Timeout: Secure connection test")
+                return False
+
+
+
+
 
     def save_console_output(self, path):
         folder = "dats_out"
@@ -307,11 +289,7 @@ class ClientTester(BasicTester):
                 return False
 
             time.sleep(0.5)
-            self.slow_write("btn 2 s\n".encode("utf-8"))
-
-    def _run_speed_test(self):
-        self.slow_write("btn 2 x\n".encode("utf-8"))
-        self.slow_write("btn 2 m\n".encode("utf-8"))
+            self.slow_write("btn 2 s\n".encode("utf-8"))        
 
     def speed_test(self) -> bool:
         """Test throughput example
@@ -328,7 +306,8 @@ class ClientTester(BasicTester):
         """
         start = datetime.now()
         while True:
-            self._run_speed_test()
+            self.slow_write("btn 2 x\n".encode("utf-8"))
+            self.slow_write("btn 2 m\n".encode("utf-8"))
 
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
@@ -360,11 +339,14 @@ def _client_thread(
 ):
     resource_manager.resource_reset(board, owner)
     client = ClientTester(portname)
+    # time.sleep(3)
 
     test_results_client["pairing"] = client.test_secure_connection()
     if not test_results_client["pairing"]:
+        client.save_console_output(f"datc_console_out_{board}.txt")
         return test_results_client
 
+    # client._wait_until_idle()
     test_results_client["speed"] = client.speed_test()
     # test_results_client["write characteristic"] = client.write_char_test()
     # test_results_client["write secure"] = client.write_secure_test()
@@ -384,6 +366,7 @@ def _server_thread(
 ):
     resource_manager.resource_reset(board, owner)
     server = BasicTester(portname)
+    # time.sleep(3)
     
     test_results_server["pairing"] = server.test_secure_connection()
 
@@ -417,21 +400,23 @@ def _print_results(name, report):
 
 def main():
     global kill_server
-    if len(sys.argv) < 3:
-        print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
+    # if len(sys.argv) < 3:
+    #     print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
 
-        for arg in sys.argv[1:]:
-            print(arg)
+    #     for arg in sys.argv[1:]:
+    #         print(arg)
 
-        print("USAGE: <dats-board> <datc-board> as shown in resource manager")
-        for arg in sys.argv:
-            print(arg)
+    #     print("USAGE: <dats-board> <datc-board> as shown in resource manager")
+    #     for arg in sys.argv:
+    #         print(arg)
 
     resource_manager = ResourceManager()
 
     # Get the boards under test and the file paths
-    server_board = sys.argv[1]
-    client_board = sys.argv[2]
+    # server_board = sys.argv[1]
+    # client_board = sys.argv[2]
+    server_board = "me18"
+    client_board = "me17"
 
     # sanity check
     assert (

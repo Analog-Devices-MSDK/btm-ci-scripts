@@ -1,0 +1,102 @@
+erminal: init
+32kHz trimmed to 0x13
+DatcHandlerInit
+MAC Addr: 00:18:80:EF:D3:F9
+Datc got evt 32
+>>> Reset complete <<<
+Datc got evt 21
+Database hash updated
+Datc got evt 153
+dmDevPassEvtToDevPriv: event: 12, param: 36, advHandle: 0
+Datc got evt 36
+>>> Scanning started <<<
+Scan Report:
+  35:82:9D:06:59:79
+Scan Report:
+  E9:2F:59:9B:C8:35
+Scan Report:
+  00:18:80:00:AF:3E
+  Name: DAT_CC_S
+dmDevPassEvtToDevPriv: event: 13, param: 37, advHandle: 0
+Datc got evt 37
+Scan results: 10
+dmConnIdByBdAddr not found
+dmConnCcbAlloc 1
+>>> Scanning stopped <<<
+dmConnSmExecute event=24 state=0
+dmDevPassEvtToDevPriv: event: 14, param: 0, advHandle: 0
+dmConnSmExecute event=28 state=1
+dmDevPassEvtToDevPriv: event: 14, param: 1, advHandle: 0
+dmDevPassEvtToDevPriv: event: 12, param: 39, advHandle: 0
+smpDbGetRecord: connId: 1 type: 0
+smpDbAddDevice
+SmpDbGetFailureCount: connId: 1 count: 0
+smpDbGetRecord: connId: 1 type: 0
+smpDbAddDevice
+SmpDbGetPairingDisabledTime: connId: 1 period: 0 attemptMult: 0
+Datc got evt 39
+>>> Connection opened <<<
+smpSmExecute event=1 state=0
+connId=1 idleMask=0x0001
+Datc got evt 65
+unexpected packet cmd:11 len:2, expected:2
+Datc got evt 22
+smpSmExecute event=6 state=1
+smpSmExecute event=17 state=2
+smpSmExecute event=4 state=3
+connId=1 idleMask=0x0001
+Datc got evt 87
+Datc got evt 4
+connId=1 idleMask=0x0009
+smpSmExecute event=6 state=4
+smpSmExecute event=20 state=5
+Datc got evt 46
+>>> Prompt user to enter passkey <<<
+Datc got evt 3
+AttcDiscServiceCmpl status 0x00
+Datc got evt 4
+AttcDiscCharCmpl status 0x79
+Datc got evt 4
+AttcDiscCharCmpl status 0x79
+Datc got evt 2
+AttcDiscCharCmpl status 0x00
+connId=1 idleMask=0x0009
+Datc got evt 3
+AttcDiscServiceCmpl status 0x00
+Datc got evt 4
+AttcDiscCharCmpl status 0x79
+Datc got evt 4
+AttcDiscCharCmpl status 0x00
+connId=1 idleMask=0x0009
+Datc got evt 3
+AttcDiscServiceCmpl status 0x00
+Datc got evt 4
+AttcDiscCharCmpl status 0x79
+Datc got evt 4
+AttcDiscCharCmpl status 0x79
+Datc got evt 2
+AttcDiscCharCmpl status 0x00
+connId=1 idleMask=0x0009
+Datc got evt 3
+AttcDiscServiceCmpl status 0x00
+Datc got evt 4
+AttcDiscCharCmpl status 0x79
+Datc got evt 4
+AttcDiscCharCmpl status 0x79
+Datc got evt 2
+AttcDiscCharCmpl status 0x79
+Datc got evt 2
+AttcDiscCharCmpl status 0x00
+connId=1 idleMask=0x0001
+AppDiscComplete connId:1 status:0x04
+connId=1 idleMask=0x0009
+Datc got evt 9
+AttcDiscConfigCmpl status 0x79
+Datc got evt 9
+AttcDiscConfigCmpl status 0x79
+Datc got evt 9
+AttcDiscConfigCmpl status 0x79
+Datc got evt 9
+AttcDiscConfigCmpl status 0x00
+connId=1 idleMask=0x0001
+AppDiscComplete connId:1 status:0x08

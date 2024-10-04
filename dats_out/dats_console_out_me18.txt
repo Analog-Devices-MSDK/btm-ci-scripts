@@ -1,0 +1,58 @@
+erminal: init
+32kHz trimmed to 0xD
+DatsHandlerInit
+MAC Addr: 00:18:80:00:AF:3E
+Adv local name: DAT_CC_S
+Dats got evt 32
+>>> Reset complete <<<
+dmAdvActConfig: state: 0
+dmAdvActSetData: state: 0
+dmAdvActSetData: state: 0
+dmAdvActStart: state: 0
+HCI_LE_ADV_ENABLE_CMD_CMPL_CBACK_EVT: state: 3
+dmDevPassEvtToDevPriv: event: 12, param: 33, advHandle: 0
+Dats got evt 33
+>>> Advertising started <<<
+Dats got evt 21
+Database hash updated
+dmConnIdByBdAddr not found
+dmConnCcbAlloc 1
+dmConnSmExecute event=28 state=0
+dmAdvConnected: state: 1
+dmDevPassEvtToDevPriv: event: 13, param: 34, advHandle: 0
+smpDbGetRecord: connId: 1 type: 0
+smpDbAddDevice
+SmpDbGetFailureCount: connId: 1 count: 0
+smpDbGetRecord: connId: 1 type: 0
+smpDbAddDevice
+SmpDbGetPairingDisabledTime: connId: 1 period: 0 attemptMult: 0
+Dats got evt 39
+>>> Connection opened <<<
+smpSmExecute event=5 state=0
+Dats got evt 65
+Dats got evt 22
+smpSmExecute event=6 state=1
+connId=1 idleMask=0x0001
+Dats got evt 49
+smpSmExecute event=2 state=2
+smpSmExecute event=17 state=3
+smpSmExecute event=4 state=5
+smpSmExecute event=6 state=4
+smpSmExecute event=20 state=6
+connId=1 idleMask=0x0001
+Dats got evt 46
+>>> Prompt user to enter passkey <<<
+Dats got evt 87
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0005
+connId=1 idleMask=0x0001
+smpSmExecute event=15 state=12
+connId=1 idleMask=0x0000
+Dats got evt 43
+>>> Pairing failed <<<
