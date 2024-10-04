@@ -97,20 +97,27 @@ class BasicTester:
             True if test success. False otherwise
         """
 
+
         start = datetime.now()
         time_extended = False
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            try:
+                new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                    "utf-8"
+                )
+            except UnicodeDecodeError:
+                new_text = ""
             self.console_output += new_text
 
             print(new_text, end="")
 
             # wait until you see the term passkey, so we can enter the pin
             if "passkey" in self.console_output:
+                self.slow_write("echo off\r".encode("utf-8"))
+
                 time.sleep(1)
-                self.serial_port.write("pin 1 1234\n".encode("utf-8"))
+
+                self.slow_write("pin 1 1234\n".encode("utf-8"))
                 break
 
             if "Connection encrypted" in self.console_output:
@@ -133,9 +140,10 @@ class BasicTester:
             print(new_text, end="")
 
             # wait for pairing process to go through and see if it passed or failed
-            if "Pairing failed" in self.console_output:
-                print("Pairing failed")
-                return False
+			# Any past failures will cause this iteration to fail
+            # if "Pairing failed" in self.console_output:
+            #     print(self.name + " TEST: Pairing failed")
+            #     return False
 
             if (
                 "Pairing completed successfully" in self.console_output
@@ -179,9 +187,9 @@ class ClientTester(BasicTester):
         time.sleep(2)
         print("WRITE CHARACTERISTIC TEST")
 
-        self.serial_port.write("btn 2 l\n".encode("utf-8"))
+        self.slow_write("btn 2 l\n".encode("utf-8"))
         time.sleep(1)
-        self.serial_port.write("btn 2 l\n".encode("utf-8"))
+        self.slow_write("btn 2 l\n".encode("utf-8"))
 
         start = datetime.now()
 
@@ -203,7 +211,7 @@ class ClientTester(BasicTester):
                 return False
 
             time.sleep(0.5)
-            self.serial_port.write("btn 2 l\n".encode("utf-8"))
+            self.slow_write("btn 2 l\n".encode("utf-8"))
 
     def write_secure_test(self) -> bool:
         """Test for secure write
@@ -220,7 +228,7 @@ class ClientTester(BasicTester):
         """
 
         time.sleep(3)
-        self.serial_port.write("btn 2 m\n".encode("utf-8"))
+        self.slow_write("btn 2 m\n".encode("utf-8"))
 
         start = datetime.now()
 
@@ -244,7 +252,7 @@ class ClientTester(BasicTester):
                 return False
 
             time.sleep(1)
-            self.serial_port.write("btn 2 m\r\n".encode("utf-8"))
+            self.slow_write("btn 2 m\r\n".encode("utf-8"))
 
     def phy_switch_test(self) -> bool:
         """Test to update PHY from 1M to 2M
@@ -261,7 +269,7 @@ class ClientTester(BasicTester):
         """
         time.sleep(4)
 
-        self.serial_port.write("btn 2 s\n".encode("utf-8"))
+        self.slow_write("btn 2 s\n".encode("utf-8"))
         start = datetime.now()
 
         while True:
@@ -284,13 +292,13 @@ class ClientTester(BasicTester):
                 return False
 
             time.sleep(0.5)
-            self.serial_port.write("btn 2 s\n".encode("utf-8"))
+            self.slow_write("btn 2 s\n".encode("utf-8"))
 
     def _run_speed_test(self):
         pass
-        self.serial_port.write("btn 2 x\n".encode("utf-8"))
+        self.slow_write("btn 2 x\n".encode("utf-8"))
         time.sleep(1)
-        self.serial_port.write("btn 2 m\n".encode("utf-8"))
+        self.slow_write("btn 2 m\n".encode("utf-8"))
 
     def speed_test(self) -> bool:
         """Test throughput example
@@ -307,9 +315,9 @@ class ClientTester(BasicTester):
         """
 
         # self._run_speed_test()
-        self.serial_port.write("btn 2 x\n".encode("utf-8"))
+        self.slow_write("btn 2 x\n".encode("utf-8"))
         time.sleep(1)
-        self.serial_port.write("btn 2 m\n".encode("utf-8"))
+        self.slow_write("btn 2 m\n".encode("utf-8"))
         time.sleep(1)
 
         # time.sleep(1)
@@ -332,9 +340,9 @@ class ClientTester(BasicTester):
                 print("\nTIMEOUT!!")
                 return False
 
-            self.serial_port.write("btn 2 x\n".encode("utf-8"))
+            self.slow_write("btn 2 x\n".encode("utf-8"))
             time.sleep(1)
-            self.serial_port.write("btn 2 x\n".encode("utf-8"))
+            self.slow_write("btn 2 x\n".encode("utf-8"))
             time.sleep(0.5)
 
             print("Execute")
