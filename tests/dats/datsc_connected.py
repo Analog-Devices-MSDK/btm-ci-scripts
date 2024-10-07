@@ -58,7 +58,7 @@ from pathlib import Path
 import serial
 
 
-from resource_manager import ResourceManager
+from btm_resource_manager import ResourceManager
 
 
 class BasicTester:
@@ -71,11 +71,12 @@ class BasicTester:
         # self._wait_until_idle()
 
     def _wait_until_idle(self):
+        print("\nWaiting for serial output to finally be silenced.")
         start = datetime.now()
         while True:
             if (self.serial_port.in_waiting == 0):
                 if (datetime.now() - start).total_seconds() > 3:
-                    print("Bootup serial output has finally silenced. Ready to test.")
+                    print("Ready to test.\n")
                     break
             else:
                 self.console_output += self.serial_port.read(self.serial_port.in_waiting).decode(
@@ -138,14 +139,16 @@ class BasicTester:
                 start = datetime.now()
 
             if "Pairing completed successfully" in new_text or "Connection encrypted" in new_text:
+                # print(self.console_output)
                 return True
             
             if "Pairing failed" in new_text:
+                # print(self.console_output)
                 return False
 
             
             if (datetime.now() - start).total_seconds() > 10:
-                print(self.console_output)
+                # print(self.console_output)
                 print("\n===Timeout: Secure connection test")
                 return False
 
@@ -181,34 +184,29 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise.
         """
-        time.sleep(2)
-        print("WRITE CHARACTERISTIC TEST")
-
-        self.slow_write("btn 2 l\n".encode("utf-8"))
-        time.sleep(1)
-        self.slow_write("btn 2 l\n".encode("utf-8"))
 
         start = datetime.now()
-
         while True:
+            self.slow_write("btn 2 l\n".encode("utf-8"))
+
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
             self.console_output += new_text
-            print(new_text, end="")
+            # print(new_text, end="")
 
-            if "No action assigned" in new_text:
-                return False
-
+            # if "No action assigned" in new_text:
+            #     # print(self.console_output)
+            #     return False
+            
             if "hello" in new_text:
+                # print(self.console_output)
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                # print(self.console_output)
+                print("\n===TIMEOUT: Write Char Test")
                 return False
-
-            time.sleep(0.5)
-            self.serial_port.write("btn 2 l\n".encode("utf-8"))
 
     def write_secure_test(self) -> bool:
         """Test for secure write
@@ -223,33 +221,30 @@ class ClientTester(BasicTester):
         bool
             True if test passed. False otherwise.
         """
-
-        time.sleep(3)
-        self.slow_write("btn 2 m\n".encode("utf-8"))
+        
 
         start = datetime.now()
 
         while True:
+            self.slow_write("btn 2 l\n".encode("utf-8"))
+            self.slow_write("btn 2 m\n".encode("utf-8"))
+
             new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                 "utf-8"
             )
             self.console_output += new_text
-            print(new_text, end="")
+            # print(new_text, end="")
 
-            if "No action assigned" in new_text:
-                return False
+            # if "No action assigned" in new_text:
+            #     return False
 
-            if (
-                "hello" in new_text
-                or "Secure data received!" in new_text
-            ):
+            if "Secure data received!" in new_text:
                 return True
+
             if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
+                print("\n===TIMEOUT: Write Secure char test")
                 return False
 
-            time.sleep(1)
-            self.slow_write("btn 2 m\r\n".encode("utf-8"))
 
     def phy_switch_test(self) -> bool:
         """Test to update PHY from 1M to 2M
@@ -291,6 +286,43 @@ class ClientTester(BasicTester):
             time.sleep(0.5)
             self.slow_write("btn 2 s\n".encode("utf-8"))        
 
+    def phy_switch_test_byme(self) -> bool:
+        """Test to update PHY from 1M to 2M
+
+        Parameters
+        ----------
+        serial_port : serial.Serial
+            Serial port to write to
+
+        Returns
+        -------
+        bool
+            True if test passed. False otherwise.
+        """
+
+        
+        start = datetime.now()
+
+        while True:
+            self.slow_write("btn 2 s\n".encode("utf-8"))
+
+            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
+                "utf-8"
+            )
+            self.console_output += new_text
+            # print(new_text, end="")
+
+            # if "No action assigned" in new_text:
+            #     return False
+
+            if "PHY Requested" in new_text or "DM_PHY_UPDATE_IND" in new_text:
+                return True
+
+            if (datetime.now() - start).total_seconds() > 10:
+                print("\n===TIMEOUT: PHY switch test")
+                return False
+
+
     def speed_test(self) -> bool:
         """Test throughput example
 
@@ -317,12 +349,12 @@ class ClientTester(BasicTester):
             # print(new_text, flush=True, end="")
 
             if "bps" in new_text:
-                print(self.console_output)
+                # print(self.console_output)
                 return True
 
             if (self.serial_port.in_waiting == 0):
                 if (datetime.now() - start).total_seconds() > 20:
-                    print(self.console_output)
+                    # print(self.console_output)
                     print("\n===Timeout: Speed test")
                     return False
 
@@ -347,10 +379,11 @@ def _client_thread(
         return test_results_client
 
     # client._wait_until_idle()
+    test_results_client["write characteristic"] = client.write_char_test()
     test_results_client["speed"] = client.speed_test()
-    # test_results_client["write characteristic"] = client.write_char_test()
-    # test_results_client["write secure"] = client.write_secure_test()
-    # test_results_client["phy switch"] = client.phy_switch_test()
+    
+    test_results_client["write secure"] = client.write_secure_test()
+    test_results_client["phy switch"] = client.phy_switch_test_byme()
 
     client.save_console_output(f"datc_console_out_{board}.txt")
 
