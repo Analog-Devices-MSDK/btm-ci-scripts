@@ -287,6 +287,8 @@ class SensitivityConnTest:
             ["Mean Peripheral PER", round(avg_periph_per, 2), "%"],
         ]
 
+
+        print(result_table)
         gen.add_table(
             result_table,
             col_widths=(gen.page_width - gen.rlib.units.inch) / 4,

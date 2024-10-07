@@ -1,0 +1,371 @@
+{
+    "test_settings": {
+        "dut": {
+            "__enum__": "DeviceId.MAX32690"
+        },
+        "master": {
+            "__enum__": "ToolId.CMW270"
+        },
+        "cw_interferer": {
+            "__enum__": "DeviceId.UNSPECIFIED"
+        },
+        "mod_interferer": {
+            "__enum__": "DeviceId.UNSPECIFIED"
+        },
+        "dut_port": "COM40",
+        "master_port": "10.20.14.109",
+        "cw_interferer_port": null,
+        "mod_interferer_port": null,
+        "checkpoint_path": "ckp_rxIntermodulation",
+        "num_packets": 1500,
+        "wanted_signal_power": -64.0,
+        "payload_pattern": {
+            "__enum__": "PayloadOption.PLD_PRBS9"
+        },
+        "log_level": "INFO",
+        "phy": {
+            "__enum__": "PhyOption.PHY_1M"
+        },
+        "master_arbfile": null,
+        "mod_interferer_arbfile": "None",
+        "spec_power": -50.0,
+        "spec_per": 30.8,
+        "sweep_key": "channels",
+        "signal_instance": 1,
+        "meas_scenario": "CSP",
+        "meas_master": "Bluetooth Sig1",
+        "meas_rx_conn": "None",
+        "meas_rf_conv": "None",
+        "sig_rx_conn": "RF1C",
+        "sig_tx_conn": "RF1C",
+        "sig_rx_conv": "RX1",
+        "sig_tx_conv": "TX1",
+        "use_sig_flex_scenario": true,
+        "flex_bb_board": "SUA1",
+        "freq_source": "INT",
+        "burst_type": "LE",
+        "operating_mode": "RFT",
+        "expected_nominal_power": 20.0,
+        "enable_auto_ranging": true,
+        "hardware_interface": "RS232",
+        "communication_protocol": "HCI",
+        "port_baud_rate": {
+            "__enum__": "CMWBaud.B115k"
+        },
+        "port_stop_bits": "S1",
+        "port_parity": "NONE",
+        "port_protocol": "NONE",
+        "enable_dut_reset": true,
+        "generator_instance": 1,
+        "gen_tx_conn": "RF1C",
+        "gen_rf_conv": "TX2",
+        "gen_arbfile": "BTLE1MSPS_Interferer_PRBS15.wv",
+        "tx": {
+            "loss": [
+                14.509,
+                14.834,
+                14.88
+            ],
+            "freqs": [
+                2402.0,
+                2440.0,
+                2480.0
+            ],
+            "attenuators": null
+        },
+        "mod_interference": {
+            "loss": [
+                14.509,
+                14.834,
+                14.88
+            ],
+            "freqs": [
+                2402.0,
+                2440.0,
+                2480.0
+            ],
+            "attenuators": null
+        },
+        "cw_interference": {
+            "loss": [
+                14.967,
+                15.258,
+                15.411
+            ],
+            "freqs": [
+                2402.0,
+                2440.0,
+                2480.0
+            ],
+            "attenuators": null
+        },
+        "config_path": null,
+        "board_to_board": false,
+        "num_channels": 8,
+        "num_packet_lens": 1,
+        "num_steps": 6,
+        "rx_durations": [
+            3.7505
+        ],
+        "scatter_plot_path": "results_rxIntermodulation1M/intermod_scatter_plot{}.png",
+        "masked_scatter_plot_path": "results_rxIntermodulation1M/intermod_masked_scatter_plot{}.png",
+        "barplot_path": "results_rxIntermodulation1M/intermod_barplot{}_CH{}.png",
+        "masked_barplot_path": "results_rxIntermodulation1M/intermod_barplot{}_CH{}.png",
+        "desired_plots": {
+            "scatter_plot": [],
+            "masked_scatter_plot": [
+                {
+                    "__enum__": "PlotId.RX_INTERMODULATION"
+                }
+            ]
+        },
+        "results_csv_path": "results_rxIntermodulation1M/results.csv",
+        "logger_name": "RX-INTERMODULATION-TEST"
+    },
+    "checkpoint": {
+        "current": null,
+        "remaining": [
+            [
+                0,
+                255,
+                -5
+            ],
+            [
+                0,
+                255,
+                -4
+            ],
+            [
+                0,
+                255,
+                -3
+            ],
+            [
+                0,
+                255,
+                3
+            ],
+            [
+                0,
+                255,
+                4
+            ],
+            [
+                0,
+                255,
+                5
+            ],
+            [
+                5,
+                255,
+                -5
+            ],
+            [
+                5,
+                255,
+                -4
+            ],
+            [
+                5,
+                255,
+                -3
+            ],
+            [
+                5,
+                255,
+                3
+            ],
+            [
+                5,
+                255,
+                4
+            ],
+            [
+                5,
+                255,
+                5
+            ],
+            [
+                10,
+                255,
+                -5
+            ],
+            [
+                10,
+                255,
+                -4
+            ],
+            [
+                10,
+                255,
+                -3
+            ],
+            [
+                10,
+                255,
+                3
+            ],
+            [
+                10,
+                255,
+                4
+            ],
+            [
+                10,
+                255,
+                5
+            ],
+            [
+                15,
+                255,
+                -5
+            ],
+            [
+                15,
+                255,
+                -4
+            ],
+            [
+                15,
+                255,
+                -3
+            ],
+            [
+                15,
+                255,
+                3
+            ],
+            [
+                15,
+                255,
+                4
+            ],
+            [
+                15,
+                255,
+                5
+            ],
+            [
+                20,
+                255,
+                -5
+            ],
+            [
+                20,
+                255,
+                -4
+            ],
+            [
+                20,
+                255,
+                -3
+            ],
+            [
+                20,
+                255,
+                3
+            ],
+            [
+                20,
+                255,
+                4
+            ],
+            [
+                20,
+                255,
+                5
+            ],
+            [
+                25,
+                255,
+                -5
+            ],
+            [
+                25,
+                255,
+                -4
+            ],
+            [
+                25,
+                255,
+                -3
+            ],
+            [
+                25,
+                255,
+                3
+            ],
+            [
+                25,
+                255,
+                4
+            ],
+            [
+                25,
+                255,
+                5
+            ],
+            [
+                30,
+                255,
+                -5
+            ],
+            [
+                30,
+                255,
+                -4
+            ],
+            [
+                30,
+                255,
+                -3
+            ],
+            [
+                30,
+                255,
+                3
+            ],
+            [
+                30,
+                255,
+                4
+            ],
+            [
+                30,
+                255,
+                5
+            ],
+            [
+                35,
+                255,
+                -5
+            ],
+            [
+                35,
+                255,
+                -4
+            ],
+            [
+                35,
+                255,
+                -3
+            ],
+            [
+                35,
+                255,
+                3
+            ],
+            [
+                35,
+                255,
+                4
+            ],
+            [
+                35,
+                255,
+                5
+            ]
+        ],
+        "tempfile": "results_rxIntermodulation1M/accumulated.csv"
+    }
+}
