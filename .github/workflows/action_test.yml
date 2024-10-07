@@ -68,7 +68,7 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test findBoard
       - name: TestFind
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/find-board@main
         id: boardGet
         with:
           target: |
@@ -87,33 +87,51 @@ jobs:
       #----------------------------------------------------------------------------------------------
       # Test lockBoard --> lock action
       - name: TestLock
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           boards: |
             max32655_board1
             max32655_board2
           lock: true
       # #----------------------------------------------------------------------------------------------
+      # Test makeProject action
+      - name: TestMake
+        id: make_logs
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/make-project@main
+        with:
+          project: BLE5_ctr
+          targets: |
+            MAX32655
+          msdk_path: ${{ github.workspace }}
+          create_buildlog: true
+      # #----------------------------------------------------------------------------------------------
+      # Test makeProject output
+      - name: TestMake_output
+        run: |
+          echo "LOG DIR -- ${{ steps.make_logs.outputs.log_directory }}"
+          ls ${{ steps.make_logs.outputs.log_directory }}
+      # #----------------------------------------------------------------------------------------------
       # Test OCDFlash action
       - name: TestFlash
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdflash@main
         with:
-          board: |
+          boards: |
             max32655_board1
-          project: BLE5_ctr
+          project: |
+            BLE5_ctr
           msdk_path: ${{ github.workspace }}
           build: true
       # # #----------------------------------------------------------------------------------------------
       # Test OCDReset action
       - name: TestReset
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocdreset@main
         with:
           board: |
             max32655_board1
       #----------------------------------------------------------------------------------------------
       # Test OCDErase action
       - name: TestErase
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/ocderase@main
         with:
           board: |
             max32655_board1
@@ -121,7 +139,7 @@ jobs:
       # Test lockBoard --> unlock action
       - name: TestUnlock
         if: always()
-        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@v1
+        uses: Analog-Devices-MSDK/btm-ci-scripts/actions/lock-board@main
         with:
           all_owned: true
           lock: false

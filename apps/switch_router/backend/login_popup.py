@@ -4,9 +4,11 @@ from PySide6.QtWidgets import QWidget, QMainWindow
 from PySide6.QtCore import QObject, QRect, Signal, Qt
 from PySide6.QtGui import QShowEvent
 
+
 class PopupSignals(QObject):
     close = Signal()
     dataEntered = Signal(str, str, str)
+
 
 class LoginPopup(QWidget):
     def __init__(self, parent: QMainWindow, close_cb, changed_cb):
@@ -33,9 +35,9 @@ class LoginPopup(QWidget):
     def setPosition(self, parent: QMainWindow) -> None:
         self.setGeometry(
             QRect(
-                parent.pos().x() + ((parent.width() - self.width())//2),
-                parent.pos().y() + ((parent.height() - self.height())//2),
+                parent.pos().x() + ((parent.width() - self.width()) // 2),
+                parent.pos().y() + ((parent.height() - self.height()) // 2),
                 self.width(),
-                self.height()
+                self.height(),
             )
         )
