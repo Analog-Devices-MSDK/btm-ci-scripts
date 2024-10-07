@@ -1,5 +1,6 @@
 const Core = require('@actions/core');
-const { spawn } = require('child_process')
+const { spawn } = require('child_process');
+const { env } = require('node:process');
 
 const TARGET_NAMES = Core.getMultilineInput('target');
 const GROUPS = Core.getMultilineInput('group');

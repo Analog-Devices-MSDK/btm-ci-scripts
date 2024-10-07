@@ -7,7 +7,7 @@ const { getBoardData, getBoardOwner, procSuccess, procFail, fileExists, findTarg
 const { makeProject } = require('../make-project');
 const { Cipher } = require('crypto');
 
-const BOARD_IDS = Core.getMultilineInput('board');
+const BOARD_IDS = Core.getMultilineInput('boards');
 const PROJECT_DIRS = Core.getMultilineInput('project');
 const MSDK_PATH = Core.getInput('msdk_path', { required: false });
 const BUILD_FLAG = Core.getBooleanInput('build', { required: false });
@@ -93,7 +93,7 @@ const main = async function () {
         let app_board = app_boards[i] 
         elfPaths[i] = path.join(projPath, 'build', `${targets[i].toLowerCase()}.elf`);
         if (BUILD_FLAG) {   
-            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, app_board, SUPPRESS_FLAG).then(
+            await makeProject(projPath, DISTCLEAN_FLAG, build_flags, board=app_board, suppress=SUPPRESS_FLAG).then(
                 (success) => procSuccess(success, 'Build'),
                 (error) => {
                     retVal--;

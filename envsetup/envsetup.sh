@@ -7,7 +7,7 @@ is_not_running_as_root() {
 
 if is_not_running_as_root; then
     echo "Script must be ran using sudo!"
-    exit -1
+    exit 255
 fi
 
 source /home/btm-ci/.bashrc
@@ -32,7 +32,6 @@ for i in {0..3}; do
     cp .env /home/btm-ci/Workspace/btm-ci-github-runner$i
     (cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh stop)
     (cd /home/btm-ci/Workspace/btm-ci-github-runner$i && ./svc.sh start)
-    
 done
 
 cp .env /home/btm-ci/Workspace/adi-msdk-github-runner0

@@ -35,7 +35,7 @@ Board matching the given criteria, where `n` is from 1...10 and matches the posi
     num_boards: 2
 ```
 
-The output can be accessed via `${{ steps.STEPID.outputs.OUTPUTNAME}}. In this case:
+The output can be accessed via `${{ steps.STEPID.outputs.OUTPUTNAME }}`. In this case:
 
 ```yaml
 - name: Echo Output
