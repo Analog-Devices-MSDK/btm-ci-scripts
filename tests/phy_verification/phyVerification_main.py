@@ -112,6 +112,27 @@ if __name__ == "__main__":
         help="DUT device ID. Must be accessible via the ResourceManager."
     )
     parser.add_argument(
+        "--interferer",
+        dest="interferer_id",
+        type=str,
+        default=None,
+        help="Interference device ID. Must be accessible via the ResourceManager."
+    )
+    parser.add_argument(
+        "--cw-interferer",
+        dest="cw_interferer_id",
+        type=str,
+        default=None,
+        help="CW interference device ID. Must be accessible via the ResourceManager."
+    )
+    parser.add_argument(
+        "--mod-interferer",
+        dest="mod_interferer_id",
+        type=str,
+        default=None,
+        help="Modulated interference device ID. Must be accessible via the ResourceManager."
+    )
+    parser.add_argument(
         "-f", "--cfg-file",
         dest="cfg_filepath",
         type=str,
@@ -207,7 +228,25 @@ if __name__ == "__main__":
         equipment["dut"] = (
             rm.get_item_value(f"{args.dut_id}.target"),
             rm.get_item_value(f"{args.dut_id}.hci_port")
-        )    
+        )
+
+    if args.interferer_id is not None:
+        equipment["interferer"] = (
+            rm.get_item_value(f"{args.interferer_id}.target"),
+            rm.get_item_value(f"{args.interferer_id}.hci_port")
+        )
+
+    if args.cw_interferer_id is not None:
+        equipment["cw_interferer"] = (
+            rm.get_item_value(f"{args.cw_interferer_id}.target"),
+            rm.get_item_value(f"{args.cw_interferer_id}.hci_port")
+        )
+
+    if args.mod_interferer_id is not None:
+        equipment["modulated_interferer"] = (
+            rm.get_item_value(f"{args.mod_interferer_id}.target"),
+            rm.get_item_value(f"{args.mod_interferer_id}.hci_port")
+        )
 
     if not equipment:
         equipment=None
