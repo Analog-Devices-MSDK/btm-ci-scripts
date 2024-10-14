@@ -60,7 +60,7 @@ import sys
 from typing import Tuple
 from ble_test_suite.controllers import MasterController
 from ble_test_suite.equipment import MiniCircuitsRFSwitch
-from resource_manager import ResourceManager
+from btm_resource_manager import ResourceManager
 
 DEF_CFG = os.path.join(os.getenv("CI_PHYTEST_CFG_DIR"), "phyTest_master.json")
 
