@@ -83,6 +83,10 @@ class BasicTester:
             self.serial_port.write(byte.to_bytes(1, 'little'))
             time.sleep(0.1)
 
+
+    def read_console_text(self):
+        return self.serial_port.read(self.serial_port.in_waiting).decode("utf-8")
+    
     def test_secure_connection(self) -> bool:
         """Generic secure connection test for pairing
 
@@ -102,9 +106,7 @@ class BasicTester:
         time_extended = False
         while True:
             try:
-                new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                    "utf-8"
-                )
+                new_text = self.read_console_text()
             except UnicodeDecodeError:
                 new_text = ""
             self.console_output += new_text
@@ -133,9 +135,7 @@ class BasicTester:
 
         start = datetime.now()
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.read_console_text()
             self.console_output += new_text
             print(new_text, end="")
 
@@ -171,6 +171,8 @@ class ClientTester(BasicTester):
     def __init__(self, portname: str) -> None:
         BasicTester.__init__(self, portname=portname)
 
+    
+
     def write_char_test(self) -> bool:
         """Test for unsecure write characteristic
 
@@ -194,9 +196,7 @@ class ClientTester(BasicTester):
         start = datetime.now()
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.read_console_text()
             self.console_output += new_text
             print(new_text, end="")
 
@@ -233,9 +233,7 @@ class ClientTester(BasicTester):
         start = datetime.now()
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.read_console_text()
             self.console_output += new_text
             print(new_text, end="")
 
@@ -273,9 +271,7 @@ class ClientTester(BasicTester):
         start = datetime.now()
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.read_console_text()
             self.console_output += new_text
             print(new_text, end="")
 
@@ -326,9 +322,7 @@ class ClientTester(BasicTester):
         start = datetime.now()
 
         while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
+            new_text = self.read_console_text()
             self.console_output += new_text
             print(new_text, end="")
 
@@ -414,6 +408,8 @@ def _print_results(name, report):
 
 
 def main():
+    
+
     global kill_server
     if len(sys.argv) < 3:
         print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
