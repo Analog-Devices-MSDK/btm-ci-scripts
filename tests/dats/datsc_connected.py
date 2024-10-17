@@ -54,7 +54,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-
+import argparse
 import serial
 
 
@@ -65,6 +65,7 @@ class BasicTester:
     def __init__(self, portname: str) -> None:
         self.portname = portname
         self.console_output = ""
+        print(portname)
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=2)
         self.serial_port.flush()
 
@@ -101,7 +102,7 @@ class BasicTester:
             True if test success. False otherwise
         """
 
-
+        connection_open = False
         start = datetime.now()
         time_extended = False
         while True:
@@ -126,12 +127,16 @@ class BasicTester:
                 return True
 
             if not time_extended and "Connection opened" in self.console_output:
+                print('TIME EXTENSION**************************')
+                connection_open = True  
                 time_extended = True
                 start = datetime.now()
 
-            if (datetime.now() - start).total_seconds() > 30:
-                print("TIMEOUT!!")
-                return False
+            if (datetime.now() - start).total_seconds() > 15:
+                if not connection_open:
+                    print("TIMEOUT!!")
+                    return False
+                break
 
         start = datetime.now()
         while True:
@@ -358,9 +363,12 @@ def _client_thread(
         client.save_console_output(f"datc_console_out_{board}.txt")
         return test_results_client
 
-    test_results_client["speed"] = client.speed_test()
     test_results_client["write characteristic"] = client.write_char_test()
+    time.sleep(1)
     test_results_client["write secure"] = client.write_secure_test()
+    time.sleep(1)
+    test_results_client["speed"] = client.speed_test()
+    time.sleep(1)
     test_results_client["phy switch"] = client.phy_switch_test()
 
     client.save_console_output(f"datc_console_out_{board}.txt")
@@ -409,23 +417,17 @@ def _print_results(name, report):
 
 def main():
     
-
+    parser = argparse.ArgumentParser(description='Run Datsc test')
+    parser.add_argument('server_board', help='Board name in resource config to act as server')
+    parser.add_argument('client_board', help='Board name in resource config to act as client')
     global kill_server
-    if len(sys.argv) < 3:
-        print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
 
-        for arg in sys.argv[1:]:
-            print(arg)
-
-        print("USAGE: <dats-board> <datc-board> as shown in resource manager")
-        for arg in sys.argv:
-            print(arg)
-
+    args = parser.parse_args()
     resource_manager = ResourceManager()
 
     # Get the boards under test and the file paths
-    server_board = sys.argv[1]
-    client_board = sys.argv[2]
+    server_board = args.server_board
+    client_board = args.client_board
 
     # sanity check
     assert (
