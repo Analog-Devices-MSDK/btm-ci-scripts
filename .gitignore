@@ -8,3 +8,5 @@ envsetup/.env
 **/results
 Resource_Share/dist
 tests/**/checkpoint*
+**/**.png
+**/**.csv
