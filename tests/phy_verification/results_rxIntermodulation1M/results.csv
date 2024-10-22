@@ -1,9 +1,0 @@
-#RX INTERMODULATION TEST
-#	dut_part_number: 
-#	dut_internal_name: 
-#	package: 
-#	pcb: 
-#	temperature: 
-#	packet_lens: 255
-#	channels: 0, 5, 10, 15, 20, 25, 30, 35
-#	steps: -5, -4, -3, 3, 4, 5
