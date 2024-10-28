@@ -14,10 +14,9 @@ jobs:
       - name: Cleanup
         run: |
           resource_manager --lock-all
-          set +e
           chmod +x envsetup/cleanup.sh
           ./envsetup/cleanup.sh
-          set -e
+          
           
       - name: Unlock
         if: always()
