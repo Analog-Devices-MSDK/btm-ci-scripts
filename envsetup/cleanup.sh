@@ -1,6 +1,6 @@
 safe_delete() {
     local dir_path="$1"
-    
+
     if [ -d "$dir_path" ]; then
         trash -rf "${dir_path}"/*
     else

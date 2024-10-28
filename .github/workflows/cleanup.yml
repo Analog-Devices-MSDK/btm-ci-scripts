@@ -2,7 +2,7 @@ name: Weekly Cleanup
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Runs every Sunday at 00:00 UTC
+    - cron: "0 0 * * 0" # Runs every Sunday at 00:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -16,8 +16,7 @@ jobs:
           resource_manager --lock-all
           chmod +x envsetup/cleanup.sh
           ./envsetup/cleanup.sh
-          
-          
+
       - name: Unlock
         if: always()
         run: resource_manager --unlock-all
