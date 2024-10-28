@@ -7,7 +7,6 @@ success_count=0
 for i in {1..20}; do
     echo "Running iteration $i"
     
-    # Run your script or command
     ./test.sh
     
     # Check if the script was successful (exit status 0)
