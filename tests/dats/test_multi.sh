@@ -4,7 +4,7 @@
 success_count=0
 
 # Loop to run the script 10 times
-for i in {1..10}; do
+for i in {1..20}; do
     echo "Running iteration $i"
     
     # Run your script or command
