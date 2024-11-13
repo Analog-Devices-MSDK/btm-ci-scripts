@@ -272,9 +272,6 @@ class ClientTester(BasicTester):
                 if (datetime.now() - start).total_seconds() > 20:
                     print("\nTIMEOUT: Speed test")
                     return False
-
-            print("Retrying...")
-
     
 
 
