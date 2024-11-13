@@ -68,23 +68,6 @@ class BasicTester:
         self.serial_port = serial.Serial(portname, baudrate=115200, timeout=0)
         self.serial_port.flush()
 
-        # self._wait_until_idle()
-
-    def _wait_until_idle(self):
-        print("\nWaiting for serial output to finally be silenced.")
-        start = datetime.now()
-        while True:
-            if (self.serial_port.in_waiting == 0):
-                if (datetime.now() - start).total_seconds() > 3:
-                    print("Ready to test.\n")
-                    break
-            else:
-                self.console_output += self.serial_port.read(self.serial_port.in_waiting).decode(
-                    "utf-8"
-                )
-                start = datetime.now()
-
-
     def slow_write(self, data: bytes):
         """Write UART data at human typing speeds
 
@@ -120,7 +103,6 @@ class BasicTester:
 
         start = datetime.now()
         while True:
-            # self.slow_write("Please work\n".encode("utf-8"))
             try:
                 new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
                     "utf-8"
@@ -129,9 +111,6 @@ class BasicTester:
                 new_text = ""
 
             self.console_output += new_text
-            # print(new_text, flush=True, end="")
-
-
 
             if "passkey" in new_text:
                 time.sleep(1)
@@ -139,22 +118,17 @@ class BasicTester:
                 start = datetime.now()
 
             if "Pairing completed successfully" in new_text or "Connection encrypted" in new_text:
-                # print(self.console_output)
                 return True
             
             if "Pairing failed" in new_text:
-                # print(self.console_output)
                 return False
 
-            
             if (datetime.now() - start).total_seconds() > 10:
-                # print(self.console_output)
-                print("\n===Timeout: Secure connection test")
+                print("\nTIMEOUT: Secure connection test")
                 return False
 
-
-
-
+    def test_stable_connection(self) -> bool:
+        return "TIMEOUT" not in self.console_output
 
     def save_console_output(self, path):
         folder = "dats_out"
@@ -193,19 +167,12 @@ class ClientTester(BasicTester):
                 "utf-8"
             )
             self.console_output += new_text
-            # print(new_text, end="")
-
-            # if "No action assigned" in new_text:
-            #     # print(self.console_output)
-            #     return False
             
             if "hello" in new_text:
-                # print(self.console_output)
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                # print(self.console_output)
-                print("\n===TIMEOUT: Write Char Test")
+                print("\nTIMEOUT: Write Char Test")
                 return False
 
     def write_secure_test(self) -> bool:
@@ -233,60 +200,15 @@ class ClientTester(BasicTester):
                 "utf-8"
             )
             self.console_output += new_text
-            # print(new_text, end="")
-
-            # if "No action assigned" in new_text:
-            #     return False
 
             if "Secure data received!" in new_text:
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("\n===TIMEOUT: Write Secure char test")
-                return False
-
+                print("\nTIMEOUT: Write Secure char test")
+                return False      
 
     def phy_switch_test(self) -> bool:
-        """Test to update PHY from 1M to 2M
-
-        Parameters
-        ----------
-        serial_port : serial.Serial
-            Serial port to write to
-
-        Returns
-        -------
-        bool
-            True if test passed. False otherwise.
-        """
-        time.sleep(4)
-
-        self.slow_write("btn 2 s\n".encode("utf-8"))
-        start = datetime.now()
-
-        while True:
-            new_text = self.serial_port.read(self.serial_port.in_waiting).decode(
-                "utf-8"
-            )
-            self.console_output += new_text
-            print(new_text, end="")
-
-            if "No action assigned" in new_text:
-                return False
-
-            if "PHY Requested" in new_text:
-                return True
-            if "DM_PHY_UPDATE_IND" in new_text:
-                return True
-
-            if (datetime.now() - start).total_seconds() > 10:
-                print("TIMEOUT!!")
-                return False
-
-            time.sleep(0.5)
-            self.slow_write("btn 2 s\n".encode("utf-8"))        
-
-    def phy_switch_test_byme(self) -> bool:
         """Test to update PHY from 1M to 2M
 
         Parameters
@@ -310,16 +232,12 @@ class ClientTester(BasicTester):
                 "utf-8"
             )
             self.console_output += new_text
-            # print(new_text, end="")
-
-            # if "No action assigned" in new_text:
-            #     return False
 
             if "PHY Requested" in new_text or "DM_PHY_UPDATE_IND" in new_text:
                 return True
 
             if (datetime.now() - start).total_seconds() > 10:
-                print("\n===TIMEOUT: PHY switch test")
+                print("\nTIMEOUT: PHY switch test")
                 return False
 
 
@@ -346,16 +264,13 @@ class ClientTester(BasicTester):
             )
 
             self.console_output += new_text
-            # print(new_text, flush=True, end="")
 
             if "bps" in new_text:
-                # print(self.console_output)
                 return True
 
             if (self.serial_port.in_waiting == 0):
                 if (datetime.now() - start).total_seconds() > 20:
-                    # print(self.console_output)
-                    print("\n===Timeout: Speed test")
+                    print("\nTIMEOUT: Speed test")
                     return False
 
             print("Retrying...")
@@ -371,20 +286,18 @@ def _client_thread(
 ):
     resource_manager.resource_reset(board, owner)
     client = ClientTester(portname)
-    # time.sleep(3)
 
     test_results_client["pairing"] = client.test_secure_connection()
     if not test_results_client["pairing"]:
         client.save_console_output(f"datc_console_out_{board}.txt")
         return test_results_client
 
-    # client._wait_until_idle()
     test_results_client["write characteristic"] = client.write_char_test()
     test_results_client["speed"] = client.speed_test()
-    
     test_results_client["write secure"] = client.write_secure_test()
-    test_results_client["phy switch"] = client.phy_switch_test_byme()
+    test_results_client["phy switch"] = client.phy_switch_test()
 
+    test_results_client["connection stability"] = client.test_stable_connection()
     client.save_console_output(f"datc_console_out_{board}.txt")
 
     return test_results_client
@@ -399,7 +312,6 @@ def _server_thread(
 ):
     resource_manager.resource_reset(board, owner)
     server = BasicTester(portname)
-    # time.sleep(3)
     
     test_results_server["pairing"] = server.test_secure_connection()
 
@@ -409,6 +321,7 @@ def _server_thread(
         )
         server.console_output += new_text
 
+    test_results_server["connection stability"] = server.test_stable_connection()
     server.save_console_output(f"dats_console_out_{board}.txt")
 
     return test_results_server
@@ -433,23 +346,22 @@ def _print_results(name, report):
 
 def main():
     global kill_server
-    # if len(sys.argv) < 3:
-    #     print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
+    if len(sys.argv) < 3:
+        print(f"DATSC TEST: Not enough arguments! Expected 2 got {len(sys.argv)}")
 
-    #     for arg in sys.argv[1:]:
-    #         print(arg)
+        for arg in sys.argv[1:]:
+            print(arg)
 
-    #     print("USAGE: <dats-board> <datc-board> as shown in resource manager")
-    #     for arg in sys.argv:
-    #         print(arg)
+        print("USAGE: <dats-board> <datc-board> as shown in resource manager")
+        for arg in sys.argv:
+            print(arg)
 
     resource_manager = ResourceManager()
 
     # Get the boards under test and the file paths
-    # server_board = sys.argv[1]
-    # client_board = sys.argv[2]
-    server_board = "me18"
-    client_board = "me17"
+    server_board = sys.argv[1]
+    client_board = sys.argv[2]
+    
 
     # sanity check
     assert (
