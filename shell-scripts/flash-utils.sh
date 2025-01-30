@@ -38,22 +38,24 @@ function ocdflash() {
     fi
 
     target=$(resource_manager -g $name.target)
-    
-
-    
     dapsn=$(resource_manager -g $name.dap_sn)
+    dap_interface=$(resource_manager -g $name.dap_interface)
     gdbport=$(resource_manager -g $name.ocdports.gdb)
     telnetport=$(resource_manager -g $name.ocdports.telnet)
     tclport=$(resource_manager -g $name.ocdports.tcl)
 
+    if [[ -z "${dap_interface}" ]]; then
+        dap_interface="cmsis-dap"
+    fi
+
     openocd -s $OPENOCD_PATH \
-    -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+    -f interface/${dap_interface}.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
     -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
     -c "program $elfFile verify; reset; exit"
 
     if [[ $? -ne 0 ]]; then
         openocd -s $OPENOCD_PATH \
-        -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+        -f interface/${dap_interface}.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
         -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
         -c "program $elfFile verify; reset; exit"
     fi
@@ -86,26 +88,26 @@ function ocderase() {
         return -1
     fi
 
-
     target=$(resource_manager -g $name.target)
-    
-    
-
     dapsn=$(resource_manager -g $name.dap_sn)
+    dap_interface=$(resource_manager -g $name.dap_interface)
     gdbport=$(resource_manager -g $name.ocdports.gdb)
     telnetport=$(resource_manager -g $name.ocdports.telnet)
     tclport=$(resource_manager -g $name.ocdports.tcl)
 
-   
+    if [[ -z "${dap_interface}" ]]; then
+        dap_interface="cmsis-dap"
+    fi
+
     openocd -s $OPENOCD_PATH \
-    -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+    -f interface/${dap_interface}.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
     -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
     -c "init; reset halt; max32xxx mass_erase 0;" -c exit
     if [[ "$target" == "MAX32655" ]]; then
         return $?
     fi
     openocd -s $OPENOCD_PATH \
-        -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+        -f interface/${dap_interface}.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
         -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
         -c "init; reset halt; max32xxx mass_erase 1;" -c exit
 
@@ -138,17 +140,18 @@ function ocdreset() {
     fi
 
     target=$(resource_manager -g $name.target)
-
-    
-
     dapsn=$(resource_manager -g $name.dap_sn)
+    dap_interface=$(resource_manager -g $name.dap_interface)
     gdbport=$(resource_manager -g $name.ocdports.gdb)
     telnetport=$(resource_manager -g $name.ocdports.telnet)
     tclport=$(resource_manager -g $name.ocdports.tcl)
 
+    if [[ -z "${dap_interface}" ]]; then
+        dap_interface="cmsis-dap"
+    fi
 
     openocd -s $OPENOCD_PATH \
-        -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+        -f interface/${dap_interface}.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
         -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport" \
         -c "init; reset ;exit" 
 
@@ -178,19 +181,19 @@ function ocdopen() {
         return -1
     fi
 
-
-
     target=$(resource_manager -g $name.target)
-
-
     dapsn=$(resource_manager -g $name.dap_sn)
+    dap_interface=$(resource_manager -g $name.dap_interface)
     gdbport=$(resource_manager -g $name.ocdports.gdb)
     telnetport=$(resource_manager -g $name.ocdports.telnet)
     tclport=$(resource_manager -g $name.ocdports.tcl)
 
+    if [[ -z "${dap_interface}" ]]; then
+        dap_interface="cmsis-dap"
+    fi
 
     openocd -s $OPENOCD_PATH \
-        -f interface/cmsis-dap.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
+        -f interface/${dap_interface}.cfg -f target/$(lower $target).cfg -c "adapter serial $dapsn" \
         -c "gdb_port $gdbport" -c "telnet_port $telnetport" -c "tcl_port $tclport"
 
     return $?
